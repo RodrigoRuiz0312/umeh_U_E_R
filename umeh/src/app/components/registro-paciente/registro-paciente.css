@@ -89,7 +89,16 @@
   z-index: 1000;
 }
 
-.form-actions > button[type="button"] {
+.form-actions .btn-secondary-1 {
+  position: fixed;
+  top: 40px;
+  right: 393px;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.form-actions .btn-secondary-2 {
   position: fixed;
   top: 40px;
   right: 210px;

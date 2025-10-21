@@ -4,6 +4,7 @@ import { ConsultaService } from '../../services/consulta-service';
 import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 interface Paciente {
   id_paciente: number;
@@ -116,7 +117,7 @@ export class ConsultaRecepcion implements OnInit {
   mensajeError: string = '';
   mensajeExito: string = '';
 
-  constructor(private consultaService: ConsultaService) { }
+  constructor(private consultaService: ConsultaService, private router: Router) { }
 
   ngOnInit(): void {
     this.cargarMedicos();
@@ -176,7 +177,7 @@ export class ConsultaRecepcion implements OnInit {
   irARegistroPaciente(): void {
     // Aquí rediriges a tu componente de registro de pacientes
     console.log('Redirigir a registro de pacientes');
-    // Ejemplo: this.router.navigate(['/pacientes/registro']);
+    this.router.navigate(['/pacientes/registro']);
   }
 
   // ============================================
