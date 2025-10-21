@@ -1,0 +1,16 @@
+.card {
+  width: 99%;
+  margin: 24px auto;
+  padding: 20px;
+  background: var(--card-bg);
+  color: var(--card-text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.card-header h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.9rem;
+  color: var(--heading-text);
+}
