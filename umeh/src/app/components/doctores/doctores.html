@@ -1,0 +1,72 @@
+<div class="registro-container">
+  <h2>Registro de Doctores</h2>
+
+  <p-toast></p-toast>
+
+  <div class="modal-overlay" *ngIf="mostrarModalCamposObligatorios" (click)="cerrarModalCamposObligatorios()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⚠️ Campos obligatorios faltantes</h3>
+        <button class="modal-close" (click)="cerrarModalCamposObligatorios()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-info">
+          Los campos marcados con <span class="asterisco-demo">*</span> son obligatorios.
+        </p>
+        <p class="modal-subtitle">Por favor completa los siguientes campos:</p>
+        <ul class="campos-faltantes">
+          <li *ngFor="let campo of camposFaltantes">
+            <span class="campo-icono">📋</span>
+            {{ campo }}
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-entendido" (click)="cerrarModalCamposObligatorios()">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <form id="doctorForm" class="doctor-form" (ngSubmit)="onSubmit()" novalidate>
+
+    <div class="form-field">
+      <label for="nombre">Nombre <span class="requerido">*</span></label>
+      <input type="text" id="nombre" name="nombre" [(ngModel)]="doctorData.nombre" required placeholder="Ej. Juan" />
+    </div>
+
+    <div class="form-field">
+      <label for="apellidos">Apellidos <span class="requerido">*</span></label>
+      <input type="text" id="apellidos" name="apellidos" [(ngModel)]="doctorData.apellidos" required
+        placeholder="Ej. Pérez García" />
+    </div>
+
+    <div class="form-field">
+      <label for="cedula_prof">Cédula Profesional <span class="requerido">*</span></label>
+      <input type="text" id="cedula_prof" name="cedula_prof" [(ngModel)]="doctorData.cedula_prof" required
+        placeholder="Ej. 1234567" />
+    </div>
+
+    <div class="form-field">
+      <label for="especialidad">Especialidad</label>
+      <input type="text" id="especialidad" name="especialidad" [(ngModel)]="doctorData.especialidad"
+        placeholder="Ej. Cirugía veterinaria" />
+    </div>
+
+    <div class="form-field">
+      <label for="telefono">Teléfono</label>
+      <input type="text" id="telefono" name="telefono" [(ngModel)]="doctorData.telefono" placeholder="Ej. 5551234567" />
+    </div>
+
+    <div class="form-field">
+      <label for="correo">Correo electrónico</label>
+      <input type="text" id="correo" name="correo" [(ngModel)]="doctorData.correo" placeholder="Ej. doctor@mail.com" />
+    </div>
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Guardando...' : 'Registrar Doctor' }}
+    </button>
+
+  </form>
+</div>

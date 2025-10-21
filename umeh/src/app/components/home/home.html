@@ -1,0 +1,210 @@
+<div class="home-container">
+
+    <!-- Modal de seleccion de inventario -->
+    <div *ngIf="showInventoryModal" class="modal-backdrop" (click)="onBackdropClick($event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    Seleccionar Inventario
+                </h3>
+                <button class="close-button" (click)="onClose()">
+                    &times;
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="inventory-grid">
+                    <a *ngFor="let option of inventoryOptions" [routerLink]="option.route" (click)="onClose()"
+                        class="inventory-option" [class]="option.color + '-border'">
+                        <div class="option-icon" [class]="option.color + '-bg'">
+                            <i class="fa-solid" [class]="option.icon"></i>
+                        </div>
+                        <div class="option-content">
+                            <h3>{{ option.title }}</h3>
+                            <p>{{ option.description }}</p>
+                        </div>
+                        <div class="option-arrow">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header-section">
+        <div class="header-content">
+            <div class="header-text">
+                <h1 class="main-title">
+                    <i class="fa-solid fa-shield-heart"></i>
+                    Sistema de Gestión Médica
+                </h1>
+                <p class="subtitle">Unidad Médica de la Huasteca (UMEH)</p>
+            </div>
+            <div class="header-date">
+                <span class="date-label">Fecha:</span>
+                <span class="date-value">{{ currentDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats Cards -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <!-- Medicamentos -->
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="icon-box"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number" *ngIf="totalMedicamentos !== null; else loadingMedicamentos">
+                        {{ totalMedicamentos }}
+                    </h3>
+                    <ng-template #loadingMedicamentos>
+                        <p-skeleton width="13rem" height="1.5rem"></p-skeleton>
+                    </ng-template>
+
+                    <p class="stat-label">Existencia total de medicamentos</p>
+                </div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-icon">
+                    <i class="icon-alert"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number" *ngIf="stockBajo !== null; else loadingStockBajo">
+                        {{ stockBajo }}
+                    </h3>
+                    <ng-template #loadingStockBajo>
+                        <p-skeleton width="13rem" height="1.5rem"></p-skeleton>
+                    </ng-template>
+
+                    <p class="stat-label">Medicamentos con bajo inventario</p>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-icon">
+                    <i class="icon-medical"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number" *ngIf="totalMaterial !== null; else loadingMaterial">
+                        {{ totalMaterial }}
+                    </h3>
+                    <ng-template #loadingMaterial>
+                        <p-skeleton width="13rem" height="1.5rem"></p-skeleton>
+                    </ng-template>
+
+                    <p class="stat-label">Recursos de triage disponibles</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <h2 class="section-title">
+        <i class="fa-solid fa-bolt"></i> Acciones Rápidas
+    </h2>
+    <!-- Quick Actions -->
+    <section class="actions-section">
+
+
+        <!-- 🩺 Gestión Médica -->
+        <div class="actions-group">
+            <h3 class="actions-subtitle">
+                <i class="fa-solid fa-stethoscope"></i> Gestión Médica
+            </h3>
+            <div class="actions-grid">
+                <button class="action-card" routerLink="/pacientes/registro">
+                    <div class="action-icon bg-primary">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Registrar paciente</h3>
+                        <p>Agregar nuevos pacientes al sistema</p>
+                    </div>
+                </button>
+
+                <button class="action-card" routerLink="/pacientes">
+                    <div class="action-icon bg-info">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Pacientes</h3>
+                        <p>Consultar informacion de pacientes</p>
+                    </div>
+                </button>
+
+                <button class="action-card" routerLink="/pacientes/doctores">
+                    <div class="action-icon bg-danger">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Registrar doctor</h3>
+                        <p>Agregar nuevo doctor al sistema</p>
+                    </div>
+                </button>
+
+                <button class="action-card" routerLink="/pacientes/lista-doctores">
+                    <div class="action-icon bg-success">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Gestión Doctores</h3>
+                        <p>Administrar personal médico registrado</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- 🧰 Gestión de Insumos -->
+        <div class="actions-group">
+            <h3 class="actions-subtitle">
+                <i class="fa-solid fa-boxes-stacked"></i> Gestión de Insumos
+            </h3>
+            <div class="actions-grid">
+                <button class="action-card" routerLink="/insumos/registro">
+                    <div class="action-icon bg-primary">
+                        <i class="fa-solid fa-circle-plus"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Registrar Insumo</h3>
+                        <p>Agregar nuevos insumos al inventario</p>
+                    </div>
+                </button>
+
+                <button class="action-card" (click)="openInventoryModal()">
+                    <div class="action-icon bg-info">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Consultar Inventario</h3>
+                        <p>Ver y filtrar el estado actual de existencias</p>
+                    </div>
+                </button>
+
+                <button class="action-card" routerLink="/insumos/procedimientos">
+                    <div class="action-icon bg-danger">
+                        <i class="fa-solid fa-syringe"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Procedimientos</h3>
+                        <p>Consultar procedimientos</p>
+                    </div>
+                </button>
+                
+                <button class="action-card" routerLink="/reportes">
+                    <div class="action-icon bg-warning">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="action-content">
+                        <h3>Generar Reportes</h3>
+                        <p>Obtener reportes de inventario</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </section>
+</div>

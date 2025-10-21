@@ -1,0 +1,67 @@
+<div class="tabla-container">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom: 12px;">
+    <h2 style="margin:0; flex: 0 0 auto;">Doctores</h2>
+    <div style="flex: 1 1 auto;"></div>
+    <div class="input-with-icon" style="flex:0 0 320px; max-width: 50%;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+        placeholder="Buscar por nombre, cédula, especialidad..."
+        style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
+    </div>
+    <div style="flex:0 0 220px;">
+      <select #orderSel (change)="onSortOptionChange(orderSel.value)"
+        style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--input-border);">
+        <option value="" disabled selected>Ordenar por...</option>
+        <option value="nombre:asc">Nombre (A→Z)</option>
+        <option value="nombre:desc">Nombre (Z→A)</option>
+        <option value="apellidos:asc">Apellidos (A→Z)</option>
+        <option value="apellidos:desc">Apellidos (Z→A)</option>
+        <option value="cedula_prof:asc">Cédula (A→Z)</option>
+        <option value="cedula_prof:desc">Cédula (Z→A)</option>
+        <option value="especialidad:asc">Especialidad (A→Z)</option>
+        <option value="especialidad:desc">Especialidad (Z→A)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Apellidos</th>
+          <th>Cédula Profesional</th>
+          <th>Teléfono</th>
+          <th>Especialidad</th>
+          <th>Correo</th>
+          <th class="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let medico of medicosView">
+          <td>{{ medico.nombre }}</td>
+          <td>{{ medico.apellidos }}</td>
+          <td>{{ medico.cedula_prof }}</td>
+          <td>{{ medico.telefono }}</td>
+          <td>{{ medico.especialidad }}</td>
+          <td>{{ medico.correo }}</td>
+          <td class="actions">
+            <button class="action-btnP" (click)="openEditModal(medico)">
+              <img src="assets/img/edit.png" class="btn-iconP">
+            </button>
+            <button class="action-btnP" (click)="borrarMedico(medico.id_medico)">
+              <img src="assets/img/delet.png" class="btn-iconP">
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-edit-doctor-modal
+  *ngIf="isModalVisible"
+  [doctor]="medicoSeleccionado"
+  (doctorActualizado)="recargarMedicos()"
+  (close)="closeModal()">
+</app-edit-doctor-modal>

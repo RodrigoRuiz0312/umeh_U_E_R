@@ -1,0 +1,342 @@
+.registro-container {
+  width: 99%;
+  margin: 24px auto;
+  padding: 20px;
+  background: var(--card-bg, #ffffff);
+  color: var(--card-text, #111827);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  height: 95%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.registro-container h2 {
+  margin: 0 0 16px 0;
+  font-size: var(--fs-3xl);
+  color: var(--heading-text);
+}
+
+.registro-container form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 12px 16px;
+  font-size: var(--fs-lg);
+}
+
+@media (max-width: 640px) {
+  .registro-container form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  margin: 0;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--label-text);
+}
+
+.form-field input[type="text"],
+.form-field input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+/* Ancho completo */
+.p-select-custom {
+  width: 100%;
+}
+
+/* Estilo base del select */
+::ng-deep .p-select-custom .p-select {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+::ng-deep .p-select-custom .p-select:hover {
+  border-color: #5a9;
+}
+
+/* Fondo y color de texto al pasar el mouse sobre una opción */
+::ng-deep .p-select-option:hover {
+  background-color: #e0f7fa !important;
+  color: #00695c !important;
+}
+
+/* Opción seleccionada (cuando ya está elegida) */
+::ng-deep .p-select-option.p-select-option-selected {
+  background-color: #b2ebf2 !important;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.form-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  outline: none;
+  resize: vertical;
+}
+
+.form-field input[type="text"]::placeholder,
+.form-field input[type="number"]::placeholder {
+  color: var(--placeholder);
+}
+
+.form-field input[type="text"]:focus,
+.form-field input[type="number"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-color) 20%, transparent);
+}
+
+button[type="submit"],
+button[type="button"] {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary-color);
+  color: #fff;
+  transition: transform 0.05s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+button[type="submit"]:hover,
+button[type="button"]:hover {
+  background: color-mix(in oklab, var(--primary-color) 90%, #000);
+}
+
+button[type="submit"]:active,
+button[type="button"]:active {
+  transform: translateY(1px);
+}
+
+button[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .proc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+p-toast {
+  margin-bottom: 8px;
+}
+
+.registro-container form > button[type="submit"] {
+  position: fixed;
+  top: 40px;
+  right: 40px;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #ffffff 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 600;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(0, 0, 0, 0.731);
+  font-size: var(--fs-4xl);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 24px;
+  background: var(--table-bg);
+}
+
+.modal-info {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  color: #856404;
+  font-size: 0.95rem;
+}
+
+.asterisco-demo {
+  color: var(--danger-color);
+  font-weight: bold;
+  font-size: var(--fs-lg);
+}
+
+.modal-subtitle {
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: var(--fs-md);
+  color: var(--text-dark);
+}
+
+.campos-faltantes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.campos-faltantes li {
+  padding: 12px 16px;
+  background: var(--li-registro-bg);
+  border-left: 3px solid #ff6b6b;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--fs-md);
+  color: #495057;
+  transition: background-color 0.2s;
+}
+
+.campos-faltantes li:hover {
+  background-color: #e9ecef;
+}
+
+.campo-icono {
+  font-size: var(--fs-lg);
+  flex-shrink: 0;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  border-radius: 0 0 12px 12px;
+  background: var(--table-bg);
+}
+
+.btn-entendido {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 6px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(76, 134, 175, 0.3);
+}
+
+.btn-entendido:hover {
+  background: color-mix(in oklab, var(--primary-color) 90%, #000);
+  box-shadow: 0 4px 12px rgba(76, 134, 175, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-entendido:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+  
+/* Estilos para el asterisco de campos obligatorios */
+.requerido {
+  color: var(--danger-color);
+  font-weight: bold;
+  margin-left: 2px;
+}

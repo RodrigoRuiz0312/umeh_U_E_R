@@ -1,0 +1,18 @@
+.footer1 {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--footer-bg);
+  z-index: 999;
+}
+
+.app-footer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--footer-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

@@ -1,0 +1,58 @@
+<div class="modal-overlay" (click)="onClose()">
+  
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h2>Editar informacion del paciente</h2>
+      <button class="close-btnP" (click)="onClose()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <form class="paciente-form">
+        <div class="form-groupP">
+          <label for="nombreP">Nombre:</label>
+          <input type="text" id="nombreP" name="nombre" [(ngModel)]="paciente.nombre">
+        </div>
+        <div class="form-groupP">
+          <label for="apellidosP">Apellidos:</label>
+          <input type="text" id="apellidosP" name="apellidos" [(ngModel)]="paciente.apellidos">
+        </div>
+        <div class="form-groupP">
+          <label for="telefonoP">Telefono:</label>
+          <input type="tel" id="telefonoP" name="telefono" [(ngModel)]="paciente.telefono">
+        </div>
+
+        <div class="form-groupP">
+            <label for="correoP">Correo:</label>
+            <input type="text" id="correoP" name="correo" [(ngModel)]="paciente.correo">
+        </div> 
+
+         <div class="form-groupP">
+            <label for="codigoP">Codigo postal:</label>
+            <input type="text" id="codigoP" name="codigo_postal" [(ngModel)]="paciente.codigo_postal">
+        </div>
+
+         <div class="form-groupP">
+            <label for="calleP">Calle:</label>
+            <input type="text" id="calleP" name="calle" [(ngModel)]="paciente.calle">
+        </div>
+
+         <div class="form-groupP">
+            <label for="coloniaP">Colonia:</label>
+            <input type="text" id="coloniaP" name="colonia" [(ngModel)]="paciente.colonia">
+        </div>
+
+         <div class="form-groupP">
+            <label for="ciudadP">Ciudad:</label>
+            <input type="text" id="ciudadP" name="ciudad" [(ngModel)]="paciente.ciudad">
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="save-btnP" (click)="guardarCambios()">Guardar Cambios</button>
+    </div>
+
+  </div>
+</div>

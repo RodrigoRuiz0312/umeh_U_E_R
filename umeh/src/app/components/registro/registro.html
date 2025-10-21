@@ -1,0 +1,197 @@
+<div class="registro-container">
+  <h2>Registro</h2>
+
+  <p-toast></p-toast>
+
+  <!-- Modal de campos obligatorios -->
+  <div class="modal-overlay" *ngIf="mostrarModalCamposObligatorios" (click)="cerrarModalCamposObligatorios()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⚠️ Campos obligatorios faltantes</h3>
+        <button class="modal-close" (click)="cerrarModalCamposObligatorios()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-info">
+          Los campos marcados con <span class="asterisco-demo">*</span> son obligatorios.
+        </p>
+        <p class="modal-subtitle">Por favor completa los siguientes campos:</p>
+        <ul class="campos-faltantes">
+          <li *ngFor="let campo of camposFaltantes">
+            <span class="campo-icono">📋</span>
+            {{ campo }}
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-entendido" (click)="cerrarModalCamposObligatorios()">  
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+    <!-- Tipo de insumo -->
+    <div class="form-field full-row">
+      <label for="tipo">¿Qué desea registrar?</label>
+      <p-select [options]="[
+          {label: 'Medicamento', value: 'medicamento'},
+          {label: 'Material', value: 'material'},
+          {label: 'Procedimiento', value: 'procedimiento'}
+        ]" formControlName="tipo" id="tipo" class="p-select-custom" />
+    </div>
+    <!-- Nombre (solo insumos) -->
+    <div class="form-field" *ngIf="form.get('tipo')?.value !== 'procedimiento'">
+      <label for="nombre">Nombre <span class="requerido">*</span></label>
+      <input id="nombre" type="text" formControlName="nombre" placeholder="Ej. Guantes" />
+    </div>
+
+    <!-- Cantidad (solo insumos) -->
+    <div class="form-field" *ngIf="form.get('tipo')?.value !== 'procedimiento'">
+      <label for="cantidad">Cantidad <span class="requerido">*</span></label>
+      <input id="cantidad" type="number" formControlName="cantidad" placeholder="Ej. 10" />
+    </div>
+
+    <!-- Unidad (solo insumos) -->
+    <div class="form-field" *ngIf="form.get('tipo')?.value !== 'procedimiento'">
+      <label for="unidad">Unidad</label>
+      <input id="unidad" type="text" formControlName="unidad" placeholder="Ej. piezas, ml, tabletas" />
+    </div>
+    <!-- Costo unitario (solo insumos) -->
+    <div class="form-field" *ngIf="form.get('tipo')?.value !== 'procedimiento'">
+      <label for="costo_unitario">Costo unitario</label>
+      <input id="costo_unitario" type="number" step="0.01" min="0" formControlName="costo_unitario"
+        placeholder="Ej. 12.50" />
+      <div class="error" *ngIf="costo_unitario?.touched && costo_unitario?.invalid">
+        <small *ngIf="costo_unitario?.errors?.['min']">El costo no puede ser negativo.</small>
+      </div>
+    </div>
+
+    <!-- Métodos de aplicación (solo si es medicamento) -->
+    <div class="form-field full-row" *ngIf="form.get('tipo')?.value === 'medicamento' && metodosAplicacion.length > 0">
+      <label>Método(s) de Aplicación <span class="requerido">*</span></label>
+
+      <div class="metodos-grid">
+        <div class="metodos-list">
+          <label class="checkbox-item" *ngFor="let metodo of metodosAplicacion | slice:0:(metodosAplicacion.length/2)">
+            <input type="checkbox" [checked]="selectedMetodos.has(metodo.id)"
+              (change)="toggleMetodo(metodo.id, $event.target.checked)" />
+            <span>{{ metodo.nombre }}</span>
+          </label>
+        </div>
+        <div class="metodos-list">
+          <label class="checkbox-item" *ngFor="let metodo of metodosAplicacion | slice:(metodosAplicacion.length/2)">
+            <input type="checkbox" [checked]="selectedMetodos.has(metodo.id)"
+              (change)="toggleMetodo(metodo.id, $event.target.checked)" />
+            <span>{{ metodo.nombre }}</span>
+          </label>
+        </div>
+        <label class="checkbox-item seleccionar-todos">
+          <input type="checkbox" [checked]="selectAllMetodos" (change)="toggleSelectAll($event.target.checked)" />
+          <span>Seleccionar todos</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Procedimiento -->
+    <ng-container *ngIf="form.get('tipo')?.value === 'procedimiento'">
+      <div formGroupName="procedimiento" class="proc-grid full-row">
+
+        <div class="form-field">
+          <label>Descripción <span class="requerido">*</span></label>
+          <input type="text" formControlName="descripcion" placeholder="Describe el procedimiento" />
+        </div>
+        <div class="form-field">
+          <label>Notas adicionales</label>
+          <input type="text" formControlName="observaciones" placeholder="Notas adicionales" />
+        </div>
+
+        <!-- Responsables en dos columnas (formulario + lista en tiempo real) -->
+        <div class="two-col full-row">
+          <div>
+            <h3>Responsables y Costos <span class="requerido">*</span></h3>
+            <div formArrayName="responsables">
+              <div class="form-field inline" *ngFor="let r of responsablesFA.controls; let i = index"
+                [formGroupName]="i">
+                <p-select [options]="[
+                  {label: 'UMEH', value: 'UMEH'},
+                  {label: 'ENFERMERO', value: 'ENFERMERO'},
+                  {label: 'MEDICO', value: 'MEDICO'}
+                ]" formControlName="nombre" />
+                <input type="number" formControlName="costo" placeholder="Costo" />
+                <button type="button" class="deleteButton" (click)="removeResponsable(i)">
+                  🗑️
+                  <span class="tooltip">Eliminar</span>
+                </button>
+              </div>
+              <button type="button" (click)="addResponsable()" class="add-btn">+ Agregar Responsable</button>
+            </div>
+          </div>
+          <div>
+            <h4>Resumen de Responsables</h4>
+            <ul class="summary-list">
+              <li *ngFor="let r of responsablesFA.controls">
+                <span>{{ r.value.nombre }}</span>
+                <span>{{ r.value.costo | currency }}</span>
+              </li>
+            </ul>
+            <div class="total-cost">
+              <strong>Total:</strong> {{ costoTotal | currency }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Insumos en dos columnas (formulario + lista en tiempo real) -->
+        <div class="two-col full-row">
+          <div>
+            <h3>Insumos utilizados</h3>
+            <div formArrayName="insumos">
+              <div class="form-field inline" *ngFor="let ins of insumosFA.controls; let i = index" [formGroupName]="i">
+                <!-- Búsqueda por teclado con datalist -->
+                <input type="text" placeholder="Buscar insumo..." formControlName="busqueda" list="listaInsumos"
+                  (change)="onSearchInsumo(i)" />
+                <datalist id="listaInsumos">
+                  <option *ngFor="let m of medicamentos" [value]="m.nombre"></option>
+                  <option *ngFor="let t of materiales" [value]="t.nombre"></option>
+                </datalist>
+                <!-- Select opcional para selección directa -->
+                <select formControlName="encoded" (change)="onSelectInsumo(i)">
+                  <option [ngValue]="null">-- Selecciona --</option>
+                  <optgroup label="Medicamentos">
+                    <option *ngFor="let m of medicamentos" [value]="'med-'+m.id">{{ m.nombre }} (Disp: {{ m.cantidad }})
+                    </option>
+                  </optgroup>
+                  <optgroup label="Material TRIAGE">
+                    <option *ngFor="let t of materiales" [value]="'mat-'+t.id">{{ t.nombre }} (Disp: {{ t.cantidad }})
+                    </option>
+                  </optgroup>
+                </select>
+                <input type="number" min="0" formControlName="cantidad" placeholder="Cantidad"
+                  (change)="onCantidadChange(i)" />
+                <button type="button" class="deleteButton" (click)="removeInsumo(i)">
+                  🗑️
+                  <span class="tooltip">Eliminar</span>
+                </button>
+              </div>
+              <button type="button" (click)="addInsumo()">+ Agregar Insumo</button>
+            </div>
+          </div>
+          <div>
+            <h4>Resumen de Insumos</h4>
+            <ul class="summary-list">
+              <li *ngFor="let ins of insumosFA.controls">
+                <span>{{ ins.value.nombre || '—' }}</span>
+                <span>x {{ ins.value.cantidad || 0 }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <button type="submit" [disabled]="loading">
+      {{ loading ? 'Guardando...' : 'Registrar' }}
+    </button>
+  </form>
+</div>

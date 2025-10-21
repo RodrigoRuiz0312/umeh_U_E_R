@@ -1,0 +1,735 @@
+.registro-container {
+  width: 99%;
+  margin: 24px auto;
+  padding: 20px;
+  background: var(--card-bg, #ffffff);
+  color: var(--card-text, #111827);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  height: 95%;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.registro-container h2 {
+  margin: 0 0 16px 0;
+  font-size: var(--fs-3xl);
+  color: var(--heading-text);
+}
+
+.registro-container form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 12px 16px;
+  font-size: var(--fs-lg);
+}
+
+@media (max-width: 640px) {
+  .registro-container form {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  margin: 0;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--label-text);
+}
+
+.form-field input[type="text"],
+.form-field input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+/* Ancho completo */
+.p-select-custom {
+  width: 100%;
+}
+
+/* Estilo base del select */
+::ng-deep .p-select-custom .p-select {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+::ng-deep .p-select-custom .p-select:hover {
+  border-color: #5a9;
+}
+
+/* Fondo y color de texto al pasar el mouse sobre una opción */
+::ng-deep .p-select-option:hover {
+  background-color: #e0f7fa !important;
+  color: #00695c !important;
+}
+
+/* Opción seleccionada (cuando ya está elegida) */
+::ng-deep .p-select-option.p-select-option-selected {
+  background-color: #b2ebf2 !important;
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.form-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  outline: none;
+  resize: vertical;
+}
+
+.form-field input[type="text"]::placeholder,
+.form-field input[type="number"]::placeholder {
+  color: var(--placeholder);
+}
+
+.form-field input[type="text"]:focus,
+.form-field input[type="number"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-color) 20%, transparent);
+}
+
+button[type="submit"],
+button[type="button"] {
+  appearance: none;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary-color);
+  color: #fff;
+  transition: transform 0.05s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+button[type="submit"]:hover,
+button[type="button"]:hover {
+  background: color-mix(in oklab, var(--primary-color) 90%, #000);
+}
+
+button[type="submit"]:active,
+button[type="button"]:active {
+  transform: translateY(1px);
+}
+
+button[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.registro-container form > button[type="submit"] {
+  grid-column: 1 / -1;
+  justify-self: end;
+  align-self: end;
+}
+
+.proc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 12px 16px;
+}
+
+@media (max-width: 640px) {
+  .proc-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field.inline {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.form-field.inline input[list] {
+  grid-column: 1 / span 1;
+}
+
+.form-field.inline select {
+  grid-column: 2 / span 1;
+}
+
+.form-field.inline input[type="number"] {
+  grid-column: 3 / span 1;
+}
+
+.form-field.inline button {
+  grid-column: 4 / span 1;
+}
+
+.summary-list {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+
+.summary-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.summary-list li:last-child {
+  border-bottom: none;
+}
+
+p-toast {
+  margin-bottom: 8px;
+}
+
+.metodos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px 12px;
+  padding-top: 5px;
+}
+
+.metodos-list {
+  grid-column: 1 / 3;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px 12px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  color: var(--label-text);
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+}
+
+.full-row {
+  grid-column: 1 / -1;
+}
+
+.seleccionar-todos {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--label-text);
+  grid-column: 3;
+  grid-row: 1 / span 3;
+}
+
+.registro-container form > button[type="submit"] {
+  position: fixed;
+  top: 40px;
+  right: 40px;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.form-field.inline input[list] {
+  margin-right: 6px;
+}
+
+.form-field.inline select {
+  margin-right: 6px;
+}
+
+.form-field.inline input[type="number"] {
+  margin-right: 6px;
+}
+
+.total-cost {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: color-mix(in oklab, var(--primary-color) 10%, transparent);
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #ffffff 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 600;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: rgba(0, 0, 0, 0.731);
+  font-size: var(--fs-4xl);
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 24px;
+  background: var(--table-bg);
+}
+
+.modal-info {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  color: #856404;
+  font-size: 0.95rem;
+}
+
+.asterisco-demo {
+  color: var(--danger-color);
+  font-weight: bold;
+  font-size: var(--fs-lg);
+}
+
+.modal-subtitle {
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: var(--fs-md);
+  color: var(--text-dark);
+}
+
+.campos-faltantes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.campos-faltantes li {
+  padding: 12px 16px;
+  background: var(--li-registro-bg);
+  border-left: 3px solid #ff6b6b;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--fs-md);
+  color: #495057;
+  transition: background-color 0.2s;
+}
+
+.campos-faltantes li:hover {
+  background-color: #e9ecef;
+}
+
+.campo-icono {
+  font-size: var(--fs-lg);
+  flex-shrink: 0;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+  border-radius: 0 0 12px 12px;
+  background: var(--table-bg);
+}
+
+.btn-entendido {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 6px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(76, 134, 175, 0.3);
+}
+
+.btn-entendido:hover {
+  background: color-mix(in oklab, var(--primary-color) 90%, #000);
+  box-shadow: 0 4px 12px rgba(76, 134, 175, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-entendido:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+  
+/* Estilos para el asterisco de campos obligatorios */
+.requerido {
+  color: var(--danger-color);
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
+  }
+
+  .modal-header h3 {
+    font-size: var(--fs-lg);
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .campos-faltantes li {
+    padding: 10px 12px;
+    font-size: var(--fs-sm);
+  }
+}
+
+/* Estilos para el select de insumos (medicamentos/materiales) */
+.form-field.inline select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  font-size: var(--fs-md);
+  cursor: pointer;
+}
+
+.form-field.inline select:hover {
+  border-color: color-mix(in oklab, var(--primary-color) 60%, transparent);
+}
+
+.form-field.inline select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-color) 20%, transparent);
+}
+
+/* Estilos para los optgroups */
+.form-field.inline select optgroup {
+  font-weight: 600;
+  color: var(--heading-text);
+  background-color: color-mix(in oklab, var(--primary-color) 10%, transparent);
+}
+
+.form-field.inline select option {
+  padding: 8px 12px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 30%, transparent);
+}
+
+.form-field.inline select option:hover {
+  background-color: color-mix(in oklab, var(--primary-color) 20%, transparent) !important;
+  color: var(--primary-color) !important;
+}
+
+/* Estilo para la opción placeholder */
+.form-field.inline select option[value=""] {
+  color: var(--placeholder);
+  font-style: italic;
+}
+
+/* Mejoras responsive para los campos inline */
+@media (max-width: 768px) {
+  .form-field.inline {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .form-field.inline input[list],
+  .form-field.inline select,
+  .form-field.inline input[type="number"],
+  .form-field.inline button {
+    grid-column: 1 / -1;
+    margin-right: 0;
+  }
+  
+  .form-field.inline button {
+    justify-self: start;
+    width: fit-content;
+  }
+}
+
+/* Estilos para el datalist (búsqueda por teclado) */
+.form-field.inline input[list] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-field.inline input[list]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-color) 20%, transparent);
+}
+
+/* Estilos para los botones de agregar */
+.add-btn {
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: color-mix(in oklab, var(--primary-color) 20%, transparent);
+  color: var(--primary-color);
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.add-btn:hover {
+  background: color-mix(in oklab, var(--primary-color) 30%, transparent);
+  transform: translateY(-1px);
+}
+
+.add-btn:active {
+  transform: translateY(0);
+}
+
+/* Botones de eliminar en campos inline */
+.form-field.inline button {
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+}
+
+.form-field.inline button:hover {
+  background: #e9ecef;
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+/* Mejora visual para los títulos de secciones */
+.proc-grid h3,
+.proc-grid h4 {
+  color: var(--heading-text);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.proc-grid h3 {
+  font-size: var(--fs-lg);
+  border-bottom: 2px solid color-mix(in oklab, var(--primary-color) 30%, transparent);
+  padding-bottom: 6px;
+}
+
+.proc-grid h4 {
+  font-size: var(--fs-lg);
+  color: var(--label-text);
+}
+
+/* Aplica padding general a los selects estándar */
+select {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+/* Asegura espaciado entre los elementos del formulario dinámico */
+.form-field.inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* espacio horizontal entre elementos */
+  margin-bottom: 0.5rem; /* separación entre filas */
+}
+
+/* Ajuste visual del input y botón para mantener coherencia */
+.form-field.inline input[type="number"] {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+}
+
+.form-field.inline button {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  background: #f8f8f8;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.form-field.inline button:hover {
+  background: #e9e9e9;
+}
+
+.deleteButton {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.deleteButton svg {
+  width: 44%;
+}
+.deleteButton:hover {
+  background-color: rgb(237, 56, 56);
+  overflow: visible;
+}
+.bin path {
+  transition: all 0.2s;
+}
+.deleteButton:hover .bin path {
+  fill: #fff;
+}
+.deleteButton:active {
+  transform: scale(0.98);
+}
+.deleteButton:hover .tooltip {
+  opacity: 1;
+}
+
+.tooltip {
+  --tooltip-color: rgb(41, 41, 41);
+  position: absolute;
+  top: -40px;
+  background-color: var(--tooltip-color);
+  color: white;
+  border-radius: 5px;
+  font-size: var(--fs-xs);
+  padding: 8px 12px;
+  font-weight: 600;
+  box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.105);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.5s;
+  z-index: 1;
+}
+.tooltip::before {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  content: "";
+  background-color: var(--tooltip-color);
+  bottom: -10%;
+}

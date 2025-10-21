@@ -1,0 +1,207 @@
+.card {
+  width: 99%;
+  margin: 24px auto;
+  padding: 20px;
+  background: var(--card-bg);
+  color: var(--card-text);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: auto;
+  height: 95%;
+}
+
+.card-header h2 {
+  margin: 0 0 16px 0;
+  font-size: 1.9rem;
+  color: var(--heading-text);
+}
+
+.agendas-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 50px;
+}
+
+/* Tarjeta principal */
+.agenda-cover {
+  width: 400px;
+  height: 450px;
+  border-radius: 15px;
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Efecto hover */
+.agenda-cover:hover {
+  transform: translateY(-10px);
+  box-shadow: 8px 12px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Rectángulo blanco interno */
+.agenda-title {
+  position: absolute;
+  top: 30px;
+  background-color: white;
+  padding: 15px 30px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 30px;
+  font-style: italic;
+  font-weight: bold;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+
+/* Colores de fondo para cada tipo de agenda */
+.agenda-cover.general {
+  background: #AEC6CF;
+}
+
+.agenda-cover.neuropediatra {
+  background: #C1E1C1;
+}
+
+.agenda-cover.cirujano {
+  background: #FFDAB9;
+}
+
+.tablero-container {
+  background: var(--card-bg);
+  color: var(--card-text);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-width: 95%;
+  margin: 20px auto;
+}
+
+/* ---Controles Superiores (Botón de Volver y Selector de Fecha) --- */
+
+.agenda-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+
+/* Estilo para el selector de fecha */
+.date-selector label {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.date-selector input[type="date"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+}
+
+/* --- El Tablero de Doctores --- */
+.board {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+/* --- La Columna de cada Doctor --- */
+.doctor-column {
+  flex: 1;
+  min-width: 220px;
+  background: var(--card-bg);
+  color: var(--card-text);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+}
+
+/* Encabezado con el nombre del doctor */
+.doctor-header {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 12px;
+  color: var(--card-text);
+}
+
+.doctor-header h3,
+.doctor-header small {
+  margin: 0;
+}
+
+.doctor-header h3 {
+  font-size: 1.1rem;
+}
+
+.doctor-header small {
+  color: var(--card-text);
+}
+
+/* ---Los Botones de Horario --- */
+
+.time-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Estilo para cada botón de horario. */
+.time-slot {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: var(--card-bg);
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+/* Efecto al pasar el mouse sobre un horario LIBRE. */
+.time-slot:hover:not(:disabled) {
+  background: var(--card-bg);
+  border-color: #0d6efd;
+  transform: scale(1.02);
+}
+
+/* Estilo para los horarios OCUPADOS. */
+.time-slot.ocupado {
+  background-color: #ffebee;
+  border-color: #e57373;
+  color: #c62828;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Estilo para el nombre del paciente en la cita ocupada. */
+.time-slot.ocupado small {
+  color: #d32f2f;
+  font-weight: normal;
+}

@@ -1,0 +1,104 @@
+<div class="tabla-container">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom: 12px;">
+    <h2 style="margin:0; flex: 0 0 auto;">Medicamentos</h2>
+    <div style="flex: 1 1 auto;"></div>
+    <div class="input-with-icon" style="flex:0 0 320px; max-width: 50%;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+        placeholder="Buscar por nombre o cantidad..."
+        style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
+    </div>
+    <div style="flex:0 0 220px;">
+      <select #orderSel (change)="onSortOptionChange(orderSel.value)"
+        style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--input-border);">
+        <option value="" disabled selected>Ordenar por...</option>
+        <option value="nombre:asc">Nombre (A→Z)</option>
+        <option value="nombre:desc">Nombre (Z→A)</option>
+        <option value="cantidad:asc">Cantidad (0→9)</option>
+        <option value="cantidad:desc">Cantidad (9→0)</option>
+        <option value="costo:asc">Costo (menor→mayor)</option>
+        <option value="costo:desc">Costo (mayor→menor)</option>
+      </select>
+    </div>
+  </div>
+
+  <p-toast [showTransitionOptions]="'250ms'" [showTransformOptions]="'translateX(100%)'"
+    [hideTransitionOptions]="'150ms'" [hideTransformOptions]="'translateX(100%)'" />
+
+  <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Cantidad</th>
+          <th>Costo Unitario</th>
+          <th>Método de Aplicación</th>
+          <th class="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="loading; else dataRows">
+          <tr *ngFor="let _ of loadingRows">
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td class="actions"><p-skeleton></p-skeleton></td>
+          </tr>
+        </ng-container>
+
+        <ng-template #dataRows>
+          <tr *ngIf="medicamentos && medicamentos.length === 0">
+            <td colspan="4" style="text-align:center; opacity:0.8; padding:12px;">No hay medicamentos registrados.</td>
+          </tr>
+          <tr *ngFor="let medicamento of medicamentosView">
+            <td>{{ medicamento.nombre }}</td>
+            <td>{{ medicamento.cantidad }}</td>
+            <td>{{ (medicamento.costo || 0) | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
+            <td>
+              <ng-container *ngIf="medicamento.metodo_aplicacion.length > 0; else sinMetodo">
+                {{ medicamento.metodo_aplicacion.join(', ') }}
+              </ng-container>
+              <ng-template #sinMetodo>
+                <span class="text-gray-400">N/A</span>
+              </ng-template>
+            </td>
+
+          
+            <td class="actions">
+              <button class="action-btnP" (click)="openEdit(medicamento)">
+                <img src="assets/img/edit.png" class="btn-iconP">
+              </button>
+              <button class="action-btnP" (click)="eliminar(medicamento)">
+                <img src="assets/img/delet.png" class="btn-iconP">
+              </button>
+            </td>
+
+          </tr>
+        </ng-template>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal edición cantidad -->
+  <div *ngIf="modalOpen" class="modal-backdrop" (click)="closeEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="margin:0">Editar stock</h3>
+        <button class="modal-close" (click)="closeEdit()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label style="margin-top:12px;">Nombre</label>
+        <input type="text" [(ngModel)]="nombreNuevo"
+          style="width:100%; padding:8px; border:1px solid var(--input-border); border-radius:8px;" />
+        <label>Cantidad</label>
+        <input type="number" [(ngModel)]="editedCantidad"
+          style="width:100%; padding:8px; border:1px solid var(--input-border); border-radius:8px;" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn" (click)="closeEdit()">Cancelar</button>
+        <button class="btn btn-edit" (click)="saveEdit()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>

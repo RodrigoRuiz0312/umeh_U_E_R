@@ -1,0 +1,99 @@
+<div class="tabla-container">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom: 12px;">
+    <h2 style="margin:0; flex: 0 0 auto;">Procedimientos</h2>
+    <div style="flex: 1 1 auto;"></div>
+    <div class="input-with-icon" style="flex:0 0 320px; max-width: 50%;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+        placeholder="Buscar por procedimiento, responsable o insumo..."
+        style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
+    </div>
+  </div>
+
+  <p-toast [showTransitionOptions]="'250ms'" [showTransformOptions]="'translateX(100%)'"
+    [hideTransitionOptions]="'150ms'" [hideTransformOptions]="'translateX(100%)'" />
+
+  <div class="table-scroll">
+    <table class="procedimiento-table">
+      <thead>
+        <tr>
+          <th (click)="toggleSort('procedimiento')" style="cursor:pointer; user-select:none;">
+            Procedimiento
+            <span *ngIf="sortColumn==='procedimiento'" aria-hidden="true">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+          <th>Observaciones</th>
+          <th>Insumos</th>
+          <th>Responsables</th>
+          <th (click)="toggleSort('costo_total')" style="cursor:pointer; user-select:none;">
+            Costo Total
+            <span *ngIf="sortColumn==='costo_total'" aria-hidden="true">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="loading; else dataRows">
+          <tr *ngFor="let _ of loadingRows">
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+          </tr>
+        </ng-container>
+
+        <ng-template #dataRows>
+          <tr *ngIf="procedimientosView.length === 0">
+            <td colspan="5" style="text-align:center; opacity:0.8; padding:20px;">
+              {{ searchTerm ? 'No se encontraron procedimientos que coincidan con la búsqueda.' : 'No hay procedimientos registrados.' }}
+            </td>
+          </tr>
+          <tr *ngFor="let p of procedimientosView">
+            <td>
+              <div>{{ p.procedimiento }}</div>
+            </td>
+            <td>
+              <span *ngIf="p.observaciones; else noObservaciones" class="text-muted">
+                {{ p.observaciones }}
+              </span>
+              <ng-template #noObservaciones>
+                <span class="text-muted">N/A</span>
+              </ng-template>
+            </td>
+            <td>
+              <div class="cell-list" *ngIf="p.insumos_detalle?.length; else noInsumos">
+                <ul>
+                  <li *ngFor="let i of p.insumos_detalle">
+                    <span>{{ i.insumo }}</span>
+                    <span>
+                      <span class="badge">{{ i.tipo }}</span>
+                      {{ i.cantidad }}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <ng-template #noInsumos>
+                <span class="text-muted">Sin insumos</span>
+              </ng-template>
+            </td>
+            <td>
+              <div class="cell-list" *ngIf="p.costos_detalle?.length; else noCostos">
+                <ul>
+                  <li *ngFor="let c of p.costos_detalle">
+                    <span>{{ c.responsable }}</span>
+                    <span>{{ c.costo | currency:'MXN':'symbol-narrow':'1.2-2' }}</span>
+                  </li>
+                </ul>
+              </div>
+              <ng-template #noCostos>
+                <span class="text-muted">Sin responsables</span>
+              </ng-template>
+            </td>
+            <td style="font-weight: 600; color: var(--primary-color);">
+              {{ (p.costo_total || 0) | currency:'MXN':'symbol-narrow':'1.2-2' }}
+            </td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </table>
+  </div>
+</div>

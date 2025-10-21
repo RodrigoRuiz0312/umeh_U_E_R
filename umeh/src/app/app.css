@@ -1,0 +1,9 @@
+.main-content {
+    position: fixed;
+    top: 0; /* desde top de layout */
+    left: 95px; /* espacio para sidebar */
+    height: calc(100vh - 10px); /* altura total - footer - top */
+    width: 93%; /* todo el ancho restante */
+    padding-bottom: 30px; /* espacio para footer */
+    transition: left 0.3s ease, width 0.3s ease;
+}

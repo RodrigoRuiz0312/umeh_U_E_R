@@ -1,0 +1,508 @@
+<!-- gestion-consulta.component.html -->
+<div class="gestion-consulta-container">
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="mensajeError" class="notice notice-danger mb-16">
+    {{ mensajeError }}
+    <button type="button" class="close" (click)="mensajeError = ''">×</button>
+  </div>
+
+  <div *ngIf="mensajeExito" class="notice notice-success mb-16">
+    {{ mensajeExito }}
+    <button type="button" class="close" (click)="mensajeExito = ''">×</button>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PASO 1: BÚSQUEDA DE PACIENTE -->
+  <!-- ============================================ -->
+  <div *ngIf="paso === 'busqueda'" class="paso-busqueda">
+    <div class="card">
+      <div class="card-header">
+        <h3>Nueva Consulta - Búsqueda de Paciente</h3>
+        <div>
+          <p>¿El paciente no está registrado?</p>
+          <button class="btn-reg btn-outline-primary" (click)="irARegistroPaciente()">
+            <i class="bi bi-person-plus"></i> Registrar Nuevo Paciente
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombre">Nombre del Paciente <span class="requerido">*</span></label>
+            <input type="text" id="nombre" [(ngModel)]="nombreBusqueda" (keyup.enter)="buscarPaciente()"
+              placeholder="Ingrese el nombre">
+          </div>
+          <div class="form-group">
+            <label for="apellidos">Apellidos (opcional)</label>
+            <input type="text" id="apellidos" [(ngModel)]="apellidosBusqueda" (keyup.enter)="buscarPaciente()"
+              placeholder="Ingrese los apellidos">
+          </div>
+          <button class="btn btn-primary" (click)="buscarPaciente()" [disabled]="cargando || !nombreBusqueda.trim()">
+            <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+            Buscar
+          </button>
+        </div>
+
+        <!-- Resultados de búsqueda -->
+        <div *ngIf="pacientesEncontrados.length > 0" class="mt-16">
+          <h5>Pacientes Encontrados:</h5>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Apellidos</th>
+                  <th>Teléfono</th>
+                  <th>Fecha Nacimiento</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let paciente of pacientesEncontrados">
+                  <td>{{ paciente.nombre }}</td>
+                  <td>{{ paciente.apellidos }}</td>
+                  <td>{{ paciente.telefono || 'N/A' }}</td>
+                  <td>{{ paciente.fecha_nacimiento | date: 'dd/MM/yyyy' }}</td>
+                  <td>
+                    <button class="btn-sel btn-sm btn-success" (click)="seleccionarPaciente(paciente)">
+                      Seleccionar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- PASO 2: SELECCIÓN DE MÉDICO -->
+  <!-- ============================================ -->
+  <div *ngIf="paso === 'seleccion-medico'" class="paso-seleccion-medico">
+    <div class="card">
+      <div class="card-header">
+        <h3>Nueva Consulta - Datos de la Consulta</h3>
+      </div>
+      <div class="card-body">
+        <div class="patient-info mb-16">
+          <h5>Datos del paciente:</h5>
+          <div class="form-row two-cols">
+            <div>
+              <p><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos }}</p>
+              <p><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefono || 'N/A' }}</p>
+              <p><strong>Correo:</strong> {{ pacienteSeleccionado?.correo || 'N/A' }}</p>
+            </div>
+            <div>
+              <p><strong>Sexo:</strong> {{ pacienteSeleccionado?.sexo || 'N/A' }}</p>
+              <p><strong>Fecha Nacimiento:</strong> {{ pacienteSeleccionado?.fecha_nacimiento | date: 'dd/MM/yyyy' }}
+              </p>
+              <p><strong>Domicilio:</strong>
+                {{ pacienteSeleccionado?.calle }} {{ pacienteSeleccionado?.num }},
+                {{ pacienteSeleccionado?.colonia }}, {{ pacienteSeleccionado?.ciudad }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selección de médico -->
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label for="medico">Médico Asignado *</label>
+            <select id="medico" [(ngModel)]="medicoSeleccionado">
+              <option [ngValue]="null">Seleccione un médico</option>
+              <option *ngFor="let medico of medicos" [ngValue]="medico.id_medico">
+                {{ medico.nombre }} {{ medico.apellidos }} - {{ medico.especialidad }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="motivo">Motivo de Consulta</label>
+            <input type="text" id="motivo" [(ngModel)]="motivoConsulta" placeholder="Opcional">
+          </div>
+        </div>
+
+        <div class="mt-16 flex justify-between">
+          <button class="btn btn-secondary" (click)="paso = 'busqueda'">
+            <i class="bi bi-arrow-left"></i> Regresar
+          </button>
+          <div class="flex gap-16">
+            <button class="btn btn-primary" (click)="crearConsulta()" [disabled]="cargando || !medicoSeleccionado">
+              <span *ngIf="cargando" class="spinner-border spinner-border-sm mr-8"></span>
+              Crear Consulta e Imprimir Hoja
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PASO 3: HOJA DE IMPRESIÓN -->
+  <!-- ============================================ -->
+  <div *ngIf="paso === 'hoja-impresion'" class="paso-hoja-impresion">
+
+    <!-- Botones de acción (no imprimibles) -->
+    <div class="no-print mb-16 acciones-top">
+      <div class="flex justify-between">
+        <button class="btn btn-secondary" (click)="paso = 'seleccion-medico'">
+          <i class="bi bi-arrow-left"></i> Regresar
+        </button>
+        <div>
+          <button class="btn btn-primary mr-8" (click)="imprimirHoja()">
+            <i class="bi bi-printer"></i> Imprimir Hoja
+          </button>
+          <button class="btn btn-success" (click)="confirmarImpresion()">
+            <i class="bi bi-check-lg"></i> Confirmar y Enviar a Consulta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hoja imprimible -->
+    <div class="hoja-consulta print-area">
+      <div class="hoja-header text-center mb-4">
+        <h2>HOJA DE REGISTRO UMEH</h2>
+        <p class="mb-0">Fecha: {{ consultaActual?.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
+        <p>No. Consulta: {{ consultaActual?.id_consulta }}</p>
+      </div>
+
+      <!-- DATOS DEL PACIENTE -->
+      <div class="seccion-datos mb-4">
+        <h4 class="seccion-titulo">DATOS DEL PACIENTE</h4>
+        <div class="grid-datos">
+          <div>
+            <strong>Nombre completo:</strong><br>
+            {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos }}
+          </div>
+          <div>
+            <strong>Fecha nacimiento:</strong><br>
+            {{ pacienteSeleccionado?.fecha_nacimiento | date: 'dd/MM/yyyy' }}
+          </div>
+          <div>
+            <strong>Sexo:</strong><br>
+            {{ pacienteSeleccionado?.sexo }}
+          </div>
+        </div>
+
+        <div class="grid-datos mt-2">
+          <div>
+            <strong>Edad:</strong><br>
+            {{ calcularEdad(pacienteSeleccionado?.fecha_nacimiento) }} años
+          </div>
+          <div class="col-span-2">
+            <strong>Domicilio:</strong><br>
+            {{ pacienteSeleccionado?.calle }} {{ pacienteSeleccionado?.num }},
+            {{ pacienteSeleccionado?.colonia }}, {{ pacienteSeleccionado?.ciudad }}
+          </div>
+        </div>
+      </div>
+
+      <!-- SOMATOMETRÍA -->
+      <div class="seccion-somatometria mb-4">
+        <h4 class="seccion-titulo">SOMATOMETRÍA (LLENADO POR ENFERMERÍA)</h4>
+        <div class="grid-somatometria">
+          <span><strong>TA:</strong> ___________ mmHg</span>
+          <span><strong>FC:</strong> ___________ lpm</span>
+          <span><strong>FR:</strong> ___________ rpm</span>
+          <span><strong>TEMP:</strong> ___________ °C</span>
+          <span><strong>SatO₂:</strong> ___________ %</span>
+        </div>
+      </div>
+
+      <!-- ANOTACIONES MÉDICAS -->
+      <div class="seccion-anotaciones mb-4">
+        <h4 class="seccion-titulo">ANOTACIONES MÉDICAS</h4>
+        <div class="anotaciones-box">
+          <p class="text-muted small">Registre aquí los insumos utilizados, procedimientos aplicados y observaciones:
+          </p>
+          <div class="lineas-anotacion">
+            <div class="linea" *ngFor="let n of [].constructor(5)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÉDICO -->
+      <div class="seccion-datos medico-asignado">
+        <h4 class="seccion-titulo">MÉDICO ASIGNADO</h4>
+        <p><strong>Dr(a). {{ getMedicoNombre(medicoSeleccionado!) }}</strong></p>
+      </div>
+    </div>
+
+    <div class="no-print mt-3">
+      <button class="btn btn-warning w-100" (click)="retomarConsulta()">
+        <i class="bi bi-arrow-clockwise"></i> Retomar Consulta (Paciente de regreso)
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PASO 4: CAPTURA DE INSUMOS -->
+  <!-- ============================================ -->
+  <div *ngIf="paso === 'captura-insumos'" class="paso-captura-insumos">
+    <div class="card">
+      <div class="card-header">
+        <h3>Captura de Insumos y Procedimientos</h3>
+        <p class="mb-0 text-muted">Consulta No. {{ consultaActual?.id_consulta }}</p>
+      </div>
+      <div class="card-body">
+
+        <!-- Información del paciente (resumida) -->
+        <div class="alert alert-light">
+          <strong>Paciente:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos }} |
+          <strong>Médico:</strong> {{ getMedicoNombre(medicoSeleccionado!) }}
+        </div>
+
+        <!-- Búsqueda de insumos -->
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Agregar Insumo/Procedimiento</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label for="tipoInsumo" class="form-label">Tipo</label>
+                <select class="form-select" id="tipoInsumo" [(ngModel)]="tipoInsumoBusqueda"
+                  (change)="insumosDisponibles = []; busquedaInsumo = ''">
+                  <option value="medicamento">Medicamento</option>
+                  <option value="material">Material</option>
+                  <option value="procedimiento">Procedimiento</option>
+                </select>
+              </div>
+              <div class="col-md-9">
+                <label for="busquedaInsumo" class="form-label">Buscar {{ tipoInsumoBusqueda }}</label>
+                <input type="text" class="form-control" id="busquedaInsumo" [(ngModel)]="busquedaInsumo"
+                  (input)="buscarInsumos()" placeholder="Escriba para buscar..." [disabled]="!!insumoAgregar.id_insumo">
+              </div>
+            </div>
+
+            <!-- Lista de insumos disponibles -->
+            <div *ngIf="insumosDisponibles.length > 0" class="list-group mt-3">
+              <button *ngFor="let insumo of insumosDisponibles" type="button"
+                class="list-group-item list-group-item-action" (click)="seleccionarInsumoDisponible(insumo)">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <strong>{{ insumo.nombre }}</strong>
+                    <br>
+                    <small class="text-muted">
+                      Disponible: {{ insumo.cantidad }} {{ insumo.unidad }} |
+                      Costo: {{ formatearMoneda(insumo.costo_unitario) }}
+                    </small>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <!-- Formulario para agregar insumo seleccionado -->
+            <div *ngIf="insumoAgregar.id_insumo" class="mt-4">
+              <div class="alert alert-success">
+                <strong>Seleccionado:</strong> {{ insumoAgregar.nombre }}
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <label for="cantidad" class="form-label">Cantidad *</label>
+                  <input type="number" class="form-control" id="cantidad" [(ngModel)]="insumoAgregar.cantidad"
+                    min="0.01" step="0.01">
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Unidad</label>
+                  <input type="text" class="form-control" [value]="insumoAgregar.unidad" readonly>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Costo Unitario</label>
+                  <input type="text" class="form-control" [value]="formatearMoneda(insumoAgregar.costo_unitario)"
+                    readonly>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Subtotal</label>
+                  <input type="text" class="form-control fw-bold"
+                    [value]="formatearMoneda(insumoAgregar.cantidad * insumoAgregar.costo_unitario)" readonly>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-2">
+                <div class="col-md-12">
+                  <label for="descripcion" class="form-label">Descripción/Notas (opcional)</label>
+                  <input type="text" class="form-control" id="descripcion" [(ngModel)]="insumoAgregar.descripcion"
+                    placeholder="Agregar notas adicionales">
+                </div>
+              </div>
+
+              <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-success" (click)="agregarInsumo()"
+                  [disabled]="cargando || insumoAgregar.cantidad <= 0">
+                  <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+                  <i class="bi bi-plus-circle"></i> Agregar a Consulta
+                </button>
+                <button class="btn btn-secondary"
+                  (click)="insumoAgregar = { id_insumo: null, nombre: '', tipo: 'medicamento', cantidad: 1, unidad: '', costo_unitario: 0, descripcion: '' }">
+                  <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de insumos agregados -->
+        <div class="card mb-4">
+          <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Insumos/Procedimientos Registrados</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="insumosConsulta.length === 0" class="text-center text-muted py-4">
+              <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+              <p class="mt-2">No se han agregado insumos aún</p>
+            </div>
+
+            <div *ngIf="insumosConsulta.length > 0" class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Costo Unit.</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let insumo of insumosConsulta">
+                    <td>
+                      <span class="badge" [ngClass]="{
+                        'bg-primary': insumo.tipo === 'medicamento',
+                        'bg-info': insumo.tipo === 'material',
+                        'bg-warning': insumo.tipo === 'procedimiento'
+                      }">
+                        {{ insumo.tipo }}
+                      </span>
+                    </td>
+                    <td>
+                      {{ insumo.nombre_insumo }}
+                      <br>
+                      <small class="text-muted" *ngIf="insumo.descripcion">{{ insumo.descripcion }}</small>
+                    </td>
+                    <td>{{ insumo.cantidad }}</td>
+                    <td>{{ insumo.unidad }}</td>
+                    <td>{{ formatearMoneda(insumo.costo_unitario) }}</td>
+                    <td class="fw-bold">{{ formatearMoneda(insumo.subtotal) }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-danger" (click)="eliminarInsumo(insumo.id!)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr class="table-active">
+                    <td colspan="5" class="text-end"><strong>TOTAL:</strong></td>
+                    <td colspan="2" class="fw-bold fs-5 text-success">
+                      {{ formatearMoneda(totalConsulta) }}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="d-flex justify-content-between">
+          <button class="btn btn-secondary" (click)="paso = 'hoja-impresion'">
+            <i class="bi bi-arrow-left"></i> Regresar
+          </button>
+          <button class="btn btn-success btn-lg" (click)="finalizarConsulta()" [disabled]="cargando">
+            <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+            <i class="bi bi-check-circle"></i> Finalizar y Generar Nota de Remisión
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PASO 5: NOTA DE REMISIÓN -->
+  <!-- ============================================ -->
+  <div *ngIf="paso === 'nota-remision'" class="paso-nota-remision">
+
+    <!-- Botones de acción (no imprimibles) -->
+    <div class="no-print mb-3">
+      <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-primary" (click)="imprimirNotaRemision()">
+          <i class="bi bi-printer"></i> Imprimir Nota
+        </button>
+        <button class="btn btn-success" (click)="nuevaConsulta()">
+          <i class="bi bi-plus-circle"></i> Nueva Consulta
+        </button>
+      </div>
+    </div>
+
+    <!-- Nota de remisión imprimible -->
+    <div class="nota-remision print-area">
+      <div class="nota-header text-center mb-4">
+        <h2>NOTA DE REMISIÓN</h2>
+        <p class="mb-0">No. {{ consultaActual?.id_consulta }}</p>
+        <p>Fecha: {{ consultaActual?.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+
+      <!-- Datos del paciente -->
+      <div class="seccion mb-3">
+        <h5>PACIENTE</h5>
+        <p class="mb-1"><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos
+          }}</p>
+        <p class="mb-1"><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefono }}</p>
+      </div>
+
+      <!-- Datos del médico -->
+      <div class="seccion mb-4">
+        <p class="mb-0"><strong>Atendió:</strong> Dr(a). {{ getMedicoNombre(medicoSeleccionado!) }}</p>
+      </div>
+
+      <!-- Detalle de insumos -->
+      <div class="seccion mb-4">
+        <h5>DETALLE</h5>
+        <table class="table table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Descripción</th>
+              <th class="text-center">Cantidad</th>
+              <th class="text-end">Precio Unit.</th>
+              <th class="text-end">Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let insumo of insumosConsulta">
+              <td>{{ insumo.nombre_insumo }}</td>
+              <td class="text-center">{{ insumo.cantidad }} {{ insumo.unidad }}</td>
+              <td class="text-end">{{ formatearMoneda(insumo.costo_unitario) }}</td>
+              <td class="text-end">{{ formatearMoneda(insumo.subtotal) }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="table-active">
+              <td colspan="3" class="text-end"><strong>TOTAL:</strong></td>
+              <td class="text-end fw-bold fs-5">{{ formatearMoneda(totalConsulta) }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Pie de nota -->
+      <div class="nota-footer text-center mt-5">
+        <p class="small text-muted">Gracias por su preferencia</p>
+        <p class="small">Esta nota no es válida como factura fiscal</p>
+      </div>
+    </div>
+
+    <!-- Mensaje de éxito -->
+    <div class="no-print mt-4 alert alert-success">
+      <i class="bi bi-check-circle-fill"></i>
+      <strong>¡Consulta finalizada exitosamente!</strong>
+      <br>
+      La nota de remisión se ha generado. Puede imprimirla o iniciar una nueva consulta.
+    </div>
+  </div>
+
+</div>

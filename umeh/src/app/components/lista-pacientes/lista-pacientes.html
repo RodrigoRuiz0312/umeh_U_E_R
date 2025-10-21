@@ -1,0 +1,70 @@
+<div class="tabla-container">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom: 12px;">
+    <h2 style="margin:0; flex: 0 0 auto;">Pacientes</h2>
+    <div style="flex: 1 1 auto;"></div>
+    <div class="input-with-icon" style="flex:0 0 320px; max-width: 50%;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="look" name="look" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+        placeholder="Buscar por nombre..."
+        style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
+    </div>
+    <div style="flex:0 0 200px;">
+      <select id="filter" name="filter" #orderSel
+        (change)="onSortOptionChange(orderSel.value)"
+        style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--input-border);">
+        <option value="" disabled selected>Ordenar por...</option>
+        <option value="nombre:asc">Nombre (A→Z)</option>
+        <option value="nombre:desc">Nombre (Z→A)</option>
+        <option value="apellidos:asc">Apellidos (A→Z)</option>
+        <option value="apellidos:desc">Apellidos (Z→A)</option>
+        <option value="telefono:asc">Teléfono (0→9)</option>
+        <option value="telefono:desc">Teléfono (9→0)</option>
+        <option value="correo:asc">Correo (A→Z)</option>
+        <option value="correo:desc">Correo (Z→A)</option>
+        <option value="sexo:asc">Sexo (A→Z)</option>
+        <option value="sexo:desc">Sexo (Z→A)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Apellidos</th>
+          <th>Teléfono</th>
+          <th>Correo electrónico</th>
+          <th>Sexo</th>
+          <th>Domicilio</th>
+          <th class="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let paciente of pacientesView">
+          <td>{{ paciente.nombre }}</td>
+          <td>{{ paciente.apellidos }}</td>
+          <td>{{ paciente.telefono }}</td>
+          <td>{{ paciente.correo }}</td>
+          <td>{{ paciente.sexo }}</td>
+          <td>{{ paciente.calle }} #{{ paciente.num }}, Col. {{ paciente.colonia }}, C.P. {{ paciente.codigo_postal }}</td>
+          <td class="actions">
+            <button class="action-btnP" (click)="openEditModal(paciente)">
+              <img src="assets/img/edit.png" class="btn-iconP">
+            </button>
+            <button class="action-btnP" (click)="borrarPaciente(paciente.id_paciente)">
+              <img src="assets/img/delet.png" class="btn-iconP">
+            </button>  
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-edit-paciente-modal
+  *ngIf="isModalVisible"
+  (close)="closeModal()"
+  [paciente]="pacienteSeleccionado"
+  (pacienteActualizado)="recargarPacientes()">
+</app-edit-paciente-modal>

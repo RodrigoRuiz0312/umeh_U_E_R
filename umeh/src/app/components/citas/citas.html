@@ -1,0 +1,65 @@
+<div class="card">
+  <div *ngIf="!agendaSeleccionada" class="seleccion_container">
+    <div class="card-header">
+       <h2>Agendación de citas</h2>
+    </div>
+    <div class="agendas-wrapper">
+      <div class="agenda-cover general" (click)="seleccionarAgenda('General')">
+        <div class="agenda-title">Agenda General</div>
+      </div>
+
+      <div class="agenda-cover neuropediatra" (click)="seleccionarAgenda('Neuropediatra')">
+        <div class="agenda-title">Agenda Neuropediatra</div>
+      </div>
+
+      <div class="agenda-cover cirujano" (click)="seleccionarAgenda('Cirujano')"> 
+        <div class="agenda-title">Agenda Cirujano</div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="agendaSeleccionada" class="tablero-container">
+    <h2>Agenda: {{ agendaSeleccionada | titlecase }}</h2>
+    
+    <div class="date-selector">
+      <label for="fecha"> Selecciona la fecha:</label>
+      <input type="date" id="fecha" [(ngModel)]="fechaSeleccionada" (change)="cargarAgenda()">
+    </div>
+
+    <div class="board">
+      <div class="doctor-column" *ngFor="let doctor of agenda">
+        <div class="doctor-header">
+          <h3>{{ doctor.nombre }} {{ doctor.apellidos }}</h3>
+        </div>
+
+        <div class="time-slots">
+          <button
+          *ngFor="let horario of horariosDelDia"
+          class="time-slot"
+          [class.ocupado]="isHourBooked(doctor, horario)"
+          (click)="isHourBooked(doctor, horario) ? verDetallesCita(getAppointmentForHour(doctor, horario)) : abrirModalAgendar(doctor, horario)">
+          
+          <span *ngIf="!isHourBooked(doctor, horario)">
+            {{ horario.substring(0, 5) }} hrs
+          </span>
+
+          <span *ngIf="isHourBooked(doctor, horario)">
+            <strong> Ocupado</strong> <br>
+            <small> {{ getAppointmentForHour(doctor, horario)?.nombre_paciente }}</small>
+          </span>
+        </button>
+        </div>
+      </div>
+    </div>
+    
+    <button class='btn btn-primary' (click)="volverASeleccion()">&lt; Volver a seleccionar agenda</button>
+  </div>
+  
+</div>
+
+<app-agendar-cita-modal
+  *ngIf="isAgendarModalVisible"
+  [datosCita]="datosParaNuevaCita"
+  (close)="cerrarModalAgendar()"
+  (citaCreada)="citaAgendadaConExito()">
+</app-agendar-cita-modal> 

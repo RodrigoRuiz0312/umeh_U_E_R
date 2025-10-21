@@ -1,0 +1,52 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="datosCita">
+    
+    <div class="modal-header">
+      <h2>Agendar Nueva Cita</h2>
+      <button class="modal-close" (click)="onClose()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="cita-info">
+        <p><strong>Médico:</strong> {{ datosCita.doctor.nombre }} {{ datosCita.doctor.apellidos }}</p>
+        <p><strong>Fecha:</strong> {{ datosCita.fecha | date:'dd/MM/yyyy' }}</p>
+        <p><strong>Hora:</strong> {{ datosCita.hora.substring(0, 5) }} hrs</p>
+      </div>
+
+      <hr>
+
+      <div class="form-group">
+        <label for="buscar-paciente">Buscar Paciente:</label>
+        <div class="search-container">
+          <input 
+            type="text" 
+            id="buscar-paciente" 
+            placeholder="Escriba al menos 3 letras del nombre..."
+            [(ngModel)]="terminoBusqueda"
+            (keyup)="buscarPaciente()">
+          <ul class="search-results" *ngIf="pacientes.length > 0">
+            <li *ngFor="let paciente of pacientes" (click)="seleccionarPaciente(paciente)">
+              {{ paciente.nombre }} {{ paciente.apellidos }}
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="consultorio">Consultorio Disponible:</label>
+        <select id="consultorio" name="consultorio" [(ngModel)]="consultorioSeleccionado">
+          <option value="" disabled>Seleccione un consultorio</option>
+          <option *ngFor="let consultorio of consultoriosDisponibles" [value]="consultorio">
+            {{ consultorio }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onClose()">Cancelar</button>
+      <button class="btn btn-primary" (click)="confirmarCita()">Confirmar Cita</button>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<div class="sidebar" [class.dark]="isDark" [class.collapsed]="isCollapsed" id="sidebar" (mouseenter)="onMouseEnter()"
+  (mouseleave)="onMouseLeave()">
+
+
+  <div class="sidebar-content">
+    <div class="header">
+      <span class="brand-text">UMEH</span>
+      <img src="assets/logo_umeh.png" alt="Logo UMEH" class="brand-logo">
+    </div>
+
+    <div class="menu">
+      <div class="menu-item" routerLink="/dashboard"><i class="fas fa-home"></i><span>Inicio</span></div>
+      <!-- Pacientes -->
+      <div class="menu-item" (click)="togglePacientes()">
+        <i class="fas fa-user-injured"></i>
+        <span>Pacientes</span>
+        <i class="fas" [ngClass]="pacientesOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-left:auto"></i>
+      </div>
+      <div class="submenu" *ngIf="pacientesOpen">
+        <div class="submenu-item" routerLink="/pacientes/registro"><i
+            class="fa-regular fa-address-card"></i><span>Registrar Paciente</span></div>
+        <div class="submenu-item" routerLink="/pacientes/lista"><i class="fa-solid fa-list"></i><span>Pacientes</span>
+        </div>
+      </div>
+      <div class="menu-item" routerLink="/agenda"><i class="fa-regular fa-calendar-check"></i><span>Agenda</span></div>
+      <div class="menu-item" (click)="toggleDoctores()">
+        <i class="fa-solid fa-user-doctor"></i>
+        <span>Doctores</span>
+        <i class="fas" [ngClass]="doctoresOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-left:auto"></i>
+      </div>
+      <div class="submenu" *ngIf="doctoresOpen">
+        <div class="submenu-item" routerLink="/pacientes/doctores"><i
+            class="fa-solid fa-user-doctor"></i><span>Registrar Doctor</span></div>
+        <div class="submenu-item" routerLink="/pacientes/lista-doctores"><i
+            class="fa-solid fa-users"></i><span>Doctores</span></div>
+      </div>
+
+      <div class="menu-item" routerLink="/pacientes/recepcion"><i class="fa-solid fa-user-doctor"></i><span>Generar consulta</span></div>
+
+      <!-- Insumos -->
+      <div class="menu-item" (click)="toggleInsumos()">
+        <i class="fas fa-boxes"></i>
+        <span>Insumos</span>
+        <i class="fas" [ngClass]="insumosOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="margin-left:auto"></i>
+      </div>
+      <div class="submenu" *ngIf="insumosOpen">
+        <div class="submenu-item" routerLink="/insumos/registro"><i
+            class="fa-regular fa-pen-to-square"></i><span>Registrar insumo</span></div>
+        <div class="submenu-item" routerLink="/insumos/medicamentos"><i
+            class="fa-solid fa-suitcase-medical"></i><span>Medicamentos</span></div>
+        <div class="submenu-item" routerLink="/insumos/triage"><i class="fa-solid fa-user-doctor"></i><span>Material
+            TRIAGE</span></div>
+        <div class="submenu-item" routerLink="/insumos/procedimientos"><i
+            class="fa-solid fa-syringe"></i><span>Procedimientos</span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="bottom">
+    <div class="toggle-theme">
+      <i class="fas" [ngClass]="isDark ? 'fa-sun' : 'fa-moon'"></i>
+      <span>{{ isDark ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+      <label class="switch">
+        <input type="checkbox" (change)="toggleTheme()" [checked]="isDark">
+      </label>
+    </div>
+  </div>
+</div>
