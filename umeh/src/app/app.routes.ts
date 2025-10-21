@@ -13,6 +13,7 @@ import { Reportes } from './components/reportes/reportes';
 import { ConsultaRecepcion } from './components/consulta-recepcion/consulta-recepcion';
 import { LoginDoctor } from './components/login-doctor/login-doctor';
 import { Configuracion } from './components/configuracion/configuracion';
+import { Estadisticas } from './components/estadisticas/estadisticas';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -46,6 +47,7 @@ export const routes: Routes = [
       { path: 'lista-doctores', component: ListaDoctores },
       { path: 'recepcion', component: ConsultaRecepcion },
       { path: 'login-doctor', component: LoginDoctor },
+      { path: 'estadisticas', component: Estadisticas },
     ]
   },
 
