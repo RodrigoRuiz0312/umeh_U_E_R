@@ -37,6 +37,10 @@ export class RegistroPaciente {
     this.router.navigate(['/pacientes/lista']);
   }
 
+  irAConsultaRecepcion(){
+    console.log('Navegando a la recepcion de la consulta')
+    this.router.navigate(['/pacientes/recepcion']);
+  }
 
    onSubmit(){
     console.log('Enviado los siguientes datos:',this.pacienteData);
