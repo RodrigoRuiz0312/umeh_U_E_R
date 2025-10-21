@@ -11,6 +11,7 @@ import { Citas } from './components/citas/citas';
 import { ListaDoctores } from './components/lista-doctores/lista-doctores';
 import { Reportes } from './components/reportes/reportes';
 import { ConsultaRecepcion } from './components/consulta-recepcion/consulta-recepcion';
+import { LoginDoctor } from './components/login-doctor/login-doctor';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -42,6 +43,7 @@ export const routes: Routes = [
       { path: 'doctores', component: Doctores },
       { path: 'lista-doctores', component: ListaDoctores },
       { path: 'recepcion', component: ConsultaRecepcion },
+      { path: 'login-doctor', component: LoginDoctor },
     ]
   },
 
