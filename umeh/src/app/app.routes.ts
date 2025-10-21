@@ -12,6 +12,7 @@ import { ListaDoctores } from './components/lista-doctores/lista-doctores';
 import { Reportes } from './components/reportes/reportes';
 import { ConsultaRecepcion } from './components/consulta-recepcion/consulta-recepcion';
 import { LoginDoctor } from './components/login-doctor/login-doctor';
+import { Configuracion } from './components/configuracion/configuracion';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -19,6 +20,7 @@ export const routes: Routes = [
   // Alias top-level
   { path: 'agenda', component: Citas },
   { path: 'reportes', component: Reportes },
+  { path: 'configuracion', component: Configuracion },
 
   // Rutas agrupadas para Insumos
   {
