@@ -2,12 +2,12 @@
 const { pool } = require('../db');
 
 class ConsultaController {
-  
+
   // Buscar paciente por nombre y apellidos
   async buscarPaciente(req, res) {
     try {
       const { nombre, apellidos } = req.query;
-      
+
       let query = `
         SELECT id_paciente, nombre, apellidos, fecha_nacimiento, telefono, 
                correo, sexo, calle, num, colonia, ciudad, codigo_postal
@@ -15,14 +15,14 @@ class ConsultaController {
         WHERE LOWER(nombre) LIKE LOWER($1)
       `;
       const params = [`%${nombre}%`];
-      
+
       if (apellidos) {
         query += ` AND LOWER(apellidos) LIKE LOWER($2)`;
         params.push(`%${apellidos}%`);
       }
-      
+
       query += ` ORDER BY nombre, apellidos LIMIT 10`;
-      
+
       const result = await pool.query(query, params);
       res.json(result.rows);
     } catch (error) {
@@ -36,45 +36,45 @@ class ConsultaController {
     const client = await pool.connect();
     try {
       const { id_paciente, id_medico, motivo } = req.body;
-      
+
       // Validar que se reciban los datos necesarios
       if (!id_paciente || !id_medico) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Datos incompletos',
-          mensaje: 'Se requiere id_paciente e id_medico' 
+          mensaje: 'Se requiere id_paciente e id_medico'
         });
       }
-      
+
       await client.query('BEGIN');
-      
+
       // Verificar que el paciente existe
       const pacienteExiste = await client.query(
         'SELECT id_paciente FROM paciente WHERE id_paciente = $1',
         [id_paciente]
       );
-      
+
       if (pacienteExiste.rows.length === 0) {
         await client.query('ROLLBACK');
-        return res.status(404).json({ 
+        return res.status(404).json({
           error: 'Paciente no encontrado',
           mensaje: `El paciente con ID ${id_paciente} no existe en la base de datos`
         });
       }
-      
+
       // Verificar que el médico existe
       const medicoExiste = await client.query(
         'SELECT id_medico FROM medico WHERE id_medico = $1',
         [id_medico]
       );
-      
+
       if (medicoExiste.rows.length === 0) {
         await client.query('ROLLBACK');
-        return res.status(404).json({ 
+        return res.status(404).json({
           error: 'Médico no encontrado',
           mensaje: `El médico con ID ${id_medico} no existe en la base de datos`
         });
       }
-      
+
       // Crear la consulta
       const result = await client.query(
         `INSERT INTO consultas (id_paciente, id_medico, motivo, estatus, fecha)
@@ -82,24 +82,24 @@ class ConsultaController {
          RETURNING id_consulta, fecha, estatus`,
         [id_paciente, id_medico, motivo]
       );
-      
+
       await client.query('COMMIT');
       res.status(201).json(result.rows[0]);
     } catch (error) {
       await client.query('ROLLBACK');
       console.error('Error creando consulta:', error);
-      
+
       // Mensajes de error más específicos
       if (error.code === '23503') {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Error de integridad referencial',
           mensaje: 'El paciente o médico especificado no existe'
         });
       }
-      
-      res.status(500).json({ 
+
+      res.status(500).json({
         error: 'Error al crear consulta',
-        mensaje: error.message 
+        mensaje: error.message
       });
     } finally {
       client.release();
@@ -110,7 +110,7 @@ class ConsultaController {
   async obtenerHojaConsulta(req, res) {
     try {
       const { id_consulta } = req.params;
-      
+
       const result = await pool.query(
         `SELECT 
           c.id_consulta,
@@ -137,11 +137,11 @@ class ConsultaController {
         WHERE c.id_consulta = $1`,
         [id_consulta]
       );
-      
+
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Consulta no encontrada' });
       }
-      
+
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error obteniendo hoja de consulta:', error);
@@ -154,7 +154,7 @@ class ConsultaController {
     try {
       const { id_consulta } = req.params;
       const { estatus } = req.body;
-      
+
       const result = await pool.query(
         `UPDATE consultas 
          SET estatus = $1 
@@ -162,11 +162,11 @@ class ConsultaController {
          RETURNING id_consulta, estatus`,
         [estatus, id_consulta]
       );
-      
+
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Consulta no encontrada' });
       }
-      
+
       res.json(result.rows[0]);
     } catch (error) {
       console.error('Error actualizando estatus:', error);
@@ -180,16 +180,16 @@ class ConsultaController {
     try {
       const { id_consulta } = req.params;
       const { id_insumo, tipo, cantidad, descripcion } = req.body;
-      
+
       await client.query('BEGIN');
-      
+
       // Verificar inventario disponible
       let inventarioDisponible = false;
       let costoUnitario = 0;
-      
+
       if (tipo === 'medicamento') {
         const med = await client.query(
-          'SELECT cantidad, costo_unitario FROM medicamentos WHERE id = $1',
+          'SELECT nombre, cantidad, costo_unitario FROM medicamentos WHERE id = $1',
           [id_insumo]
         );
         if (med.rows.length > 0 && med.rows[0].cantidad >= cantidad) {
@@ -225,45 +225,77 @@ class ConsultaController {
           WHERE pi.id_procedimiento = $1`,
           [id_insumo, cantidad]
         );
-        
+
         inventarioDisponible = verificacion.rows[0].disponible;
-        
+
         // Obtener costo del procedimiento
         const costoProcedimiento = await client.query(
           'SELECT costo_total FROM vista_costo_procedimientos WHERE id_procedimiento = $1',
           [id_insumo]
         );
-        
+
         if (costoProcedimiento.rows.length > 0) {
           costoUnitario = costoProcedimiento.rows[0].costo_total;
         }
       }
-      
+
       if (!inventarioDisponible) {
         await client.query('ROLLBACK');
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: 'Inventario insuficiente',
           mensaje: 'No hay suficiente stock disponible para este insumo o procedimiento'
         });
       }
-      
+
       // Insertar insumo en consulta (el trigger descontará automáticamente)
-      const result = await client.query(
+      const insert = await client.query(
         `INSERT INTO consulta_insumos 
-         (id_consulta, id_insumo, tipo, cantidad, costo_unitario, descripcion)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id, id_consulta, id_insumo, tipo, cantidad, costo_unitario, subtotal, descripcion`,
+   (id_consulta, id_insumo, tipo, cantidad, costo_unitario, descripcion)
+   VALUES ($1, $2, $3, $4, $5, $6)
+   RETURNING id`,
         [id_consulta, id_insumo, tipo, cantidad, costoUnitario, descripcion]
       );
-      
+
+      // Consultar el insumo recién insertado con su nombre y unidad
+      const result = await client.query(
+        `SELECT 
+    ci.id,
+    ci.id_insumo,
+    ci.tipo,
+    ci.cantidad,
+    ci.costo_unitario,
+    ci.subtotal,
+    ci.descripcion,
+    CASE 
+      WHEN ci.tipo = 'medicamento' THEN m.nombre
+      WHEN ci.tipo = 'material' THEN mt.nombre
+      WHEN ci.tipo = 'procedimiento' THEN p.descripcion
+    END as nombre_insumo,
+    CASE 
+      WHEN ci.tipo = 'medicamento' THEN m.unidad
+      WHEN ci.tipo = 'material' THEN mt.unidad
+      ELSE 'procedimiento'
+    END as unidad
+  FROM consulta_insumos ci
+  LEFT JOIN medicamentos m ON ci.tipo = 'medicamento' AND ci.id_insumo = m.id
+  LEFT JOIN mat_triage mt ON ci.tipo = 'material' AND ci.id_insumo = mt.id
+  LEFT JOIN procedimientos p ON ci.tipo = 'procedimiento' AND ci.id_insumo = p.id_procedimiento
+  WHERE ci.id = $1`,
+        [insert.rows[0].id]
+      );
+
+
       // Obtener total actualizado de la consulta
       const totalConsulta = await client.query(
         'SELECT total FROM consultas WHERE id_consulta = $1',
         [id_consulta]
       );
-      
+
+      // Dentro de agregarInsumo (antes de COMMIT)
+      console.log('✅ INSERTANDO INSUMO EN CONSULTA:', { id_consulta, id_insumo, tipo, cantidad, costoUnitario });
+
       await client.query('COMMIT');
-      
+
       res.status(201).json({
         insumo: result.rows[0],
         totalConsulta: totalConsulta.rows[0].total
@@ -282,22 +314,22 @@ class ConsultaController {
     const client = await pool.connect();
     try {
       const { id_insumo_consulta } = req.params;
-      
+
       await client.query('BEGIN');
-      
+
       // Obtener datos del insumo antes de eliminarlo
       const insumoData = await client.query(
         'SELECT id_insumo, tipo, cantidad FROM consulta_insumos WHERE id = $1',
         [id_insumo_consulta]
       );
-      
+
       if (insumoData.rows.length === 0) {
         await client.query('ROLLBACK');
         return res.status(404).json({ error: 'Insumo no encontrado' });
       }
-      
+
       const { id_insumo, tipo, cantidad } = insumoData.rows[0];
-      
+
       // Restaurar inventario
       if (tipo === 'medicamento') {
         await client.query(
@@ -320,7 +352,7 @@ class ConsultaController {
            AND pi.id_insumo = m.id`,
           [cantidad, id_insumo]
         );
-        
+
         await client.query(
           `UPDATE mat_triage mt
            SET cantidad = cantidad + (pi.cantidad * $1)
@@ -331,21 +363,21 @@ class ConsultaController {
           [cantidad, id_insumo]
         );
       }
-      
+
       // Eliminar el registro
       const result = await client.query(
         'DELETE FROM consulta_insumos WHERE id = $1 RETURNING id_consulta',
         [id_insumo_consulta]
       );
-      
+
       // Obtener total actualizado
       const totalConsulta = await client.query(
         'SELECT total FROM consultas WHERE id_consulta = $1',
         [result.rows[0].id_consulta]
       );
-      
+
       await client.query('COMMIT');
-      
+
       res.json({
         mensaje: 'Insumo eliminado correctamente',
         totalConsulta: totalConsulta.rows[0].total
@@ -363,7 +395,7 @@ class ConsultaController {
   async obtenerInsumosConsulta(req, res) {
     try {
       const { id_consulta } = req.params;
-      
+
       const result = await pool.query(
         `SELECT 
           ci.id,
@@ -391,7 +423,7 @@ class ConsultaController {
         ORDER BY ci.id`,
         [id_consulta]
       );
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error('Error obteniendo insumos:', error);
@@ -405,9 +437,9 @@ class ConsultaController {
     try {
       const { id_consulta } = req.params;
       const { observaciones } = req.body;
-      
+
       await client.query('BEGIN');
-      
+
       // Actualizar observaciones y estatus
       await client.query(
         `UPDATE consultas 
@@ -415,7 +447,7 @@ class ConsultaController {
          WHERE id_consulta = $2`,
         [observaciones, id_consulta]
       );
-      
+
       // Obtener datos completos para la nota de remisión
       const notaRemision = await client.query(
         `SELECT 
@@ -457,9 +489,9 @@ class ConsultaController {
                  p.nombre, p.apellidos, p.telefono, m.nombre, m.apellidos`,
         [id_consulta]
       );
-      
+
       await client.query('COMMIT');
-      
+
       res.json({
         mensaje: 'Consulta finalizada',
         notaRemision: notaRemision.rows[0]
@@ -477,7 +509,7 @@ class ConsultaController {
   async buscarMedicamentos(req, res) {
     try {
       const { busqueda } = req.query;
-      
+
       const result = await pool.query(
         `SELECT id, nombre, cantidad, unidad, costo_unitario
          FROM medicamentos
@@ -488,7 +520,7 @@ class ConsultaController {
          LIMIT 20`,
         [`%${busqueda}%`]
       );
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error('Error buscando medicamentos:', error);
@@ -500,7 +532,7 @@ class ConsultaController {
   async buscarMateriales(req, res) {
     try {
       const { busqueda } = req.query;
-      
+
       const result = await pool.query(
         `SELECT id, nombre, cantidad, unidad, costo_unitario
          FROM mat_triage
@@ -511,7 +543,7 @@ class ConsultaController {
          LIMIT 20`,
         [`%${busqueda}%`]
       );
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error('Error buscando materiales:', error);
@@ -523,7 +555,7 @@ class ConsultaController {
   async buscarProcedimientos(req, res) {
     try {
       const { busqueda } = req.query;
-      
+
       const result = await pool.query(
         `SELECT 
           vcp.id_procedimiento as id,
@@ -538,7 +570,7 @@ class ConsultaController {
          LIMIT 20`,
         [`%${busqueda}%`]
       );
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error('Error buscando procedimientos:', error);
@@ -554,7 +586,7 @@ class ConsultaController {
          FROM medico
          ORDER BY nombre, apellidos`
       );
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error('Error obteniendo médicos:', error);

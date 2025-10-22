@@ -197,6 +197,17 @@ export class InsumoService {
     );
   }
 
+  // ✅ Obtener configuración actual (limiteStock, etc.)
+  obtenerConfiguracion(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/configuracion`);
+  }
+
+  // ✅ Actualizar configuración (nuevo límite de stock)
+  actualizarConfiguracion(data: { limiteStock: number }): Observable<any> {
+    return this.http.put(`${this.baseUrl}/configuracion`, data);
+  }
+
+
   // Método opcional para invalidar la cache
   clearCache() {
     this.medicamentosCache = null;
