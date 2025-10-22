@@ -1,8 +1,27 @@
 <div class="card">
   <div class="card-header">
-    <h2>CONFIGURACIÓN</h2>
+    <h2>Configuración del sistema</h2>
   </div>
   <div class="card-body">
-    <p style="opacity:0.8">En esta sección se pueden configurar los parámetros del sistema</p>
+    <!-- Tema -->
+    <div class="config-section">
+      <h3>Tema<span> (Cambia el tema de la aplicacion)</span></h3>
+      <div class="toggle-theme">
+        <i class="fas" [ngClass]="isDark ? 'fa-sun' : 'fa-moon'"></i>
+        <span>{{ isDark ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+        <label class="switch">
+          <input type="checkbox" (change)="toggleTheme()" [checked]="isDark">
+        </label>
+      </div>
+    </div>
+
+    <!-- Límite de stock -->
+    <div class="config-section">
+      <h3>Límite de stock bajo<span> (Actualice aqui el limite de stock para las alertas en inicio)</span></h3>
+      <label for="limiteStock">Cantidad mínima:</label>
+      <input type="number" id="limiteStock" [(ngModel)]="limiteStock" min="1">
+
+      <button (click)="guardarConfiguracion()">Guardar cambios</button>
+    </div>
   </div>
 </div>

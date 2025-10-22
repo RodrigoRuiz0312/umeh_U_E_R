@@ -61,12 +61,5 @@
 
   <div class="bottom">
     <div class="menu-item" routerLink="/configuracion"><i class="fa-solid fa-gear"></i><span>Configuración</span></div>
-    <div class="toggle-theme">
-      <i class="fas" [ngClass]="isDark ? 'fa-sun' : 'fa-moon'"></i>
-      <span>{{ isDark ? 'Modo Claro' : 'Modo Oscuro' }}</span>
-      <label class="switch">
-        <input type="checkbox" (change)="toggleTheme()" [checked]="isDark">
-      </label>
-    </div>
   </div>
 </div>

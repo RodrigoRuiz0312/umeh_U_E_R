@@ -14,3 +14,40 @@
   font-size: 1.9rem;
   color: var(--heading-text);
 }
+
+.config-section {
+  padding-left: 30px;
+}
+
+.config-section h3 span {
+  font-size: 15px;
+  color: #ff7700;
+}
+
+.config-section label {
+  padding-right: 10px;
+}
+
+.config-section input[type="number"] {
+  margin-right: 10px;
+}
+
+.toggle-theme {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.switch input {
+  cursor: pointer;
+}
+
+button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
