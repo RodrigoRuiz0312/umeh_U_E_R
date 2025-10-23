@@ -3,6 +3,9 @@ const router = express.Router();
 const { pool } = require('../db');
 
 router.get('/resumen', async (req, res) => {
+
+  const config = await pool.query('SELECT limite_stock FROM configuracion LIMIT 1');
+  const limite = config.rows[0]?.limite_stock || 2;
     try {
     const [meds, stockBajo, triage] = await Promise.all([
       pool.query('SELECT SUM(cantidad) AS total_meds FROM medicamentos'),
