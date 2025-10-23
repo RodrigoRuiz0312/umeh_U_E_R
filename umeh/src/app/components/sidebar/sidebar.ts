@@ -22,10 +22,6 @@ export class Sidebar {
     return this.temaServicio.theme() === 'dark';
   }
 
-  toggleTheme() {
-    this.temaServicio.toggleTheme();
-  }
-
   onMouseEnter() {
     this.isCollapsed = false;
   }

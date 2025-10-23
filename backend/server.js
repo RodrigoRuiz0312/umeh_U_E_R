@@ -20,6 +20,7 @@ const triageRouter = require('./routes/mat_triage');
 const procedimientosRouter = require('./routes/procedimientos');
 const reportesRouter = require('./routes/reportes');
 const dashboardRouter = require('./routes/dashboard');
+const configuracionRouter = require('./routes/configuracion');
 
 // Rutas PACIENTES
 const pacientesRouter = require('./routes/pacientes');
@@ -33,6 +34,7 @@ app.use('/api/triage', triageRouter);
 app.use('/api/procedimientos', procedimientosRouter);
 app.use('/api/reportes', reportesRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/configuracion', configuracionRouter);
 app.use('/api/pacientes', pacientesRouter);
 
 // Rutas API PACIENTES
