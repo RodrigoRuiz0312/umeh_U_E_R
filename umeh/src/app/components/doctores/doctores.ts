@@ -26,6 +26,7 @@ export class Doctores implements OnInit {
     telefono: '',
     correo: '',
     especialidad: '',
+    nombre_agenda: '',
   };
 
   constructor(private api: ApiService, private toastr: ToastrService, private messageService: MessageService) { }
@@ -52,7 +53,11 @@ export class Doctores implements OnInit {
     if (!this.doctorData.cedula_prof || this.doctorData.cedula_prof.trim() === '') {
       faltantes.push('Cédula profesional');
     }
-
+    
+    if (!this.doctorData.nombre_agenda){
+      faltantes.push('Agenda');
+    }
+    
     // Los siguientes son opcionales, pero puedes validar formato si quieres:
     if (this.doctorData.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.doctorData.correo)) {
       faltantes.push('Correo electrónico inválido');
@@ -86,6 +91,7 @@ export class Doctores implements OnInit {
           telefono: '',
           correo: '',
           especialidad: '',
+          nombre_agenda: '',
         };
       },
       error: (error) => {

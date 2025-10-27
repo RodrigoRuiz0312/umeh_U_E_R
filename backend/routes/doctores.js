@@ -4,11 +4,11 @@ const { pool } = require('../db');
 
 router.post('/', async (req, res) => {
   try {
-    const { nombre, apellidos, cedula_prof, telefono, correo, especialidad } = req.body;
+    const { nombre, apellidos, cedula_prof, telefono, correo, especialidad, nombre_agenda } = req.body;
     const query = `
-      INSERT INTO medico (nombre, apellidos, cedula_prof, telefono, correo, especialidad)
-      VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`;
-    const result = await pool.query(query, [nombre, apellidos, cedula_prof, telefono, correo, especialidad]);
+      INSERT INTO medico (nombre, apellidos, cedula_prof, telefono, correo, especialidad, nombre_agenda)
+      VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`;
+    const result = await pool.query(query, [nombre, apellidos, cedula_prof, telefono, correo, especialidad, nombre_agenda]);
     res.status(201).json({ message: 'Médico registrado con éxito', doctor: result.rows[0] });
   } catch (err) {
     console.error('Error al registrar médico:', err);

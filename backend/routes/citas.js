@@ -7,17 +7,17 @@ const { pool } = require('../db'); // Ajusta la ruta según tu db.js
 // Agendación de citas
 router.get("/agenda", async (req, res) => {
   try {
-    const { fecha, especialidad } = req.query;
-    if (!fecha || !especialidad) {
-      return res.status(400).json({ error: "Se requiere el parámetro de fecha y especialidad" });
+    const { fecha, especialidad:nombre_agenda } = req.query;
+    if (!fecha || !nombre_agenda) {
+      return res.status(400).json({ error: "Se requiere el parámetro de fecha y agenda asignada" });
     }
 
     const doctoresQuery = `
       SELECT id_medico, nombre, apellidos, especialidad
       FROM medico
-      WHERE UPPER(especialidad) = UPPER($1)`;
+      WHERE nombre_agenda = $1`;
 
-    const doctoresResult = await pool.query(doctoresQuery, [especialidad]);
+    const doctoresResult = await pool.query(doctoresQuery, [nombre_agenda]);
     const doctoresFiltrados = doctoresResult.rows;
 
     const citasResult = await pool.query(

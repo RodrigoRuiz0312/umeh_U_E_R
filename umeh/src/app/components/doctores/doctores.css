@@ -340,3 +340,70 @@ p-toast {
   font-weight: bold;
   margin-left: 2px;
 }
+
+/* --- Estilos para los Radio Buttons de Agenda --- */
+
+/* Contenedor principal de las opciones de radio */
+.form-field .radio-group {
+  display: flex; 
+  gap: 20px; 
+  padding: 20px 0; 
+}
+
+/* Contenedor de cada par (botón + etiqueta) */
+.radio-option {
+  display: flex;
+  align-items: center; 
+  cursor: pointer; 
+}
+
+/* Estilo para la etiqueta de cada opción (ej. "General") */
+.radio-option label {
+  margin-left: 8px; 
+  font-weight: normal; 
+  color: var(--label-text);
+}
+
+.radio-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 18px; 
+  height: 18px;
+  border: 2px solid var(--input-border);
+  border-radius: 50%; 
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+
+.radio-option input[type="radio"]::before {
+  content: '';
+  display: block;
+  width: 10px; 
+  height: 10px;
+  background-color: transparent;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: background-color 0.2s ease;
+}
+
+/* Estilo del botón de radio CUANDO ESTÁ SELECCIONADO */
+.radio-option input[type="radio"]:checked {
+  border-color: var(--primary-color); 
+}
+
+/* Estilo del círculo interior CUANDO ESTÁ SELECCIONADO */
+.radio-option input[type="radio"]:checked::before {
+  background-color: var(--primary-color); 
+}
+
+/* Efecto al pasar el mouse por encima */
+.radio-option input[type="radio"]:hover {
+  border-color: var(--primary-color);
+}
