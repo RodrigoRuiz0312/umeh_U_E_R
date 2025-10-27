@@ -44,7 +44,7 @@ router.get("/agenda", async (req, res) => {
 });
 
 // Crear una nueva cita
-router.post("/citas", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { id_paciente, id_medico, fecha, hora, consultorio } = req.body;
 
