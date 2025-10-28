@@ -1,0 +1,23 @@
+<div class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Detalles de la Cita</h2>
+      <button class="close-btn" (click)="onClose()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="cita"> 
+      <p><strong>Paciente:</strong> {{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</p>
+      <p><strong>Médico:</strong> {{ cita.nombre_medico }} {{ cita.apellidos_medico }}</p>
+      <p><strong>Hora:</strong> {{ cita.hora.substring(0, 5) }} hrs</p>
+      <p><strong>Consultorio:</strong> {{ cita.consultorio }}</p>
+      <p><strong>Estado Actual:</strong> {{ cita.estado }}</p>
+      </div>
+      
+   <!-- <div class="modal-footer">
+      <button class="btn btn-primary" (click)="imprimirPapeleta()">Confirmar Llegada / Imprimir Papeleta</button>
+      
+      <button class="btn btn-secondary" (click)="actualizarEstado('En Consulta')">Iniciar Consulta</button>
+      <button class="btn btn-success" (click)="actualizarEstado('Finalizada')">Finalizar Cita</button>
+      <button class="btn btn-danger" (click)="actualizarEstado('Cancelada')">Cancelar Cita</button>
+    </div>-->
+  </div>
+</div>

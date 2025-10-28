@@ -13,27 +13,48 @@ router.get("/agenda", async (req, res) => {
     }
 
     const doctoresQuery = `
-      SELECT id_medico, nombre, apellidos, especialidad
+      SELECT id_medico, nombre AS nombre_medico, apellidos AS apellidos_medico, especialidad
       FROM medico
       WHERE nombre_agenda = $1`;
 
     const doctoresResult = await pool.query(doctoresQuery, [nombre_agenda]);
     const doctoresFiltrados = doctoresResult.rows;
 
-    const citasResult = await pool.query(
-      "SELECT * FROM citas WHERE fecha = $1",
-      [fecha]
+    const citasQuery = `
+
+    SELECT c.*,
+      p.nombre AS nombre_paciente,
+      p.apellidos AS apellidos_paciente
+    FROM citas c
+    LEFT JOIN paciente p ON c.id_paciente = p.id_paciente
+    WHERE c.fecha = $1
+    `;
+
+    const citasResult = await pool.query(citasQuery,[fecha]
     );
     const citasDelDia = citasResult.rows;
 
     const agenda = doctoresFiltrados.map((doctor) => {
+      const docId = Number(doctor.id_medico);
+
       const susCitas = citasDelDia.filter(
-        (cita) => cita.id_medico === doctor.id_medico
-      );
-      return {
-        ...doctor,
-        citas: susCitas,
+        (c) => Number(c.id_medico) === docId)
+        .map((cita) => {
+          return {
+        ...cita,
+        nombre_paciente: cita.nombre_paciente ?? null,
+        apellidos_paciente: cita.apellidos_paciente ?? null,
+        nombre_medico: doctor.nombre_medico,
+        apellidos_medico: doctor.apellidos_medico
       };
+     });
+    return{
+      id_medico: doctor.id_medico,
+      nombre:doctor.nombre_medico,
+      apellidos: doctor.apellidos_medico,
+      especialidad: doctor.especialidad,
+      citas: susCitas
+    };
     });
 
     res.json(agenda);
@@ -44,7 +65,7 @@ router.get("/agenda", async (req, res) => {
 });
 
 // Crear una nueva cita
-router.post("/citas", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const { id_paciente, id_medico, fecha, hora, consultorio } = req.body;
 

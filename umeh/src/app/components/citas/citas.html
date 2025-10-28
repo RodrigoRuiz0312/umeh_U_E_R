@@ -62,4 +62,11 @@
   [datosCita]="datosParaNuevaCita"
   (close)="cerrarModalAgendar()"
   (citaCreada)="citaAgendadaConExito()">
-</app-agendar-cita-modal> 
+</app-agendar-cita-modal>
+
+<app-detalles-cita-modal
+  *ngIf="isDetailsModalVisible"
+  [cita]="citaSeleccionada"
+  (close)="closeDetailsModal()"
+  (citaActualizada)="citaActualizadaConExito()"> 
+</app-detalles-cita-modal>
