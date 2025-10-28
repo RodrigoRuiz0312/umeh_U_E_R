@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AgendarCitaModal } from '../../utils//agendar-cita-modal/agendar-cita-modal';
 import { ApiService } from '../../services/api';
+import { DetallesCitaModal } from '../../utils/detalles-cita-modal/detalles-cita-modal';
 
 @Component({
   selector: 'app-citas',
   standalone: true,
-  imports: [CommonModule, FormsModule, AgendarCitaModal],
+  imports: [CommonModule, FormsModule, AgendarCitaModal, DetallesCitaModal],
   templateUrl: './citas.html',
   styleUrl: './citas.css'
 })
@@ -38,6 +39,9 @@ export class Citas implements OnInit {
   isAgendarModalVisible = false;
   datosParaNuevaCita: any = {};
 
+  isDetailsModalVisible = false;
+  citaSeleccionada: any;
+
   constructor(private api: ApiService) { }
 
   ngOnInit() { }
@@ -65,10 +69,6 @@ export class Citas implements OnInit {
     this.isAgendarModalVisible = true;
   }
 
-  verDetallesCita(cita: any) {
-    console.log('Mostrando detalles de la cita (función pendiente):', cita);
-
-  }
 
   cerrarModalAgendar() {
     this.isAgendarModalVisible = false;
@@ -94,4 +94,19 @@ export class Citas implements OnInit {
     return doctor.citas.find((cita: any) => cita.hora === horario);
   }
 
+  verDetallesCita(cita: any) {
+    this.citaSeleccionada = cita;
+    this.isDetailsModalVisible = true;
+  }
+ 
+
+  closeDetailsModal() {
+    this.isDetailsModalVisible = false;
+  }
+
+  
+  citaActualizadaConExito() {
+    this.closeDetailsModal();
+    this.cargarAgenda();
+  }
 }
