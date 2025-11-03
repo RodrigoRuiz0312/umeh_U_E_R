@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const consultaController = require('../controllers/consultaController');
+const { generarHojaPDF } = require('../utils/generarHojaPDF');
 
 // Búsqueda de pacientes
 router.get('/pacientes/buscar', consultaController.buscarPaciente);
@@ -13,7 +14,19 @@ router.get('/medicos', consultaController.obtenerMedicos);
 router.post('/crearConsulta', consultaController.crearConsulta);
 
 // Obtener datos para hoja de consulta
-router.get('/consultas/:id_consulta/hoja', consultaController.obtenerHojaConsulta);
+router.get('/:id_consulta/hoja-pdf', async (req, res) => {
+    try {
+        const { id_consulta } = req.params;
+        const result = await consultaController.obtenerHojaConsultaInterna(id_consulta);
+        if (!result) {
+            return res.status(404).json({ error: 'Consulta no encontrada' });
+        }
+        generarHojaPDF(result, res);
+    } catch (error) {
+        console.error('Error generando PDF:', error);
+        res.status(500).json({ error: 'Error generando hoja PDF' });
+    }
+});
 
 // Actualizar estatus de consulta
 router.patch('/actConsulta/:id_consulta/estatus', consultaController.actualizarEstatus);

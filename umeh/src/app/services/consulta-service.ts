@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 })
 export class ConsultaService {
   
-  private apiUrl = `${environment.apiUrl}`;
+  public apiUrl = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {}
 
