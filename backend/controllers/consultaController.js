@@ -595,4 +595,46 @@ class ConsultaController {
   }
 }
 
-module.exports = new ConsultaController();
+async function obtenerHojaConsultaInterna(id_consulta) {
+  const { pool } = require('../db');
+  const result = await pool.query(
+    `SELECT 
+      c.id_consulta, c.fecha, c.motivo, c.estatus,
+      p.nombre as paciente_nombre, p.apellidos as paciente_apellidos, 
+      p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
+      p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
+      m.nombre as medico_nombre, m.apellidos as medico_apellidos, 
+      m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
+     FROM consultas c
+     INNER JOIN paciente p ON c.id_paciente = p.id_paciente
+     LEFT JOIN medico m ON c.id_medico = m.id_medico
+     WHERE c.id_consulta = $1`,
+    [id_consulta]
+  );
+
+  return result.rows[0] || null;
+}
+
+const controller = new ConsultaController();
+
+// Función auxiliar fuera de la clase
+controller.obtenerHojaConsultaInterna = async function (id_consulta) {
+  const result = await pool.query(
+    `SELECT 
+      c.id_consulta, c.fecha, c.motivo, c.estatus,
+      p.nombre as paciente_nombre, p.apellidos as paciente_apellidos, 
+      p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
+      p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
+      m.nombre as medico_nombre, m.apellidos as medico_apellidos, 
+      m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
+     FROM consultas c
+     INNER JOIN paciente p ON c.id_paciente = p.id_paciente
+     LEFT JOIN medico m ON c.id_medico = m.id_medico
+     WHERE c.id_consulta = $1`,
+    [id_consulta]
+  );
+
+  return result.rows[0] || null;
+};
+
+module.exports = controller;

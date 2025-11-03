@@ -138,105 +138,6 @@
   </div>
 
   <!-- ============================================ -->
-  <!-- PASO 3: HOJA DE IMPRESIÓN -->
-  <!-- ============================================ -->
-  <div *ngIf="paso === 'hoja-impresion'" class="paso-hoja-impresion">
-
-    <!-- Botones de acción (no imprimibles) -->
-    <div class="no-print mb-16 acciones-top">
-      <div class="flex justify-between">
-        <button class="btn btn-secondary" (click)="paso = 'seleccion-medico'">
-          <i class="bi bi-arrow-left"></i> Regresar
-        </button>
-        <div>
-          <button class="btn btn-primary mr-8" (click)="imprimirHoja()">
-            <i class="bi bi-printer"></i> Imprimir Hoja
-          </button>
-          <button class="btn btn-success" (click)="confirmarImpresion()">
-            <i class="bi bi-check-lg"></i> Confirmar y Enviar a Consulta
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Hoja imprimible -->
-    <div class="hoja-consulta print-area">
-      <div class="hoja-header text-center mb-4">
-        <h2>HOJA DE REGISTRO UMEH</h2>
-        <p class="mb-0">Fecha: {{ consultaActual?.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
-        <p>No. Consulta: {{ consultaActual?.id_consulta }}</p>
-      </div>
-
-      <!-- DATOS DEL PACIENTE -->
-      <div class="seccion-datos mb-4">
-        <h4 class="seccion-titulo">DATOS DEL PACIENTE</h4>
-        <div class="grid-datos">
-          <div>
-            <strong>Nombre completo:</strong><br>
-            {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos }}
-          </div>
-          <div>
-            <strong>Fecha nacimiento:</strong><br>
-            {{ pacienteSeleccionado?.fecha_nacimiento | date: 'dd/MM/yyyy' }}
-          </div>
-          <div>
-            <strong>Sexo:</strong><br>
-            {{ pacienteSeleccionado?.sexo }}
-          </div>
-        </div>
-
-        <div class="grid-datos mt-2">
-          <div>
-            <strong>Edad:</strong><br>
-            {{ calcularEdad(pacienteSeleccionado?.fecha_nacimiento) }} años
-          </div>
-          <div class="col-span-2">
-            <strong>Domicilio:</strong><br>
-            {{ pacienteSeleccionado?.calle }} {{ pacienteSeleccionado?.num }},
-            {{ pacienteSeleccionado?.colonia }}, {{ pacienteSeleccionado?.ciudad }}
-          </div>
-        </div>
-      </div>
-
-      <!-- SOMATOMETRÍA -->
-      <div class="seccion-somatometria mb-4">
-        <h4 class="seccion-titulo">SOMATOMETRÍA (LLENADO POR ENFERMERÍA)</h4>
-        <div class="grid-somatometria">
-          <span><strong>TA:</strong> ___________ mmHg</span>
-          <span><strong>FC:</strong> ___________ lpm</span>
-          <span><strong>FR:</strong> ___________ rpm</span>
-          <span><strong>TEMP:</strong> ___________ °C</span>
-          <span><strong>SatO₂:</strong> ___________ %</span>
-        </div>
-      </div>
-
-      <!-- ANOTACIONES MÉDICAS -->
-      <div class="seccion-anotaciones mb-4">
-        <h4 class="seccion-titulo">ANOTACIONES MÉDICAS</h4>
-        <div class="anotaciones-box">
-          <p class="text-muted small">Registre aquí los insumos utilizados, procedimientos aplicados y observaciones:
-          </p>
-          <div class="lineas-anotacion">
-            <div class="linea" *ngFor="let n of [].constructor(5)"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- MÉDICO -->
-      <div class="seccion-datos medico-asignado">
-        <h4 class="seccion-titulo">MÉDICO ASIGNADO</h4>
-        <p><strong>Dr(a). {{ getMedicoNombre(medicoSeleccionado!) }}</strong></p>
-      </div>
-    </div>
-
-    <div class="no-print mt-3">
-      <button class="btn btn-warning w-100" (click)="retomarConsulta()">
-        <i class="bi bi-arrow-clockwise"></i> Retomar Consulta (Paciente de regreso)
-      </button>
-    </div>
-  </div>
-
-  <!-- ============================================ -->
   <!-- PASO 4: CAPTURA DE INSUMOS -->
   <!-- ============================================ -->
   <div *ngIf="paso === 'captura-insumos'" class="paso-captura-insumos">
@@ -410,7 +311,7 @@
 
         <!-- Botones de acción -->
         <div class="d-flex justify-content-between">
-          <button class="btn btn-secondary" (click)="paso = 'hoja-impresion'">
+          <button class="btn btn-secondary" (click)="paso = 'seleccion-medico'">
             <i class="bi bi-arrow-left"></i> Regresar
           </button>
           <button class="btn btn-success btn-lg" (click)="finalizarConsulta()" [disabled]="cargando">

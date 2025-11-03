@@ -66,7 +66,7 @@ interface InsumoDisponible {
 export class ConsultaRecepcion implements OnInit {
 
   // Control de flujo
-  paso: 'busqueda' | 'seleccion-medico' | 'hoja-impresion' | 'captura-insumos' | 'nota-remision' = 'busqueda';
+  paso: 'busqueda' | 'seleccion-medico' | 'captura-insumos' | 'nota-remision' = 'busqueda';
 
   // Datos de búsqueda
   nombreBusqueda: string = '';
@@ -225,8 +225,13 @@ export class ConsultaRecepcion implements OnInit {
       next: (consulta) => {
         this.consultaActual = consulta;
         this.cargando = false;
-        this.paso = 'hoja-impresion';
+        this.paso = 'captura-insumos';
+
         console.log('Consulta creada exitosamente:', consulta);
+
+        // ✅ Abrir automáticamente la hoja PDF generada en el backend
+        const pdfUrl = `${this.consultaService.apiUrl}/consultas/${consulta.id_consulta}/hoja-pdf`;
+        window.open(pdfUrl, '_blank');
       },
       error: (error) => {
         console.error('Error creando consulta:', error);
