@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { pool } = require('../db'); // Ajusta la ruta según tu db.js
+const { pool } = require('../db');
 
 /*-----------Citas---------------*/ 
 
