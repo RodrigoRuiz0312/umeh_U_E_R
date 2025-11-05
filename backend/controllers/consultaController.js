@@ -175,6 +175,7 @@ class ConsultaController {
   }
 
   // Agregar insumo/medicamento/material a la consulta
+  // Agregar insumo/medicamento/material a la consulta
   async agregarInsumo(req, res) {
     const client = await pool.connect();
     try {
@@ -194,7 +195,7 @@ class ConsultaController {
         );
         if (med.rows.length > 0 && med.rows[0].cantidad >= cantidad) {
           inventarioDisponible = true;
-          costoUnitario = med.rows[0].costo_unitario;
+          costoUnitario = parseFloat(med.rows[0].costo_unitario); // ✅ Convertir aquí
         }
       } else if (tipo === 'material') {
         const mat = await client.query(
@@ -203,7 +204,7 @@ class ConsultaController {
         );
         if (mat.rows.length > 0 && mat.rows[0].cantidad >= cantidad) {
           inventarioDisponible = true;
-          costoUnitario = mat.rows[0].costo_unitario;
+          costoUnitario = parseFloat(mat.rows[0].costo_unitario); // ✅ Convertir aquí
         }
       } else if (tipo === 'procedimiento') {
         // Para procedimientos, verificar que todos sus insumos estén disponibles
@@ -235,7 +236,7 @@ class ConsultaController {
         );
 
         if (costoProcedimiento.rows.length > 0) {
-          costoUnitario = costoProcedimiento.rows[0].costo_total;
+          costoUnitario = parseFloat(costoProcedimiento.rows[0].costo_total); // ✅ Convertir aquí
         }
       }
 
@@ -276,14 +277,23 @@ class ConsultaController {
       WHEN ci.tipo = 'material' THEN mt.unidad
       ELSE 'procedimiento'
     END as unidad
-  FROM consulta_insumos ci
-  LEFT JOIN medicamentos m ON ci.tipo = 'medicamento' AND ci.id_insumo = m.id
-  LEFT JOIN mat_triage mt ON ci.tipo = 'material' AND ci.id_insumo = mt.id
-  LEFT JOIN procedimientos p ON ci.tipo = 'procedimiento' AND ci.id_insumo = p.id_procedimiento
-  WHERE ci.id = $1`,
+         FROM consulta_insumos ci
+         LEFT JOIN medicamentos m ON ci.tipo = 'medicamento' AND ci.id_insumo = m.id
+         LEFT JOIN mat_triage mt ON ci.tipo = 'material' AND ci.id_insumo = mt.id
+         LEFT JOIN procedimientos p ON ci.tipo = 'procedimiento' AND ci.id_insumo = p.id_procedimiento
+         WHERE ci.id = $1`,
         [insert.rows[0].id]
       );
 
+      // ✅ Convertir tipos de datos del insumo insertado
+      const insumoConvertido = {
+        ...result.rows[0],
+        id: parseInt(result.rows[0].id, 10),
+        id_insumo: parseInt(result.rows[0].id_insumo, 10),
+        cantidad: parseFloat(result.rows[0].cantidad),
+        costo_unitario: parseFloat(result.rows[0].costo_unitario),
+        subtotal: parseFloat(result.rows[0].subtotal)
+      };
 
       // Obtener total actualizado de la consulta
       const totalConsulta = await client.query(
@@ -297,8 +307,8 @@ class ConsultaController {
       await client.query('COMMIT');
 
       res.status(201).json({
-        insumo: result.rows[0],
-        totalConsulta: totalConsulta.rows[0].total
+        insumo: insumoConvertido, // ✅ Enviar el insumo convertido
+        totalConsulta: parseFloat(totalConsulta.rows[0].total) // ✅ Convertir total también
       });
     } catch (error) {
       await client.query('ROLLBACK');
@@ -313,7 +323,11 @@ class ConsultaController {
   async eliminarInsumo(req, res) {
     const client = await pool.connect();
     try {
-      const { id_insumo_consulta } = req.params;
+      const id_insumo_consulta = parseInt(req.params.id_insumo_consulta, 10);
+
+      if (isNaN(id_insumo_consulta)) {
+        return res.status(400).json({ error: 'ID de insumo inválido' });
+      }
 
       await client.query('BEGIN');
 
@@ -342,24 +356,23 @@ class ConsultaController {
           [cantidad, id_insumo]
         );
       } else if (tipo === 'procedimiento') {
-        // Restaurar insumos del procedimiento
         await client.query(
           `UPDATE medicamentos m
-           SET cantidad = cantidad + (pi.cantidad * $1)
-           FROM procedimiento_insumos pi
-           WHERE pi.id_procedimiento = $2
-           AND pi.tipo = 'medicamento'
-           AND pi.id_insumo = m.id`,
+         SET cantidad = cantidad + (pi.cantidad * $1)
+         FROM procedimiento_insumos pi
+         WHERE pi.id_procedimiento = $2
+         AND pi.tipo = 'medicamento'
+         AND pi.id_insumo = m.id`,
           [cantidad, id_insumo]
         );
 
         await client.query(
           `UPDATE mat_triage mt
-           SET cantidad = cantidad + (pi.cantidad * $1)
-           FROM procedimiento_insumos pi
-           WHERE pi.id_procedimiento = $2
-           AND pi.tipo = 'material'
-           AND pi.id_insumo = mt.id`,
+         SET cantidad = cantidad + (pi.cantidad * $1)
+         FROM procedimiento_insumos pi
+         WHERE pi.id_procedimiento = $2
+         AND pi.tipo = 'material'
+         AND pi.id_insumo = mt.id`,
           [cantidad, id_insumo]
         );
       }
@@ -370,7 +383,6 @@ class ConsultaController {
         [id_insumo_consulta]
       );
 
-      // Obtener total actualizado
       const totalConsulta = await client.query(
         'SELECT total FROM consultas WHERE id_consulta = $1',
         [result.rows[0].id_consulta]
@@ -424,7 +436,17 @@ class ConsultaController {
         [id_consulta]
       );
 
-      res.json(result.rows);
+      // ✅ Convertir tipos de datos correctamente
+      const insumos = result.rows.map(insumo => ({
+        ...insumo,
+        id: parseInt(insumo.id, 10),                    // bigint → number
+        id_insumo: parseInt(insumo.id_insumo, 10),      // bigint → number
+        cantidad: parseFloat(insumo.cantidad),          // numeric → number
+        costo_unitario: parseFloat(insumo.costo_unitario), // numeric → number
+        subtotal: parseFloat(insumo.subtotal)           // numeric → number
+      }));
+
+      res.json(insumos);
     } catch (error) {
       console.error('Error obteniendo insumos:', error);
       res.status(500).json({ error: 'Error al obtener insumos' });
