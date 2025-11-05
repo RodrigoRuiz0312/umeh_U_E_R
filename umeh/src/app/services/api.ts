@@ -68,4 +68,8 @@ export class ApiService {
   crearCita(data: any): Observable<any> {
     return this.http.post(`${this.base}/citas`, data);
   }
+
+  actualizarEstadoCita(id: number, estado:string): Observable<any>{
+    return this.http.patch(`${this.base}/citas/${id}/estado`, { estado });
+  }
 }

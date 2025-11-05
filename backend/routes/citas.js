@@ -28,6 +28,7 @@ router.get("/agenda", async (req, res) => {
     FROM citas c
     LEFT JOIN paciente p ON c.id_paciente = p.id_paciente
     WHERE c.fecha = $1
+     AND (c.estado IS NULL OR c.estado NOT IN ('Finalizada', 'Cancelada'))
     `;
 
     const citasResult = await pool.query(citasQuery,[fecha]
@@ -118,5 +119,31 @@ router.get("/consultorios-disponibles", async (req, res) => {
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+
+  router.patch("/:id/estado", async (req, res) => {
+    try{
+      const { id } = req.params;
+      const { estado } = req.body;
+
+      const estadosValidos = ['Agendada', 'En Sala de Espera', 'En Consulta', 'Finalizada', 'Cancelada'];
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ error: `Estado '${estado}' no es válido` });
+    }
+
+    const query = 'UPDATE citas SET estado = $1 WHERE id_cita = $2 RETURNING *';
+    const result = await pool.query(query, [estado, id]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Cita no encontrada' });
+    }
+
+  
+    res.json({ message: `Estado actualizado a '${estado}'`, cita: result.rows[0] });
+
+  } catch (err) {
+    console.error('Error al actualizar estado:', err);
+    res.status(500).json({ error: 'Error interno' });
+  }
+    });
 
 module.exports = router;

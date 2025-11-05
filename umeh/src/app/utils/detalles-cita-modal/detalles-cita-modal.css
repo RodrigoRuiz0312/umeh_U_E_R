@@ -53,6 +53,18 @@
   transition: 0.2s;
 }
 
+.btn-danger{
+  background-color: red;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(76, 134, 175, 0.3);
+}
+
 .close-btn:hover {
   color: #000;
 }
