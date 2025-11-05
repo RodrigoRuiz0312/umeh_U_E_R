@@ -23,6 +23,17 @@ export class DetallesCitaModal {
   }
   constructor(private api:ApiService){}
 
+  cancelarCita(){
+    this.api.actualizarEstadoCita(this.cita.id_cita, 'Cancelada')
+    .subscribe({
+      next: () => {
+        this.citaActualizada.emit(); 
+        this.close.emit();           
+      },
+      error: (err) => console.error("Error cancelando cita:", err)
+    });
+  }
+
   /*actualizarEstado(nuevoEstado: string) {
     // Llama a la función correspondiente en tu ApiService
     this.api.actualizarEstadoCita(this.cita.id_cita, nuevoEstado).subscribe({
