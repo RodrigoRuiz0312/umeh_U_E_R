@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const consultaController = require('../controllers/consultaController');
 const { generarHojaPDF } = require('../utils/generarHojaPDF');
+const { pool } = require('../db');
 
 // Búsqueda de pacientes
 router.get('/pacientes/buscar', consultaController.buscarPaciente);
@@ -47,5 +48,30 @@ router.post('/finalizarConsulta/:id_consulta/finalizar', consultaController.fina
 router.get('/medicamentos/buscar', consultaController.buscarMedicamentos);
 router.get('/materiales/buscar', consultaController.buscarMateriales);
 router.get('/procedimientos/buscar', consultaController.buscarProcedimientos);
+
+router.patch('/actCosto/:id_consulta', async (req, res) => {
+    try {
+        const { id_consulta } = req.params;
+        const { costo_consulta } = req.body;
+
+        await pool.query(
+            `UPDATE consultas
+   SET costo_consulta = $1::numeric,
+       total = COALESCE(
+         (SELECT SUM(subtotal) FROM consulta_insumos WHERE id_consulta = $2::bigint), 0
+       ) + COALESCE(
+         (SELECT SUM(costo) FROM consulta_extras WHERE id_consulta = $2::bigint), 0
+       ) + COALESCE($1::numeric, 0)
+   WHERE id_consulta = $2::bigint`,
+            [costo_consulta, id_consulta]
+        );
+
+
+        res.json({ mensaje: 'Costo de consulta actualizado correctamente' });
+    } catch (error) {
+        console.error('Error actualizando costo de consulta:', error);
+        res.status(500).json({ error: 'Error al actualizar costo de consulta' });
+    }
+});
 
 module.exports = router;

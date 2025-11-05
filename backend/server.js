@@ -44,6 +44,9 @@ app.use('/api/citas', citasRouter);
 //app.use('/api', testConexionRouter);
 app.use('/api/consultas', consultaRouter);
 
+const consultaExtrasRoutes = require('./routes/consultaExtrasRoutes');
+app.use('/api/consultas/extras', consultaExtrasRoutes);
+
 // Servir Angular (build de producción) - ajusta 'umeh' si tu carpeta difiere
 const angularDistPath = path.join(__dirname, 'dist', 'umeh', 'browser');
 app.use(express.static(angularDistPath));

@@ -8,10 +8,10 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class ConsultaService {
-  
+
   public apiUrl = `${environment.apiUrl}`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Búsqueda de pacientes
   buscarPaciente(nombre: string, apellidos?: string): Observable<any[]> {
@@ -97,5 +97,25 @@ export class ConsultaService {
   buscarProcedimientos(busqueda: string): Observable<any[]> {
     const params = new HttpParams().set('busqueda', busqueda);
     return this.http.get<any[]>(`${this.apiUrl}/procedimientos/buscar`, { params });
+  }
+
+  // Costos adicionales
+  obtenerExtras(id_consulta: number) {
+    return this.http.get(`${this.apiUrl}/consultas/extras/${id_consulta}/extras`);
+  }
+
+  agregarExtra(id_consulta: number, concepto: string, costo: number, observaciones?: string) {
+    return this.http.post(`${this.apiUrl}/consultas/extras/${id_consulta}/extras`, {
+      concepto, costo, observaciones
+    });
+  }
+
+  eliminarExtra(id_extra: number) {
+    return this.http.delete(`${this.apiUrl}/consultas/extras/extras/${id_extra}`);
+  }
+
+  // Costo de consulta
+  actualizarCostoConsulta(id_consulta: number, data: any) {
+    return this.http.patch(`${this.apiUrl}/consultas/actCosto/${id_consulta}`, data);
   }
 }

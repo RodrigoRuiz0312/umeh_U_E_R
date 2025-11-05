@@ -56,6 +56,13 @@ interface InsumoDisponible {
   costo_unitario: number;
 }
 
+interface Extra {
+  id_extra: number;
+  concepto: string;
+  costo: number;
+  observaciones?: string;
+}
+
 @Component({
   selector: 'app-consulta-recepcion',
   standalone: true,
@@ -112,10 +119,48 @@ export class ConsultaRecepcion implements OnInit {
       descripcion: ''
     };
 
+  // Costos de consulta y extras
+  costoConsulta: number = 0;
+  extras: Extra[] = [];
+  nuevoExtra: { concepto: string; costo: number; observaciones: string } = {
+    concepto: '',
+    costo: 0,
+    observaciones: ''
+  };
+
   // Estados de carga
   cargando: boolean = false;
   mensajeError: string = '';
   mensajeExito: string = '';
+
+  get listaCostosCombinada() {
+    const insumos = this.insumosConsulta.map(i => ({
+      tipo: i.tipo,
+      nombre: i.nombre_insumo,
+      cantidad: i.cantidad,
+      unidad: i.unidad,
+      costo_unitario: i.costo_unitario,
+      subtotal: i.subtotal,
+      observaciones: i.descripcion || '',
+      id: i.id,
+      esExtra: false
+    }));
+
+    const extras = this.extras.map(e => ({
+      tipo: 'extra',
+      nombre: e.concepto,
+      cantidad: '-',
+      unidad: '-',
+      costo_unitario: e.costo,
+      subtotal: e.costo,
+      observaciones: e.observaciones || '',
+      id: e.id_extra,
+      esExtra: true
+    }));
+
+    return [...insumos, ...extras];
+  }
+
 
   constructor(private consultaService: ConsultaService, private router: Router) { }
 
@@ -226,6 +271,8 @@ export class ConsultaRecepcion implements OnInit {
         this.consultaActual = consulta;
         this.cargando = false;
         this.paso = 'captura-insumos';
+        this.cargarExtras();
+        this.cargarInsumosConsulta();
 
         console.log('Consulta creada exitosamente:', consulta);
 
@@ -281,6 +328,7 @@ export class ConsultaRecepcion implements OnInit {
           next: () => {
             this.paso = 'captura-insumos';
             this.cargarInsumosConsulta();
+            this.cargarExtras();
           },
           error: (error) => {
             console.error('Error actualizando estatus:', error);
@@ -413,14 +461,23 @@ export class ConsultaRecepcion implements OnInit {
     });
   }
 
-  eliminarInsumo(insumoId: number): void {
-    if (!confirm('¿Está seguro de eliminar este insumo?')) {
+  eliminarInsumo(insumoId: number | string): void {
+    console.log('Tipo de insumoId:', typeof insumoId, 'Valor:', insumoId);
+    
+    if (!confirm('¿Está seguro de eliminar este insumo?')) return;
+
+    // Asegurar que sea un entero válido
+    const idLimpio = parseInt(String(insumoId), 10);
+
+    if (isNaN(idLimpio)) {
+      this.mensajeError = 'ID de insumo inválido';
       return;
     }
 
-    this.consultaService.eliminarInsumo(insumoId).subscribe({
+    this.consultaService.eliminarInsumo(idLimpio).subscribe({
       next: (response) => {
-        this.insumosConsulta = this.insumosConsulta.filter(i => i.id !== insumoId);
+        // Usar idLimpio para la comparación
+        this.insumosConsulta = this.insumosConsulta.filter(i => parseInt(String(i.id), 10) !== idLimpio);
         this.totalConsulta = response.totalConsulta;
         this.mensajeExito = 'Insumo eliminado correctamente';
         setTimeout(() => this.mensajeExito = '', 3000);
@@ -432,9 +489,75 @@ export class ConsultaRecepcion implements OnInit {
     });
   }
 
-  calcularTotal(): void {
-    this.totalConsulta = this.insumosConsulta.reduce((sum, insumo) => sum + insumo.subtotal, 0);
+  // ============================================
+  // COSTO DE CONSULTA Y COSTOS EXTRA
+  // ============================================
+
+  cargarExtras(): void {
+    if (!this.consultaActual) return;
+    this.consultaService.obtenerExtras(this.consultaActual.id_consulta).subscribe({
+      next: (data: any) => {
+        this.extras = data.extras || [];
+        this.costoConsulta = data.costo_consulta || 0;
+        this.calcularTotal();
+      },
+      error: (err) => console.error('Error cargando extras:', err)
+    });
   }
+
+  guardarCostoConsulta(): void {
+    if (!this.consultaActual) return;
+    const body = { costo_consulta: this.costoConsulta };
+
+    this.consultaService.actualizarCostoConsulta(this.consultaActual.id_consulta, body).subscribe({
+      next: () => {
+        console.log('Costo de consulta actualizado');
+        this.calcularTotal();
+      },
+      error: (err) => console.error('Error actualizando costo base:', err)
+    });
+  }
+
+  agregarExtra(): void {
+    if (!this.consultaActual) return;
+    const { concepto, costo, observaciones } = this.nuevoExtra;
+
+    if (!concepto || costo <= 0) {
+      alert('Ingrese un concepto y un costo válido.');
+      return;
+    }
+
+    this.consultaService.agregarExtra(this.consultaActual.id_consulta, concepto, costo, observaciones)
+      .subscribe({
+        next: (res: any) => {
+          this.extras.push(res.extra);
+          this.nuevoExtra = { concepto: '', costo: 0, observaciones: '' };
+          this.calcularTotal();
+        },
+        error: (err) => console.error('Error agregando costo extra:', err)
+      });
+  }
+
+  eliminarExtra(id_extra: number): void {
+    if (!confirm('¿Eliminar este costo adicional?')) return;
+
+    this.consultaService.eliminarExtra(id_extra).subscribe({
+      next: () => {
+        this.extras = this.extras.filter(e => e.id_extra !== id_extra);
+        this.calcularTotal();
+      },
+      error: (err) => console.error('Error eliminando extra:', err)
+    });
+  }
+
+  // 🔢 Recalcular el total incluyendo costo base, insumos y extras
+  calcularTotal(): void {
+    const subtotalInsumos = this.insumosConsulta.reduce((sum, i) => sum + i.subtotal, 0);
+    const subtotalExtras = this.extras.reduce((sum, e) => sum + Number(e.costo || 0), 0);
+    this.totalConsulta = this.costoConsulta + subtotalInsumos + subtotalExtras;
+  }
+
+
 
   // ============================================
   // PASO 5: FINALIZAR Y GENERAR NOTA DE REMISIÓN
@@ -482,6 +605,9 @@ export class ConsultaRecepcion implements OnInit {
     this.motivoConsulta = '';
     this.insumosConsulta = [];
     this.totalConsulta = 0;
+    this.costoConsulta = 0;
+    this.extras = [];
+    this.nuevoExtra = { concepto: '', costo: 0, observaciones: '' };
     this.mensajeError = '';
     this.mensajeExito = '';
   }

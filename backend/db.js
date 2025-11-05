@@ -1,4 +1,13 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// Configurar parsers globales ANTES de crear el pool
+types.setTypeParser(1700, function(val) {
+  return val === null ? null : parseFloat(val);
+});
+
+types.setTypeParser(20, function(val) {
+  return val === null ? null : parseInt(val, 10);
+});
 
 const pool = new Pool({
     user: 'postgres',
@@ -7,24 +16,5 @@ const pool = new Pool({
     password: 'umeh2025',
     port: 5432
 });
-
-/*
-const poolInsumo = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'postgres',
-    password: '21690098rrm',
-    port: 5432
-});
-
-const poolPaciente = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'emilio_bdd',
-    password: '21690098rrm',
-    port: 5432
-});*/
-
-
 
 module.exports = { pool };
