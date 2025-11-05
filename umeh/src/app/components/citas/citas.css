@@ -205,3 +205,49 @@
   color: #d32f2f;
   font-weight: normal;
 }
+
+
+.resultados-busqueda {
+  display: flex;        
+  flex-direction: row;  
+  overflow-x: auto;     
+  background: #f8f9fa;  
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  margin-top: 10px; 
+}
+
+/* Cada tarjeta individual de resultado */
+.resultado-item {
+  flex-shrink: 0;   
+  width: 300px;     
+  padding: 15px;
+  
+
+  border-right: 1px solid #ddd;
+}
+
+/* Estilo para la última tarjeta, para que no tenga el separador */
+.resultado-item:last-child {
+  border-right: none;
+}
+
+/* Estilos para el texto dentro de cada tarjeta de resultado */
+.resultado-item p {
+  margin: 0 0 8px 0; 
+  font-size: 0.9rem;
+}
+
+.resultado-item p strong {
+  color: #333;
+}
+
+.input-name{
+
+ width: 300px;
+  border-radius: 50px;
+  padding: 12px 20px;
+  border: 1px solid #ddd;
+  background-color: #f8f8f8;
+}

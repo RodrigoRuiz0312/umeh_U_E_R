@@ -120,6 +120,39 @@ router.get("/consultorios-disponibles", async (req, res) => {
   }
 });
 
+  router.get("/buscar-paciente", async (req, res) => {
+    try {
+      const { nombre } = req.query;
+      if (!nombre || nombre.length < 3){
+        return res.json([]);
+      }
+
+      const searchTerm = `%${nombre}%`;
+
+      const query = `
+      SELECT
+      c.fecha, c.hora, c.consultorio,
+      p.nombre AS nombre_paciente, p.apellidos AS apellidos_paciente,
+      m.nombre AS nombre_medico
+    FROM citas c
+    JOIN paciente p ON c.id_paciente = p.id_paciente
+    JOIN medico m ON c.id_medico = m.id_medico
+    WHERE
+      (p.nombre ILIKE $1 OR p.apellidos ILIKE $1)
+      AND c.fecha >= CURRENT_DATE
+      AND c.estado NOT IN ('Finalizada', 'Cancelada')
+      ORDER BY
+      c.fecha, c.hora;
+    `;
+
+    const result = await pool.query(query, [searchTerm]);
+    res.json(result.rows);
+    } catch (err){
+      console.error("Error al buscar citas:", err);
+      res.status(500).json({ error: "Error interno en el servidor"});
+    }
+  });
+
   router.patch("/:id/estado", async (req, res) => {
     try{
       const { id } = req.params;

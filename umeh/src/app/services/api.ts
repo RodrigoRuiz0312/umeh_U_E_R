@@ -36,6 +36,10 @@ export class ApiService {
     return this.http.post('/api/consultas', consulta);
   }
 
+  buscarCitasPorPacientes(nombre: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/citas/buscar-paciente`, { params: { nombre } });
+  }
+
 
   // Doctores
   getDoctores(): Observable<any[]> {

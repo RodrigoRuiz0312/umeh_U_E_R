@@ -3,6 +3,22 @@
     <div class="card-header">
        <h2>Agendación de citas</h2>
     </div>
+
+    <div class="buscador general">
+      <h3>Buscar cita existente</h3>
+      <input class="input-name"type="text" placeholder="Escriba nombre del paciente..."
+      [(ngModel)]="terminoBusquedaCita" (keyup)="buscarCitas()">
+
+      <div class="resultados-busqueda" *ngIf="resultadoBusqueda.length > 0">
+        <div *ngFor="let cita of resultadoBusqueda" class="resultado-item">
+          <p><strong>Paciente:</strong> {{ cita.nombre_paciente }} {{cita.apellidos_paciente }}</p>
+          <p><strong>Médico:</strong> {{ cita.nombre_medico }}</p>
+          <p><strong>Fecha:</strong> {{ cita.fecha | date:'dd/MM/yyyy' }} - {{ cita.hora.substring(0, 5) }} hrs</p>
+          <p><strong>Consultorio:</strong> {{ cita.consultorio }}</p>
+        </div>
+      </div>
+    </div>
+
     <div class="agendas-wrapper">
       <div class="agenda-cover general" (click)="seleccionarAgenda('General')">
         <div class="agenda-title">Agenda General</div>
