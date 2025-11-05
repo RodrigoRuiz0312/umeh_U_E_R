@@ -17,6 +17,10 @@ export class Citas implements OnInit {
   agendaSeleccionada: string | null = null;
   agenda: any[] = [];
 
+
+  terminoBusquedaCita: string ='';
+  resultadoBusqueda: any[] = [];
+
   fechaSeleccionada: string = new Date().toISOString().split('T')[0];
 
   horariosDelDia: string[] = [
@@ -49,6 +53,9 @@ export class Citas implements OnInit {
   seleccionarAgenda(nombreAgenda: string) {
     this.agendaSeleccionada = nombreAgenda;
     this.cargarAgenda();
+
+    this.resultadoBusqueda = [];
+    this.terminoBusquedaCita = '';
   }
 
   cargarAgenda() {
@@ -56,6 +63,16 @@ export class Citas implements OnInit {
     this.api.getAgenda(this.fechaSeleccionada, this.agendaSeleccionada).subscribe((data) => {
       this.agenda = data;
       console.log('Agenda recibida para la fecha', this.fechaSeleccionada, ':', this.agenda);
+    });
+  }
+
+  buscarCitas(){
+    if(this.terminoBusquedaCita.length < 3) {
+      this.resultadoBusqueda = [];
+      return;
+    }
+    this.api.buscarCitasPorPacientes(this.terminoBusquedaCita).subscribe(data => {
+      this.resultadoBusqueda = data;
     });
   }
 
@@ -83,6 +100,9 @@ export class Citas implements OnInit {
   volverASeleccion() {
     this.agendaSeleccionada = null;
     this.agenda = [];
+
+    this.resultadoBusqueda = [];
+    this.terminoBusquedaCita = '';
   }
 
   isHourBooked(doctor: any, horario: string): boolean {
