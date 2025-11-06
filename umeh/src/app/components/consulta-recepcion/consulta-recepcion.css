@@ -331,6 +331,7 @@
 .form-label {
   font-weight: 600;
   margin-bottom: 8px;
+  margin-right: 10px;
   color: var(--label-text);
   font-size: var(--fs-md);
 }
@@ -1150,4 +1151,80 @@
   color: var(--danger-color);
   font-weight: bold;
   margin-left: 2px;
+}
+
+/* Distribución lado a lado en paso de captura */
+.row-insumos-costos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+/* Asegurar que las tarjetas llenen correctamente su espacio */
+.col-insumos,
+.col-costos {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Igualar altura de las tarjetas */
+.col-insumos .card,
+.col-costos .card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.col-insumos .card-body,
+.col-costos .card-body {
+  flex: 1;
+}
+
+/* Ajustar select de tipo de insumo al contenido */
+.col-insumos .col-md-3 {
+  flex: 0 0 auto;
+  max-width: fit-content;
+}
+
+.col-insumos .col-md-3 select {
+  width: auto;
+  min-width: 150px;
+}
+
+/* Normalizar tamaño de fuente del h6 */
+.col-costos h6 {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+/* Ajustar ancho de tabla resumen con espacios laterales */
+.tabla-resumen-container {
+  padding: 0 16px;
+}
+
+.tabla-resumen-container .table {
+  width: calc(100% - 32px);
+  margin: 0 auto;
+}
+
+/* Centrar contenido de la tabla horizontal y verticalmente */
+.tabla-resumen-container .table td,
+.tabla-resumen-container .table th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Celda de tipo con color de fondo completo */
+.celda-tipo {
+  color: white !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: var(--fs-xs);
+  padding: 12px 8px !important;
+}
+
+/* Asegurar que el color warning tenga texto oscuro */
+.celda-tipo.bg-warning {
+  color: #000 !important;
 }
