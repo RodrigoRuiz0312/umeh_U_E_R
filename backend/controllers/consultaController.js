@@ -31,80 +31,57 @@ class ConsultaController {
     }
   }
 
-  // Crear nueva consulta
+  // Crear una nueva consulta
   async crearConsulta(req, res) {
     const client = await pool.connect();
     try {
       const { id_paciente, id_medico, motivo } = req.body;
 
-      // Validar que se reciban los datos necesarios
       if (!id_paciente || !id_medico) {
-        return res.status(400).json({
-          error: 'Datos incompletos',
-          mensaje: 'Se requiere id_paciente e id_medico'
-        });
+        return res.status(400).json({ error: 'Faltan datos requeridos.' });
       }
 
       await client.query('BEGIN');
 
-      // Verificar que el paciente existe
-      const pacienteExiste = await client.query(
-        'SELECT id_paciente FROM paciente WHERE id_paciente = $1',
-        [id_paciente]
-      );
-
-      if (pacienteExiste.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({
-          error: 'Paciente no encontrado',
-          mensaje: `El paciente con ID ${id_paciente} no existe en la base de datos`
-        });
-      }
-
-      // Verificar que el médico existe
-      const medicoExiste = await client.query(
-        'SELECT id_medico FROM medico WHERE id_medico = $1',
-        [id_medico]
-      );
-
-      if (medicoExiste.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({
-          error: 'Médico no encontrado',
-          mensaje: `El médico con ID ${id_medico} no existe en la base de datos`
-        });
-      }
-
-      // Crear la consulta
-      const result = await client.query(
-        `INSERT INTO consultas (id_paciente, id_medico, motivo, estatus, fecha)
-         VALUES ($1, $2, $3, 'espera', NOW())
-         RETURNING id_consulta, fecha, estatus`,
-        [id_paciente, id_medico, motivo]
-      );
+      const query = `
+      INSERT INTO consultas (id_paciente, id_medico, motivo, estatus, fecha, fecha_sesion, activo)
+      VALUES ($1, $2, $3, 'espera', NOW(), CURRENT_DATE, true)
+      RETURNING id_consulta, id_paciente, id_medico, estatus, fecha;
+    `;
+      const { rows } = await client.query(query, [id_paciente, id_medico, motivo]);
 
       await client.query('COMMIT');
-      res.status(201).json(result.rows[0]);
+      res.status(201).json(rows[0]);
     } catch (error) {
       await client.query('ROLLBACK');
-      console.error('Error creando consulta:', error);
-
-      // Mensajes de error más específicos
-      if (error.code === '23503') {
-        return res.status(400).json({
-          error: 'Error de integridad referencial',
-          mensaje: 'El paciente o médico especificado no existe'
-        });
-      }
-
-      res.status(500).json({
-        error: 'Error al crear consulta',
-        mensaje: error.message
-      });
+      console.error('Error al crear consulta:', error);
+      res.status(500).json({ error: 'Error al crear la consulta' });
     } finally {
       client.release();
     }
   }
+
+  // Consultas activas del día
+  async obtenerConsultasActivas(req, res) {
+    try {
+      const { rows } = await pool.query(`
+      SELECT c.id_consulta, c.fecha, c.estatus, c.motivo,
+             p.nombre AS paciente_nombre, p.apellidos AS paciente_apellidos,
+             m.nombre AS medico_nombre, m.apellidos AS medico_apellidos
+      FROM consultas c
+      JOIN paciente p ON c.id_paciente = p.id_paciente
+      JOIN medico m ON c.id_medico = m.id_medico
+      WHERE c.fecha_sesion = CURRENT_DATE AND c.activo = true
+      ORDER BY c.fecha ASC;
+    `);
+
+      res.json(rows);
+    } catch (error) {
+      console.error('Error al obtener consultas activas:', error);
+      res.status(500).json({ error: 'Error al obtener consultas activas' });
+    }
+  }
+
 
   // Obtener datos completos para hoja de consulta
   async obtenerHojaConsulta(req, res) {
@@ -114,6 +91,8 @@ class ConsultaController {
       const result = await pool.query(
         `SELECT 
           c.id_consulta,
+          c.id_paciente,
+          c.id_medico,
           c.fecha,
           c.motivo,
           c.estatus,
@@ -149,32 +128,24 @@ class ConsultaController {
     }
   }
 
-  // Actualizar estatus de consulta
+  // Cambiar estatus
   async actualizarEstatus(req, res) {
     try {
       const { id_consulta } = req.params;
-      const { estatus } = req.body;
+      const { nuevoEstatus } = req.body;
 
-      const result = await pool.query(
-        `UPDATE consultas 
-         SET estatus = $1 
-         WHERE id_consulta = $2
-         RETURNING id_consulta, estatus`,
-        [estatus, id_consulta]
+      await pool.query(
+        'UPDATE consultas SET estatus = $1 WHERE id_consulta = $2',
+        [nuevoEstatus, id_consulta]
       );
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Consulta no encontrada' });
-      }
-
-      res.json(result.rows[0]);
+      res.json({ message: `Estatus actualizado a ${nuevoEstatus}` });
     } catch (error) {
       console.error('Error actualizando estatus:', error);
       res.status(500).json({ error: 'Error al actualizar estatus' });
     }
   }
 
-  // Agregar insumo/medicamento/material a la consulta
   // Agregar insumo/medicamento/material a la consulta
   async agregarInsumo(req, res) {
     const client = await pool.connect();
@@ -464,41 +435,41 @@ class ConsultaController {
 
       // Actualizar observaciones y estatus
       await client.query(
-        `UPDATE consultas 
-         SET estatus = 'completada', observaciones = $1 
-         WHERE id_consulta = $2`,
-        [observaciones, id_consulta]
+        `UPDATE consultas
+      SET estatus = 'completada', activo = false, fecha = NOW()
+      WHERE id_consulta = $1`,
+        [id_consulta]
       );
 
       // Obtener datos completos para la nota de remisión
       const notaRemision = await client.query(
         `SELECT 
           c.id_consulta,
-          c.fecha,
-          c.total,
-          c.observaciones,
-          p.nombre as paciente_nombre,
-          p.apellidos as paciente_apellidos,
-          p.telefono as paciente_telefono,
-          m.nombre as medico_nombre,
-          m.apellidos as medico_apellidos,
-          json_agg(
-            json_build_object(
-              'nombre', CASE 
+        c.fecha,
+        c.total,
+        c.observaciones,
+        p.nombre as paciente_nombre,
+        p.apellidos as paciente_apellidos,
+        p.telefono as paciente_telefono,
+        m.nombre as medico_nombre,
+        m.apellidos as medico_apellidos,
+        json_agg(
+          json_build_object(
+            'nombre', CASE 
                 WHEN ci.tipo = 'medicamento' THEN med.nombre
                 WHEN ci.tipo = 'material' THEN mat.nombre
                 WHEN ci.tipo = 'procedimiento' THEN proc.descripcion
               END,
-              'cantidad', ci.cantidad,
-              'unidad', CASE 
+            'cantidad', ci.cantidad,
+            'unidad', CASE 
                 WHEN ci.tipo = 'medicamento' THEN med.unidad
                 WHEN ci.tipo = 'material' THEN mat.unidad
                 ELSE 'procedimiento'
               END,
-              'costo_unitario', ci.costo_unitario,
-              'subtotal', ci.subtotal
-            ) ORDER BY ci.id
-          ) as insumos
+            'costo_unitario', ci.costo_unitario,
+            'subtotal', ci.subtotal
+          ) ORDER BY ci.id
+        ) as insumos
         FROM consultas c
         INNER JOIN paciente p ON c.id_paciente = p.id_paciente
         LEFT JOIN medico m ON c.id_medico = m.id_medico
@@ -507,8 +478,8 @@ class ConsultaController {
         LEFT JOIN mat_triage mat ON ci.tipo = 'material' AND ci.id_insumo = mat.id
         LEFT JOIN procedimientos proc ON ci.tipo = 'procedimiento' AND ci.id_insumo = proc.id_procedimiento
         WHERE c.id_consulta = $1
-        GROUP BY c.id_consulta, c.fecha, c.total, c.observaciones, 
-                 p.nombre, p.apellidos, p.telefono, m.nombre, m.apellidos`,
+        GROUP BY c.id_consulta, c.fecha, c.total, c.observaciones,
+        p.nombre, p.apellidos, p.telefono, m.nombre, m.apellidos`,
         [id_consulta]
       );
 
@@ -581,9 +552,9 @@ class ConsultaController {
       const result = await pool.query(
         `SELECT 
           vcp.id_procedimiento as id,
-          vcp.descripcion as nombre,
-          vcp.costo_total as costo_unitario,
-          'procedimiento' as unidad
+        vcp.descripcion as nombre,
+        vcp.costo_total as costo_unitario,
+        'procedimiento' as unidad
          FROM vista_costo_procedimientos vcp
          INNER JOIN procedimientos p ON vcp.id_procedimiento = p.id_procedimiento
          WHERE p.activo = true 
@@ -622,11 +593,11 @@ async function obtenerHojaConsultaInterna(id_consulta) {
   const result = await pool.query(
     `SELECT 
       c.id_consulta, c.fecha, c.motivo, c.estatus,
-      p.nombre as paciente_nombre, p.apellidos as paciente_apellidos, 
-      p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
-      p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
-      m.nombre as medico_nombre, m.apellidos as medico_apellidos, 
-      m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
+        p.nombre as paciente_nombre, p.apellidos as paciente_apellidos,
+        p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
+        p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
+        m.nombre as medico_nombre, m.apellidos as medico_apellidos,
+        m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
      FROM consultas c
      INNER JOIN paciente p ON c.id_paciente = p.id_paciente
      LEFT JOIN medico m ON c.id_medico = m.id_medico
@@ -644,11 +615,11 @@ controller.obtenerHojaConsultaInterna = async function (id_consulta) {
   const result = await pool.query(
     `SELECT 
       c.id_consulta, c.fecha, c.motivo, c.estatus,
-      p.nombre as paciente_nombre, p.apellidos as paciente_apellidos, 
-      p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
-      p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
-      m.nombre as medico_nombre, m.apellidos as medico_apellidos, 
-      m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
+        p.nombre as paciente_nombre, p.apellidos as paciente_apellidos,
+        p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
+        p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
+        m.nombre as medico_nombre, m.apellidos as medico_apellidos,
+        m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
      FROM consultas c
      INNER JOIN paciente p ON c.id_paciente = p.id_paciente
      LEFT JOIN medico m ON c.id_medico = m.id_medico

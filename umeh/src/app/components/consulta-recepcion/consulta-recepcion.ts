@@ -35,6 +35,11 @@ interface Consulta {
   estatus: string;
   motivo?: string;
   total: number;
+  activo: boolean;
+  paciente_nombre?: string;
+  paciente_apellidos?: string;
+  medico_nombre?: string;
+  medico_apellidos?: string;
 }
 
 interface Insumo {
@@ -136,6 +141,8 @@ export class ConsultaRecepcion implements OnInit {
   mensajeError: string = '';
   mensajeExito: string = '';
 
+  consultasActivas: Consulta[] = [];
+
   get listaCostosCombinada() {
     const insumos = this.insumosConsulta.map(i => ({
       tipo: i.tipo,
@@ -165,30 +172,31 @@ export class ConsultaRecepcion implements OnInit {
   }
 
 
-  constructor(private consultaService: ConsultaService, private api:ApiService, private router: Router) { }
+  constructor(private consultaService: ConsultaService, private api: ApiService, private router: Router) { }
 
   ngOnInit(): void {
     this.cargarMedicos();
     this.cargarCitasDelDia();
+    this.obtenerConsultasActivas();
   }
 
 
   private getTodayLocalYYYYMMDD(): string {
-    const today = new Date(); 
+    const today = new Date();
     const year = today.getFullYear();
-   
-    const month = (today.getMonth() + 1).toString().padStart(2, '0'); 
+
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
     const day = today.getDate().toString().padStart(2, '0');
-    
+
     return `${year}-${month}-${day}`;
   }
 
 
   //Añadi esta nueva funcion
   cargarCitasDelDia(): void {
-    const hoy = this.getTodayLocalYYYYMMDD(); 
-    
-    console.log(`Cargando citas para la fecha local: ${hoy}`); 
+    const hoy = this.getTodayLocalYYYYMMDD();
+
+    console.log(`Cargando citas para la fecha local: ${hoy}`);
 
     this.api.getAgendaCompletaDelDia(hoy).subscribe({
       next: (data) => {
@@ -202,7 +210,7 @@ export class ConsultaRecepcion implements OnInit {
   }
 
   seleccionarCitaParaConsulta(cita: any): void {
-   
+
     this.cargando = true;
     this.consultaService.buscarPaciente(cita.nombre_paciente, cita.apellidos_paciente).subscribe({
       next: (pacientes) => {
@@ -258,7 +266,7 @@ export class ConsultaRecepcion implements OnInit {
   seleccionarPaciente(paciente: Paciente): void {
     console.log('Paciente seleccionado:', paciente);
 
-    // Verificar que el paciente tiene ID
+    // Verificar que el paciente tenga ID
     if (!paciente.id_paciente) {
       this.mensajeError = 'Error: El paciente no tiene un ID válido';
       console.error('Paciente sin ID:', paciente);
@@ -318,18 +326,28 @@ export class ConsultaRecepcion implements OnInit {
       this.medicoSeleccionado,
       this.motivoConsulta
     ).subscribe({
-      next: (consulta) => {
+      next: (consulta: any) => {
         this.consultaActual = consulta;
         this.cargando = false;
-        this.paso = 'captura-insumos';
-        this.cargarExtras();
-        this.cargarInsumosConsulta();
-
-        console.log('Consulta creada exitosamente:', consulta);
-
-        // ✅ Abrir automáticamente la hoja PDF generada en el backend
-        const pdfUrl = `${this.consultaService.apiUrl}/consultas/${consulta.id_consulta}/hoja-pdf`;
-        window.open(pdfUrl, '_blank');
+        
+        // Cambiar estatus a 'en_atencion' automáticamente
+        this.consultaService.actualizarEstatus(consulta.id_consulta, 'en_atencion').subscribe({
+          next: () => {
+            this.paso = 'captura-insumos';
+            this.cargarExtras();
+            this.cargarInsumosConsulta();
+            
+            // Actualizar lista de consultas activas
+            this.obtenerConsultasActivas();
+            
+            console.log('Consulta creada y en atención:', consulta);
+            
+            // ✅ Abrir automáticamente la hoja PDF generada en el backend
+            const pdfUrl = `${this.consultaService.apiUrl}/consultas/${consulta.id_consulta}/hoja-pdf`;
+            window.open(pdfUrl, '_blank');
+          },
+          error: (err) => console.error('Error actualizando estatus inicial:', err)
+        });
       },
       error: (error) => {
         console.error('Error creando consulta:', error);
@@ -514,7 +532,7 @@ export class ConsultaRecepcion implements OnInit {
 
   eliminarInsumo(insumoId: number | string): void {
     console.log('Tipo de insumoId:', typeof insumoId, 'Valor:', insumoId);
-    
+
     if (!confirm('¿Está seguro de eliminar este insumo?')) return;
 
     // Asegurar que sea un entero válido
@@ -631,6 +649,9 @@ export class ConsultaRecepcion implements OnInit {
           this.cargando = false;
           this.paso = 'nota-remision';
           this.mensajeExito = 'Consulta finalizada correctamente';
+          
+          // Actualizar lista de consultas activas (esta consulta ya no aparecerá)
+          this.obtenerConsultasActivas();
         },
         error: (error) => {
           console.error('Error finalizando consulta:', error);
@@ -688,4 +709,66 @@ export class ConsultaRecepcion implements OnInit {
       currency: 'MXN'
     }).format(cantidad);
   }
+
+  obtenerConsultasActivas() {
+    this.consultaService.obtenerConsultasActivas().subscribe({
+      next: (data) => this.consultasActivas = data,
+      error: (err) => console.error(err)
+    });
+  }
+
+  // Retomar una consulta en espera para continuar con la captura de insumos
+  retomarConsultaActiva(consulta: Consulta): void {
+    // Buscar el paciente y médico de la consulta
+    this.consultaService.obtenerHojaConsulta(consulta.id_consulta).subscribe({
+      next: (datos: any) => {
+        // Cargar datos del paciente
+        this.pacienteSeleccionado = {
+          id_paciente: datos.id_paciente || 0,
+          nombre: datos.paciente_nombre,
+          apellidos: datos.paciente_apellidos,
+          fecha_nacimiento: datos.fecha_nacimiento,
+          telefono: datos.paciente_telefono,
+          correo: '',
+          sexo: datos.sexo,
+          calle: datos.calle,
+          num: datos.num,
+          colonia: datos.colonia,
+          ciudad: datos.ciudad,
+          codigo_postal: datos.codigo_postal
+        };
+        
+        // Cargar datos de la consulta
+        this.consultaActual = consulta;
+        this.motivoConsulta = consulta.motivo || '';
+        
+        // Buscar el médico en la lista
+        const medico = this.medicos.find(m => 
+          m.nombre === datos.medico_nombre && m.apellidos === datos.medico_apellidos
+        );
+        this.medicoSeleccionado = medico ? medico.id_medico : null;
+        
+        // Cambiar a paso de captura de insumos
+        this.paso = 'captura-insumos';
+        this.cargarExtras();
+        this.cargarInsumosConsulta();
+        
+        // Actualizar estatus a 'en_atencion'
+        this.consultaService.actualizarEstatus(consulta.id_consulta, 'en_atencion').subscribe({
+          next: () => {
+            this.obtenerConsultasActivas();
+            this.mensajeExito = 'Consulta retomada';
+            setTimeout(() => this.mensajeExito = '', 3000);
+          },
+          error: (err) => console.error('Error actualizando estatus:', err)
+        });
+      },
+      error: (err) => {
+        console.error('Error obteniendo datos de consulta:', err);
+        this.mensajeError = 'Error al cargar los datos de la consulta';
+      }
+    });
+  }
+
+  // Método eliminado - ya no se finaliza desde la tabla de consultas activas
 }

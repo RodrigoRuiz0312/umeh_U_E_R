@@ -14,7 +14,10 @@ router.get('/medicos', consultaController.obtenerMedicos);
 // Crear nueva consulta
 router.post('/crearConsulta', consultaController.crearConsulta);
 
-// Obtener datos para hoja de consulta
+// Obtener datos para hoja de consulta (JSON)
+router.get('/:id_consulta/hoja', consultaController.obtenerHojaConsulta);
+
+// Obtener datos para hoja de consulta (PDF)
 router.get('/:id_consulta/hoja-pdf', async (req, res) => {
     try {
         const { id_consulta } = req.params;
@@ -48,6 +51,11 @@ router.post('/finalizarConsulta/:id_consulta/finalizar', consultaController.fina
 router.get('/medicamentos/buscar', consultaController.buscarMedicamentos);
 router.get('/materiales/buscar', consultaController.buscarMateriales);
 router.get('/procedimientos/buscar', consultaController.buscarProcedimientos);
+
+router.get('/activas', consultaController.obtenerConsultasActivas);
+
+// Nueva ruta para finalizar consulta (método PUT)
+router.put('/:id_consulta/finalizar', consultaController.finalizarConsulta);
 
 router.patch('/actCosto/:id_consulta', async (req, res) => {
     try {
