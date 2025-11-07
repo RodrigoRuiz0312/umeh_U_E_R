@@ -530,13 +530,15 @@
 }
 
 .btn-outline-primary {
-  background: transparent;
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
+  transition: all 0.3s ease;
 }
 
 .btn-outline-primary:hover {
-  background: color-mix(in oklab, var(--primary-color) 10%, transparent);
+  background-color: #0d6efd;
+  color: #fff;
+  transform: scale(1.05);
 }
 
 .btn-outline-info {
@@ -925,12 +927,35 @@
   padding: 8px;
 }
 
-.col-md-2 { flex: 0 0 16.666667%; max-width: 16.666667%; }
-.col-md-3 { flex: 0 0 25%; max-width: 25%; }
-.col-md-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
-.col-md-5 { flex: 0 0 41.666667%; max-width: 41.666667%; }
-.col-md-9 { flex: 0 0 75%; max-width: 75%; }
-.col-md-12 { flex: 0 0 100%; max-width: 100%; }
+.col-md-2 {
+  flex: 0 0 16.666667%;
+  max-width: 16.666667%;
+}
+
+.col-md-3 {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+.col-md-4 {
+  flex: 0 0 33.333333%;
+  max-width: 33.333333%;
+}
+
+.col-md-5 {
+  flex: 0 0 41.666667%;
+  max-width: 41.666667%;
+}
+
+.col-md-9 {
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+
+.col-md-12 {
+  flex: 0 0 100%;
+  max-width: 100%;
+}
 
 .g-3 {
   gap: 1rem;

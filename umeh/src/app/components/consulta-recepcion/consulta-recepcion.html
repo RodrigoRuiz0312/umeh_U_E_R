@@ -17,14 +17,10 @@
   <!-- ============================================ -->
   <div *ngIf="paso === 'busqueda'" class="paso-busqueda">
     <div>
-      <div class="card-header">
-        <h3>Nueva Consulta - Búsqueda de Paciente</h3>
-        <div>
-          <p>Generar notas de remisión</p>
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <h3 class="mb-0">Nueva Consulta - Búsqueda de Paciente</h3>
+        <div class="d-flex align-items-center gap-2">
           <button class="btn-reg btn-outline-primary">Generar Notas</button>
-        </div>
-        <div>
-          <p>¿El paciente no está registrado?</p>
           <button class="btn-reg btn-outline-primary" (click)="irARegistroPaciente()">
             <i class="bi bi-person-plus"></i> Registrar Nuevo Paciente
           </button>
@@ -81,42 +77,98 @@
       </div>
     </div>
     <!--Añadi este apartdo de html vale-->
-     <div class="card mb-16">
-    <div class="card-header">
-      <h3>Citas Agendadas para Hoy</h3>
-    </div>
-    <div class="card-body">
-      <div *ngIf="citasDelDia.length === 0" class="text-center text-muted">
-        No hay citas agendadas para hoy.
+    <div class="card mb-16">
+      <div class="card-header">
+        <h3>Citas Agendadas para Hoy</h3>
       </div>
-      <div *ngIf="citasDelDia.length > 0" class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Hora</th>
-              <th>Paciente</th>
-              <th>Médico</th>
-              <th>Estado</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cita of citasDelDia">
-              <td>{{ cita.hora.substring(0, 5) }} hrs</td>
-              <td>{{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</td>
-              <td>{{ cita.nombre_medico }}</td>
-              <td>{{ cita.estado }}</td>
-              <td>
-                <button class="btn-sel btn-sm btn-success" (click)="seleccionarCitaParaConsulta(cita)">
-                  Iniciar Consulta
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="card-body">
+        <div *ngIf="citasDelDia.length === 0" class="text-center text-muted">
+          No hay citas agendadas para hoy.
+        </div>
+        <div *ngIf="citasDelDia.length > 0" class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cita of citasDelDia">
+                <td>{{ cita.hora.substring(0, 5) }} hrs</td>
+                <td>{{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</td>
+                <td>{{ cita.nombre_medico }}</td>
+                <td>{{ cita.estado }}</td>
+                <td>
+                  <button class="btn-sel btn-sm btn-success" (click)="seleccionarCitaParaConsulta(cita)">
+                    Iniciar Consulta
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </div>
+
+    <!-- Tabla de Consultas Activas -->
+    <div class="card mb-16">
+      <div class="card-header">
+        <h3>Consultas Activas del Día</h3>
+      </div>
+      <div class="card-body">
+        <div *ngIf="consultasActivas.length === 0" class="text-center text-muted">
+          No hay consultas activas en este momento.
+        </div>
+        <div *ngIf="consultasActivas.length > 0" class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Paciente</th>
+                <th>Médico</th>
+                <th>Estatus</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of consultasActivas">
+                <td>{{ c.id_consulta }}</td>
+                <td>{{ c.paciente_nombre }} {{ c.paciente_apellidos }}</td>
+                <td>{{ c.medico_nombre }} {{ c.medico_apellidos }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge-warning': c.estatus === 'espera',
+                    'badge-primary': c.estatus === 'en_atencion',
+                    'badge-success': c.estatus === 'completada'
+                  }">
+                    {{ c.estatus === 'espera' ? 'En Espera' : 
+                       c.estatus === 'en_atencion' ? 'En Atención' : 
+                       'Completada' }}
+                  </span>
+                </td>
+                <td>
+                  <button *ngIf="c.estatus === 'espera'" class="btn-sel btn-sm btn-primary" 
+                    (click)="retomarConsultaActiva(c)">
+                    <i class="bi bi-play-fill"></i> Atender
+                  </button>
+                  <button *ngIf="c.estatus === 'en_atencion'" class="btn-sel btn-sm btn-info" 
+                    (click)="retomarConsultaActiva(c)">
+                    <i class="bi bi-arrow-repeat"></i> Continuar
+                  </button>
+                  <span *ngIf="c.estatus === 'completada'" class="text-success">
+                    <i class="bi bi-check-circle-fill"></i> Finalizada
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
   </div>
   <!-- PASO 2: SELECCIÓN DE MÉDICO -->
@@ -281,54 +333,54 @@
 
         <!-- Búsqueda de insumos -->
         <div class="card mb-4">
-            <!-- Formulario para agregar insumo seleccionado -->
-            <div *ngIf="insumoAgregar.id_insumo" class="card-body mt-4">
-              <div class="alert alert-success">
-                <strong>Seleccionado:</strong> {{ insumoAgregar.nombre }}
-              </div>
+          <!-- Formulario para agregar insumo seleccionado -->
+          <div *ngIf="insumoAgregar.id_insumo" class="card-body mt-4">
+            <div class="alert alert-success">
+              <strong>Seleccionado:</strong> {{ insumoAgregar.nombre }}
+            </div>
 
-              <div class="row g-3">
-                <div class="col-md-3">
-                  <label for="cantidad" class="form-label">Cantidad *</label>
-                  <input type="number" class="form-control" id="cantidad" [(ngModel)]="insumoAgregar.cantidad"
-                    min="0.01" step="0.01">
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Unidad</label>
-                  <input type="text" class="form-control" [value]="insumoAgregar.unidad" readonly>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Costo Unitario</label>
-                  <input type="text" class="form-control" [value]="formatearMoneda(insumoAgregar.costo_unitario)"
-                    readonly>
-                </div>
-                <div class="col-md-3">
-                  <label class="form-label">Subtotal</label>
-                  <input type="text" class="form-control fw-bold"
-                    [value]="formatearMoneda(insumoAgregar.cantidad * insumoAgregar.costo_unitario)" readonly>
-                </div>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label for="cantidad" class="form-label">Cantidad *</label>
+                <input type="number" class="form-control" id="cantidad" [(ngModel)]="insumoAgregar.cantidad" min="0.01"
+                  step="0.01">
               </div>
-
-              <div class="row g-3 mt-2">
-                <div class="col-md-12">
-                  <label for="descripcion" class="form-label">Descripción/Notas (opcional)</label>
-                  <input type="text" class="form-control" id="descripcion" [(ngModel)]="insumoAgregar.descripcion"
-                    placeholder="Agregar notas adicionales">
-                </div>
+              <div class="col-md-3">
+                <label class="form-label">Unidad</label>
+                <input type="text" class="form-control" [value]="insumoAgregar.unidad" readonly>
               </div>
-
-              <div class="mt-3 d-flex gap-2">
-                <button class="btn btn-success" (click)="agregarInsumo()"
-                  [disabled]="cargando || insumoAgregar.cantidad <= 0">
-                  <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
-                  <i class="bi bi-plus-circle"></i> Agregar a Consulta
-                </button>
-                <button class="btn btn-secondary"
-                  (click)="insumoAgregar = { id_insumo: null, nombre: '', tipo: 'medicamento', cantidad: 1, unidad: '', costo_unitario: 0, descripcion: '' }">
-                  <i class="bi bi-x-circle"></i> Cancelar
-                </button>
+              <div class="col-md-3">
+                <label class="form-label">Costo Unitario</label>
+                <input type="text" class="form-control" [value]="formatearMoneda(insumoAgregar.costo_unitario)"
+                  readonly>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Subtotal</label>
+                <input type="text" class="form-control fw-bold"
+                  [value]="formatearMoneda(insumoAgregar.cantidad * insumoAgregar.costo_unitario)" readonly>
               </div>
             </div>
+
+            <div class="row g-3 mt-2">
+              <div class="col-md-12">
+                <label for="descripcion" class="form-label">Descripción/Notas (opcional)</label>
+                <input type="text" class="form-control" id="descripcion" [(ngModel)]="insumoAgregar.descripcion"
+                  placeholder="Agregar notas adicionales">
+              </div>
+            </div>
+
+            <div class="mt-3 d-flex gap-2">
+              <button class="btn btn-success" (click)="agregarInsumo()"
+                [disabled]="cargando || insumoAgregar.cantidad <= 0">
+                <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+                <i class="bi bi-plus-circle"></i> Agregar a Consulta
+              </button>
+              <button class="btn btn-secondary"
+                (click)="insumoAgregar = { id_insumo: null, nombre: '', tipo: 'medicamento', cantidad: 1, unidad: '', costo_unitario: 0, descripcion: '' }">
+                <i class="bi bi-x-circle"></i> Cancelar
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="card mb-4">

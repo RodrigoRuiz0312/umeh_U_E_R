@@ -4,6 +4,19 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+interface Consulta {
+  id_consulta: number;
+  fecha: string;
+  estatus: string;
+  motivo?: string;
+  total: number;
+  activo: boolean;
+  paciente_nombre?: string;
+  paciente_apellidos?: string;
+  medico_nombre?: string;
+  medico_apellidos?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -28,13 +41,14 @@ export class ConsultaService {
   }
 
   // Crear consulta
+  /*
   crearConsulta(id_paciente: number, id_medico: number, motivo: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/consultas/crearConsulta`, {
       id_paciente,
       id_medico,
       motivo
     });
-  }
+  }*/
 
   // Obtener datos para hoja de consulta
   obtenerHojaConsulta(id_consulta: number): Observable<any> {
@@ -42,11 +56,12 @@ export class ConsultaService {
   }
 
   // Actualizar estatus de consulta
+  /*
   actualizarEstatus(id_consulta: number, estatus: string): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/consultas/actConsulta/${id_consulta}/estatus`, {
       estatus
     });
-  }
+  }*/
 
   // Obtener insumos de una consulta
   obtenerInsumosConsulta(id_consulta: number): Observable<any[]> {
@@ -75,11 +90,11 @@ export class ConsultaService {
   }
 
   // Finalizar consulta
-  finalizarConsulta(id_consulta: number, observaciones: string): Observable<any> {
+  /*finalizarConsulta(id_consulta: number, observaciones: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/consultas/finalizarConsulta/${id_consulta}/finalizar`, {
       observaciones
     });
-  }
+  }*/
 
   // Buscar medicamentos
   buscarMedicamentos(busqueda: string): Observable<any[]> {
@@ -90,13 +105,13 @@ export class ConsultaService {
   // Buscar materiales
   buscarMateriales(busqueda: string): Observable<any[]> {
     const params = new HttpParams().set('busqueda', busqueda);
-    return this.http.get<any[]>(`${this.apiUrl}/materiales/buscar`, { params });
+    return this.http.get<any[]>(`${this.apiUrl}/consultas/materiales/buscar`, { params });
   }
 
   // Buscar procedimientos
   buscarProcedimientos(busqueda: string): Observable<any[]> {
     const params = new HttpParams().set('busqueda', busqueda);
-    return this.http.get<any[]>(`${this.apiUrl}/procedimientos/buscar`, { params });
+    return this.http.get<any[]>(`${this.apiUrl}/consultas/procedimientos/buscar`, { params });
   }
 
   // Costos adicionales
@@ -117,5 +132,23 @@ export class ConsultaService {
   // Costo de consulta
   actualizarCostoConsulta(id_consulta: number, data: any) {
     return this.http.patch(`${this.apiUrl}/consultas/actCosto/${id_consulta}`, data);
+  }
+
+  obtenerConsultasActivas() {
+    return this.http.get<Consulta[]>(`${this.apiUrl}/consultas/activas`);
+  }
+
+  crearConsulta(id_paciente: number, id_medico: number, motivo: string) {
+    return this.http.post(`${this.apiUrl}/consultas/crearConsulta`, {
+      id_paciente, id_medico, motivo
+    });
+  }
+
+  actualizarEstatus(id_consulta: number, nuevoEstatus: string) {
+    return this.http.patch(`${this.apiUrl}/consultas/actConsulta/${id_consulta}/estatus`, { nuevoEstatus });
+  }
+
+  finalizarConsulta(id_consulta: number, observaciones?: string) {
+    return this.http.put(`${this.apiUrl}/consultas/${id_consulta}/finalizar`, { observaciones });
   }
 }
