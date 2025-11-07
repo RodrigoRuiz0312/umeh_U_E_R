@@ -80,6 +80,44 @@
         </div>
       </div>
     </div>
+    <!--Añadi este apartdo de html vale-->
+     <div class="card mb-16">
+    <div class="card-header">
+      <h3>Citas Agendadas para Hoy</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="citasDelDia.length === 0" class="text-center text-muted">
+        No hay citas agendadas para hoy.
+      </div>
+      <div *ngIf="citasDelDia.length > 0" class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Paciente</th>
+              <th>Médico</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let cita of citasDelDia">
+              <td>{{ cita.hora.substring(0, 5) }} hrs</td>
+              <td>{{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</td>
+              <td>{{ cita.nombre_medico }}</td>
+              <td>{{ cita.estado }}</td>
+              <td>
+                <button class="btn-sel btn-sm btn-success" (click)="seleccionarCitaParaConsulta(cita)">
+                  Iniciar Consulta
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   </div>
   <!-- PASO 2: SELECCIÓN DE MÉDICO -->
   <!-- ============================================ -->
