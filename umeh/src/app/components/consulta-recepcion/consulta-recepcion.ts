@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ApiService } from '../../services/api';
 
 interface Paciente {
   id_paciente: number;
@@ -71,6 +72,8 @@ interface Extra {
   styleUrls: ['./consulta-recepcion.css']
 })
 export class ConsultaRecepcion implements OnInit {
+
+  citasDelDia: any[] = [];
 
   // Control de flujo
   paso: 'busqueda' | 'seleccion-medico' | 'captura-insumos' | 'nota-remision' = 'busqueda';
@@ -162,11 +165,59 @@ export class ConsultaRecepcion implements OnInit {
   }
 
 
-  constructor(private consultaService: ConsultaService, private router: Router) { }
+  constructor(private consultaService: ConsultaService, private api:ApiService, private router: Router) { }
 
   ngOnInit(): void {
     this.cargarMedicos();
+    this.cargarCitasDelDia();
   }
+
+
+  private getTodayLocalYYYYMMDD(): string {
+    const today = new Date(); 
+    const year = today.getFullYear();
+   
+    const month = (today.getMonth() + 1).toString().padStart(2, '0'); 
+    const day = today.getDate().toString().padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  }
+
+
+  //Añadi esta nueva funcion
+  cargarCitasDelDia(): void {
+    const hoy = this.getTodayLocalYYYYMMDD(); 
+    
+    console.log(`Cargando citas para la fecha local: ${hoy}`); 
+
+    this.api.getAgendaCompletaDelDia(hoy).subscribe({
+      next: (data) => {
+        this.citasDelDia = data;
+      },
+      error: (err) => {
+        console.error('Error cargando la agenda del día:', err);
+        this.mensajeError = 'No se pudo cargar la agenda del día.';
+      }
+    });
+  }
+
+  seleccionarCitaParaConsulta(cita: any): void {
+   
+    this.cargando = true;
+    this.consultaService.buscarPaciente(cita.nombre_paciente, cita.apellidos_paciente).subscribe({
+      next: (pacientes) => {
+        if (pacientes.length > 0) {
+          this.seleccionarPaciente(pacientes[0]);
+        }
+        this.cargando = false;
+      },
+      error: (err) => {
+        this.mensajeError = 'Error al seleccionar el paciente de la cita.';
+        this.cargando = false;
+      }
+    });
+  }
+
 
   // ============================================
   // PASO 1: BÚSQUEDA DE PACIENTE

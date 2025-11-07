@@ -153,6 +153,40 @@ router.get("/consultorios-disponibles", async (req, res) => {
     }
   });
 
+  
+
+router.get("/hoy", async (req, res) => {
+  try {
+    const { fecha } = req.query;
+    if (!fecha) {
+      return res.status(400).json({ error: "Se requiere un parámetro de fecha" });
+    }
+
+    
+    const query = `
+      SELECT 
+        c.*,  -- Trae todas las columnas de la cita
+        p.nombre AS nombre_paciente, p.apellidos AS apellidos_paciente,
+        m.nombre AS nombre_medico, m.especialidad
+      FROM citas c
+      JOIN paciente p ON c.id_paciente = p.id_paciente
+      JOIN medico m ON c.id_medico = m.id_medico
+      WHERE 
+        c.fecha = $1 
+        AND c.estado NOT IN ('Finalizada', 'Cancelada') -- Solo las citas activas
+      ORDER BY 
+        c.hora; -- Ordenadas por hora
+    `;
+    
+    const result = await pool.query(query, [fecha]);
+    res.json(result.rows); 
+
+  } catch (err) {
+    console.error("Error al obtener la agenda del día:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
   router.patch("/:id/estado", async (req, res) => {
     try{
       const { id } = req.params;

@@ -73,6 +73,10 @@ export class ApiService {
     return this.http.post(`${this.base}/citas`, data);
   }
 
+  getAgendaCompletaDelDia(fecha: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/citas/hoy`, { params: { fecha } });
+  }
+
   actualizarEstadoCita(id: number, estado:string): Observable<any>{
     return this.http.patch(`${this.base}/citas/${id}/estado`, { estado });
   }
