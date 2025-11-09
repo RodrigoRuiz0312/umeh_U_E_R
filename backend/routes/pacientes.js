@@ -79,14 +79,33 @@ router.put('/:id', async (req, res) => {
 
 // Eliminar paciente
 router.delete('/:id', async (req, res) => {
+  const client = await pool.connect();
   try {
-    const { id } = req.params;
-    const result = await pool.query('DELETE FROM paciente WHERE id_paciente=$1', [id]);
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Paciente no encontrado' });
-    res.json({ message: 'Paciente eliminado con éxito' });
+    await client.query('BEGIN');
+
+    // First delete related records
+    await client.query('DELETE FROM consultas WHERE id_paciente = $1', [req.params.id]);
+    await client.query('DELETE FROM citas WHERE id_paciente = $1', [req.params.id]);
+
+    // Then delete the patient
+    const result = await client.query('DELETE FROM paciente WHERE id_paciente = $1 RETURNING *', [req.params.id]);
+
+    if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Paciente y registros relacionados eliminados con éxito' });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Error al eliminar paciente:', err);
-    res.status(500).json({ error: 'Error interno al eliminar el paciente' });
+    res.status(500).json({
+      error: 'Error interno al eliminar el paciente',
+      details: err.message
+    });
+  } finally {
+    client.release();
   }
 });
 
