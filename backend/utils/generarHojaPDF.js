@@ -2,11 +2,11 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 
 function generarHojaPDF(datos, res) {
-  const doc = new PDFDocument({ 
+  const doc = new PDFDocument({
     margin: 50,
     size: 'A4'
   });
-  
+
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `inline; filename="Hoja_Consulta_${datos.id_consulta}.pdf"`);
 
@@ -28,7 +28,7 @@ function generarHojaPDF(datos, res) {
     .fontSize(10)
     .font('Helvetica')
     .fillColor('#666')
-    .text('UNIDAD MÉDICA DE LA HUASTRECA', 0, 80, { align: 'center' });
+    .text('UNIDAD MÉDICA DE LA HUASTECA', 0, 80, { align: 'center' });
 
   // Línea divisora del encabezado
   doc
@@ -44,18 +44,17 @@ function generarHojaPDF(datos, res) {
     .fontSize(9)
     .font('Helvetica-Bold')
     .fillColor('#2c3e50');
-  
-  // Fecha y consulta
+
+  // Fecha
   doc.text(`FECHA: ${new Date(datos.fecha).toLocaleDateString('es-MX')}`, lineStart, infoY);
-  doc.text(`NO. CONSULTA: ${datos.id_consulta}`, lineStart, infoY + 15);
-  
-  // Hora y expediente  
+
+  // Hora y consulta
   const fecha = new Date(datos.fecha);
   doc.text(`HORA: ${fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`, lineEnd - 150, infoY);
-  doc.text(`EXPEDIENTE: ${datos.expediente || 'N/A'}`, lineEnd - 150, infoY + 15);
+  doc.text(`NO. CONSULTA: ${datos.id_consulta}`, lineEnd - 150, infoY + 15);
 
   // === SECCIÓN: DATOS DEL PACIENTE ===
-  const sectionY = 160;
+  const sectionY = 150;
   doc
     .fontSize(12)
     .font('Helvetica-Bold')
@@ -83,10 +82,22 @@ function generarHojaPDF(datos, res) {
   doc
     .font('Helvetica')
     .fillColor('#000')
-    .text(`${datos.paciente_nombre} ${datos.paciente_apellidos}`, lineStart + 85, currentY);
-  
+    .text(`${datos.paciente_nombre} ${datos.paciente_apellidos}`, lineStart + 90, currentY);
+
   currentY += 18;
-  
+
+  const fechaNacimiento = new Date(datos.fecha_nacimiento);
+  const dia = String(fechaNacimiento.getDate()).padStart(2, '0');
+  const mes = String(fechaNacimiento.getMonth() + 1).padStart(2, '0');
+  const anio = fechaNacimiento.getFullYear();
+  const fechaFormateada = `${dia}/${mes}/${anio}`;
+
+  doc
+    .font('Helvetica')
+    .fillColor('#000')
+    .text(fechaFormateada, lineStart + 105, currentY);
+
+
   doc
     .font('Helvetica-Bold')
     .fillColor('#34495e')
@@ -94,10 +105,10 @@ function generarHojaPDF(datos, res) {
   doc
     .font('Helvetica')
     .fillColor('#000')
-    .text(new Date(datos.fecha_nacimiento).toLocaleDateString('es-MX'), lineStart + 85, currentY);
-  
+    .text(fechaFormateada, lineStart + 105, currentY);
+
   currentY += 18;
-  
+
   doc
     .font('Helvetica-Bold')
     .fillColor('#34495e')
@@ -105,10 +116,10 @@ function generarHojaPDF(datos, res) {
   doc
     .font('Helvetica')
     .fillColor('#000')
-    .text(datos.sexo, lineStart + 85, currentY);
-  
+    .text(datos.sexo, lineStart + 30, currentY);
+
   currentY += 18;
-  
+
   doc
     .font('Helvetica-Bold')
     .fillColor('#34495e')
@@ -116,11 +127,11 @@ function generarHojaPDF(datos, res) {
   doc
     .font('Helvetica')
     .fillColor('#000')
-    .text(calcularEdad(datos.fecha_nacimiento), lineStart + 85, currentY);
+    .text(calcularEdad(datos.fecha_nacimiento), lineStart + 32, currentY);
 
   // Segunda columna
   currentY = dataStartY;
-  
+
   doc
     .font('Helvetica-Bold')
     .fillColor('#34495e')
@@ -128,10 +139,10 @@ function generarHojaPDF(datos, res) {
   doc
     .font('Helvetica')
     .fillColor('#000')
-    .text(datos.paciente_telefono || 'N/A', lineStart + 250 + 50, currentY);
-  
+    .text(datos.paciente_telefono || 'N/A', lineStart + 250 + 48, currentY);
+
   currentY += 18;
-  
+
   doc
     .font('Helvetica-Bold')
     .fillColor('#34495e')
@@ -146,18 +157,12 @@ function generarHojaPDF(datos, res) {
     });
 
   // === SECCIÓN: SOMATOMETRÍA ===
-  const somatoY = dataStartY + 80;
+  const somatoY = dataStartY + 75;
   doc
     .fontSize(12)
     .font('Helvetica-Bold')
     .fillColor('#2c3e50')
     .text('SOMATOMETRÍA', 0, somatoY, { align: 'center' });
-
-  doc
-    .fontSize(8)
-    .font('Helvetica-Oblique')
-    .fillColor('#7f8c8d')
-    .text('(LLENADO POR ENFERMERÍA)', 0, somatoY + 12, { align: 'center' });
 
   // Línea de sección
   doc
@@ -169,7 +174,7 @@ function generarHojaPDF(datos, res) {
 
   // Campos de somatometría
   const somatoDataY = somatoY + 40;
-  
+
   // Fila 1
   doc
     .fontSize(9)
@@ -180,14 +185,14 @@ function generarHojaPDF(datos, res) {
     .font('Helvetica')
     .fillColor('#000')
     .text('_______ mmHg', lineStart + 25, somatoDataY);
-  
+
   doc
     .font('Helvetica-Bold')
     .text('F/C:', lineStart + 120, somatoDataY);
   doc
     .font('Helvetica')
     .text('_______ lpm', lineStart + 145, somatoDataY);
-  
+
   doc
     .font('Helvetica-Bold')
     .text('F/R:', lineStart + 240, somatoDataY);
@@ -198,42 +203,34 @@ function generarHojaPDF(datos, res) {
   // Fila 2
   doc
     .font('Helvetica-Bold')
-    .text('TEMP:', lineStart, somatoDataY + 25);
+    .text('TEMP:', lineStart + 360, somatoDataY);
   doc
     .font('Helvetica')
-    .text('_______ °C', lineStart + 30, somatoDataY + 25);
-  
-  doc
-    .font('Helvetica-Bold')
-    .text('SatO₂:', lineStart + 120, somatoDataY + 25);
-  doc
-    .font('Helvetica')
-    .text('_______ %', lineStart + 155, somatoDataY + 25);
-  
-  doc
-    .font('Helvetica-Bold')
-    .text('Peso:', lineStart + 240, somatoDataY + 25);
-  doc
-    .font('Helvetica')
-    .text('_______ kg', lineStart + 270, somatoDataY + 25);
+    .text('_______ °C', lineStart + 395, somatoDataY);
 
-  // Fila 3
   doc
     .font('Helvetica-Bold')
-    .text('Talla:', lineStart, somatoDataY + 50);
+    .text('SATO2:', lineStart, somatoDataY + 25);
   doc
     .font('Helvetica')
-    .text('_______ cm', lineStart + 30, somatoDataY + 50);
-  
+    .text('_______ %', lineStart + 35, somatoDataY + 25);
+
   doc
     .font('Helvetica-Bold')
-    .text('IMC:', lineStart + 120, somatoDataY + 50);
+    .text('Peso:', lineStart + 120, somatoDataY + 25);
   doc
     .font('Helvetica')
-    .text('_______', lineStart + 150, somatoDataY + 50);
+    .text('_______ kg', lineStart + 150, somatoDataY + 25);
+
+  doc
+    .font('Helvetica-Bold')
+    .text('Talla:', lineStart + 240, somatoDataY + 25);
+  doc
+    .font('Helvetica')
+    .text('_______ cm', lineStart + 265, somatoDataY + 25);
 
   // === SECCIÓN: ANOTACIONES MÉDICAS ===
-  const notesY = somatoDataY + 80;
+  const notesY = somatoDataY + 60;
   doc
     .fontSize(12)
     .font('Helvetica-Bold')
@@ -248,14 +245,6 @@ function generarHojaPDF(datos, res) {
     .lineWidth(0.8)
     .stroke();
 
-  // Instrucciones
-  doc
-    .fontSize(9)
-    .font('Helvetica-Oblique')
-    .fillColor('#7f8c8d')
-    .text('Registre aquí los signos y síntomas, diagnóstico, tratamiento y observaciones:', 
-          lineStart, notesY + 25);
-
   // Área de anotaciones con líneas
   const notesStartY = notesY + 40;
   const lineHeight = 20;
@@ -263,7 +252,7 @@ function generarHojaPDF(datos, res) {
 
   for (let i = 0; i < numLines; i++) {
     const lineY = notesStartY + (i * lineHeight);
-    
+
     // Dibujar línea
     doc
       .moveTo(lineStart, lineY)
@@ -271,7 +260,7 @@ function generarHojaPDF(datos, res) {
       .strokeColor('#ecf0f1')
       .lineWidth(0.5)
       .stroke();
-    
+
     // Números de línea
     doc
       .fontSize(7)
@@ -281,7 +270,7 @@ function generarHojaPDF(datos, res) {
 
   // === SECCIÓN: MÉDICO ASIGNADO ===
   const doctorY = notesStartY + (numLines * lineHeight) + 20;
-  
+
   // Verificar si hay espacio suficiente, si no, crear nueva página
   if (doctorY > doc.page.height - 100) {
     doc.addPage();
@@ -304,7 +293,7 @@ function generarHojaPDF(datos, res) {
 
   // Información del médico
   doc.y += 30;
-  
+
   doc
     .fontSize(11)
     .font('Helvetica-Bold')
@@ -315,15 +304,15 @@ function generarHojaPDF(datos, res) {
     .fontSize(9)
     .font('Helvetica')
     .fillColor('#000')
-    .text(`Especialidad: ${datos.medico_especialidad || 'No especificada'}`, 0, doc.y + 18, { align: 'center' });
+    .text(`Especialidad: ${datos.medico_especialidad || 'No especificada'}`, 0, doc.y + 10, { align: 'center' });
 
   doc
     .fontSize(9)
-    .text(`Cédula Profesional: ${datos.medico_cedula || 'No especificada'}`, 0, doc.y + 32, { align: 'center' });
+    .text(`Cédula Profesional: ${datos.medico_cedula || 'No especificada'}`, 0, doc.y + 13, { align: 'center' });
 
   // === PIE DE PÁGINA ===
   const footerY = doc.page.height - 50;
-  
+
   doc
     .moveTo(lineStart, footerY - 20)
     .lineTo(lineEnd, footerY - 20)
@@ -337,13 +326,6 @@ function generarHojaPDF(datos, res) {
     .fillColor('#7f8c8d')
     .text('Unidad Médica de la Huasteca (UMEH)', 0, footerY - 15, { align: 'center' });
 
-  doc
-    .fontSize(7)
-    .font('Helvetica-Oblique')
-    .fillColor('#95a5a6')
-    .text(`Documento generado automáticamente el ${new Date().toLocaleDateString('es-MX')}`, 
-          0, footerY - 5, { align: 'center' });
-
   doc.end();
 }
 
@@ -354,11 +336,11 @@ function calcularEdad(fechaNacimiento) {
     const hoy = new Date();
     let edad = hoy.getFullYear() - nacimiento.getFullYear();
     const mes = hoy.getMonth() - nacimiento.getMonth();
-    
+
     if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
       edad--;
     }
-    
+
     return `${edad} años`;
   } catch (error) {
     return 'N/A';
@@ -373,7 +355,7 @@ function formatDireccion(datos) {
       datos.colonia,
       datos.ciudad
     ].filter(part => part && part.trim() !== '');
-    
+
     return parts.length > 0 ? parts.join(', ') : 'No especificado';
   } catch (error) {
     return 'No especificado';

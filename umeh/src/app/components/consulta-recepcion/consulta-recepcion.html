@@ -117,7 +117,7 @@
     <!-- Tabla de Consultas Activas -->
     <div class="card mb-16">
       <div class="card-header">
-        <h3>Consultas Activas del Día</h3>
+        <h3>Consultas activas</h3>
       </div>
       <div class="card-body">
         <div *ngIf="consultasActivas.length === 0" class="text-center text-muted">
@@ -192,8 +192,8 @@
               <p><strong>Fecha Nacimiento:</strong> {{ pacienteSeleccionado?.fecha_nacimiento | date: 'dd/MM/yyyy' }}
               </p>
               <p><strong>Domicilio:</strong>
-                {{ pacienteSeleccionado?.calle }} {{ pacienteSeleccionado?.num }},
-                {{ pacienteSeleccionado?.colonia }}, {{ pacienteSeleccionado?.ciudad }}
+                {{ pacienteSeleccionado?.calle }} #{{ pacienteSeleccionado?.num }},
+                Col. {{ pacienteSeleccionado?.colonia }}, {{ pacienteSeleccionado?.ciudad }}
               </p>
             </div>
           </div>
