@@ -9,18 +9,17 @@
         style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
     </div>
     <div style="flex:0 0 200px;">
-      <select id="filter" name="filter" #orderSel
-        (change)="onSortOptionChange(orderSel.value)"
+      <select id="filter" name="filter" #orderSel (change)="onSortOptionChange(orderSel.value)"
         style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--input-border);">
         <option value="" disabled selected>Ordenar por...</option>
         <option value="nombre:asc">Nombre (A→Z)</option>
         <option value="nombre:desc">Nombre (Z→A)</option>
         <option value="apellidos:asc">Apellidos (A→Z)</option>
         <option value="apellidos:desc">Apellidos (Z→A)</option>
-        <option value="telefono:asc">Teléfono (0→9)</option>
-        <option value="telefono:desc">Teléfono (9→0)</option>
-        <option value="correo:asc">Correo (A→Z)</option>
-        <option value="correo:desc">Correo (Z→A)</option>
+        <option value="telefonos:asc">Teléfono(s) (0→9)</option>
+        <option value="telefonos:desc">Teléfono(s) (9→0)</option>
+        <option value="correos:asc">Correo(s) electrónico(s) (A→Z)</option>
+        <option value="correos:desc">Correo(s) electrónico(s) (Z→A)</option>
         <option value="sexo:asc">Sexo (A→Z)</option>
         <option value="sexo:desc">Sexo (Z→A)</option>
       </select>
@@ -33,8 +32,8 @@
         <tr>
           <th>Nombre</th>
           <th>Apellidos</th>
-          <th>Teléfono</th>
-          <th>Correo electrónico</th>
+          <th>Teléfono(s)</th>
+          <th>Correo(s) electrónico(s)</th>
           <th>Sexo</th>
           <th>Domicilio</th>
           <th class="actions">Acciones</th>
@@ -44,17 +43,27 @@
         <tr *ngFor="let paciente of pacientesView">
           <td>{{ paciente.nombre }}</td>
           <td>{{ paciente.apellidos }}</td>
-          <td>{{ paciente.telefono }}</td>
-          <td>{{ paciente.correo }}</td>
+          <td>
+            <div *ngFor="let tel of paciente.telefonos">
+              {{ tel }}
+            </div>
+            <i *ngIf="!paciente.telefonos || paciente.telefonos.length === 0">N/A</i>
+          </td>
+          <td>
+            <div *ngFor="let correo of paciente.correos">
+              {{ correo }}
+            </div>
+            <i *ngIf="!paciente.correos || paciente.correos.length === 0">N/A</i>
+          </td>
           <td>{{ paciente.sexo }}</td>
-          <td>{{ paciente.calle }} #{{ paciente.num }}, Col. {{ paciente.colonia }}, C.P. {{ paciente.codigo_postal }}</td>
+          <td>{{ paciente.calle }} #{{ paciente.num }}, Col. {{ paciente.colonia }}, {{ paciente.municipio }}</td>
           <td class="actions">
             <button class="action-btnP" (click)="openEditModal(paciente)">
               <img src="assets/img/edit.png" class="btn-iconP">
             </button>
             <button class="action-btnP" (click)="borrarPaciente(paciente.id_paciente)">
               <img src="assets/img/delet.png" class="btn-iconP">
-            </button>  
+            </button>
           </td>
         </tr>
       </tbody>
@@ -62,9 +71,6 @@
   </div>
 </div>
 
-<app-edit-paciente-modal
-  *ngIf="isModalVisible"
-  (close)="closeModal()"
-  [paciente]="pacienteSeleccionado"
+<app-edit-paciente-modal *ngIf="isModalVisible" (close)="closeModal()" [paciente]="pacienteSeleccionado"
   (pacienteActualizado)="recargarPacientes()">
 </app-edit-paciente-modal>

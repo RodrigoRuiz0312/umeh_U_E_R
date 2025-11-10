@@ -17,7 +17,7 @@ export class ListaPacientes implements OnInit {
   pacientes: any[] = [];
   pacientesView: any[] = [];
   searchTerm: string = '';
-  sortColumn: 'nombre' | 'apellidos' | 'telefono' | 'correo' | 'sexo' = 'nombre';
+  sortColumn: 'nombre' | 'apellidos' | 'telefonos' | 'correos' | 'sexo' = 'nombre';
   sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor(private api: ApiService) { }
@@ -71,7 +71,10 @@ export class ListaPacientes implements OnInit {
     this.applyFilters();
   }
 
+  // EN: lista-pacientes.ts
+
   private applyFilters() {
+    // --- El filtrado por término de búsqueda (search) no necesita cambios ---
     const term = (this.searchTerm || '').trim().toLowerCase();
     if (!term) {
       this.pacientesView = [...this.pacientes];
@@ -79,15 +82,34 @@ export class ListaPacientes implements OnInit {
       this.pacientesView = this.pacientes.filter(p =>
         String(p?.nombre || '').toLowerCase().includes(term) ||
         String(p?.apellidos || '').toLowerCase().includes(term)
+        // Nota: El filtro de búsqueda no buscará en teléfonos o correos,
+        // ¡pero eso es un tema para otra mejora!
       );
     }
 
-    // Ordenar según columna y dirección seleccionadas
+    // --- El Ordenamiento (sort) SÍ necesita cambios ---
     const dir = this.sortDirection === 'asc' ? 1 : -1;
     this.pacientesView.sort((a, b) => {
       const col = this.sortColumn;
-      const av = String(a?.[col] ?? '').toLowerCase();
-      const bv = String(b?.[col] ?? '').toLowerCase();
+
+      let av: string, bv: string;
+
+      // --- ¡NUEVA LÓGICA DE ORDENAMIENTO! ---
+      if (col === 'telefonos') {
+        // Ordenar por el *primer* teléfono del array
+        av = String(a?.telefonos?.[0] ?? '').toLowerCase();
+        bv = String(b?.telefonos?.[0] ?? '').toLowerCase();
+      } else if (col === 'correos') {
+        // Ordenar por el *primer* correo del array
+        av = String(a?.correos?.[0] ?? '').toLowerCase();
+        bv = String(b?.correos?.[0] ?? '').toLowerCase();
+      } else {
+        // Lógica original para nombre, apellidos, sexo
+        av = String(a?.[col] ?? '').toLowerCase();
+        bv = String(b?.[col] ?? '').toLowerCase();
+      }
+      // --- FIN DE LA NUEVA LÓGICA ---
+
       if (av < bv) return -1 * dir;
       if (av > bv) return 1 * dir;
       return 0;
@@ -97,7 +119,12 @@ export class ListaPacientes implements OnInit {
   onSortOptionChange(value: string) {
     // value formato: "col:dir" e.g. "nombre:asc"
     const [col, dir] = (value || '').split(':');
-    if (col && (['nombre','apellidos','telefono','correo','sexo'] as const).includes(col as any)) {
+
+    // ANTES
+    // if (col && (['nombre','apellidos','telefono','correo','sexo'] as const).includes(col as any)) {
+
+    // DESPUÉS
+    if (col && (['nombre', 'apellidos', 'telefonos', 'correos', 'sexo'] as const).includes(col as any)) {
       this.sortColumn = col as any;
     }
     if (dir === 'asc' || dir === 'desc') {

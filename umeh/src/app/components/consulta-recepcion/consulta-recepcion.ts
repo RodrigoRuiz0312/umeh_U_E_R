@@ -12,13 +12,14 @@ interface Paciente {
   nombre: string;
   apellidos: string;
   fecha_nacimiento: string;
-  telefono: string;
-  correo: string;
+  telefonos: string[];
+  correos: string[];
   sexo: string;
   calle: string;
   num: string;
   colonia: string;
-  ciudad: string;
+  municipio: string;
+  estado: string;
   codigo_postal: string;
 }
 
@@ -89,7 +90,7 @@ export class ConsultaRecepcion implements OnInit {
   pacientesEncontrados: Paciente[] = [];
 
   // Paciente seleccionado
-  pacienteSeleccionado: Paciente | null = null;
+  pacienteSeleccionado: any;
 
   // Médicos
   medicos: Medico[] = [];
@@ -728,13 +729,14 @@ export class ConsultaRecepcion implements OnInit {
           nombre: datos.paciente_nombre,
           apellidos: datos.paciente_apellidos,
           fecha_nacimiento: datos.fecha_nacimiento,
-          telefono: datos.paciente_telefono,
-          correo: '',
+          telefonos: datos.paciente_telefono,
+          correos: datos.paciente_correo,
           sexo: datos.sexo,
           calle: datos.calle,
           num: datos.num,
           colonia: datos.colonia,
-          ciudad: datos.ciudad,
+          municipio: datos.ciudad,
+          estado: datos.estado,
           codigo_postal: datos.codigo_postal
         };
         

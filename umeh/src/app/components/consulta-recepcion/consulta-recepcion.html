@@ -53,7 +53,7 @@
                 <tr>
                   <th>Nombre</th>
                   <th>Apellidos</th>
-                  <th>Teléfono</th>
+                  <th>Teléfono(s)</th>
                   <th>Fecha Nacimiento</th>
                   <th>Acción</th>
                 </tr>
@@ -62,7 +62,7 @@
                 <tr *ngFor="let paciente of pacientesEncontrados">
                   <td>{{ paciente.nombre }}</td>
                   <td>{{ paciente.apellidos }}</td>
-                  <td>{{ paciente.telefono || 'N/A' }}</td>
+                  <td>{{ paciente.telefonos || 'N/A' }}</td>
                   <td>{{ paciente.fecha_nacimiento | date: 'dd/MM/yyyy' }}</td>
                   <td>
                     <button class="btn-sel btn-sm btn-success" (click)="seleccionarPaciente(paciente)">
@@ -145,17 +145,17 @@
                     'badge-primary': c.estatus === 'en_atencion',
                     'badge-success': c.estatus === 'completada'
                   }">
-                    {{ c.estatus === 'espera' ? 'En Espera' : 
-                       c.estatus === 'en_atencion' ? 'En Atención' : 
-                       'Completada' }}
+                    {{ c.estatus === 'espera' ? 'En Espera' :
+                    c.estatus === 'en_atencion' ? 'En Atención' :
+                    'Completada' }}
                   </span>
                 </td>
                 <td>
-                  <button *ngIf="c.estatus === 'espera'" class="btn-sel btn-sm btn-primary" 
+                  <button *ngIf="c.estatus === 'espera'" class="btn-sel btn-sm btn-primary"
                     (click)="retomarConsultaActiva(c)">
                     <i class="bi bi-play-fill"></i> Atender
                   </button>
-                  <button *ngIf="c.estatus === 'en_atencion'" class="btn-sel btn-sm btn-info" 
+                  <button *ngIf="c.estatus === 'en_atencion'" class="btn-sel btn-sm btn-info"
                     (click)="retomarConsultaActiva(c)">
                     <i class="bi bi-arrow-repeat"></i> Continuar
                   </button>
@@ -184,8 +184,18 @@
           <div class="form-row two-cols">
             <div>
               <p><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos }}</p>
-              <p><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefono || 'N/A' }}</p>
-              <p><strong>Correo:</strong> {{ pacienteSeleccionado?.correo || 'N/A' }}</p>
+              <p><strong>Teléfono(s):</strong>
+                <span *ngIf="pacienteSeleccionado?.telefonos?.length > 0; else noTelefonos">
+                  {{ pacienteSeleccionado.telefonos.join(', ') }}
+                </span>
+                <ng-template #noTelefonos> No registrados</ng-template>
+              </p>
+              <p><strong>Correo(s):</strong>
+                <span *ngIf="pacienteSeleccionado?.correos?.length > 0; else noCorreos">
+                  {{ pacienteSeleccionado.correos.join(', ') }}
+                </span>
+                <ng-template #noCorreos> No registrados</ng-template>
+              </p>
             </div>
             <div>
               <p><strong>Sexo:</strong> {{ pacienteSeleccionado?.sexo || 'N/A' }}</p>
@@ -193,7 +203,7 @@
               </p>
               <p><strong>Domicilio:</strong>
                 {{ pacienteSeleccionado?.calle }} #{{ pacienteSeleccionado?.num }},
-                Col. {{ pacienteSeleccionado?.colonia }}, {{ pacienteSeleccionado?.ciudad }}
+                Col. {{ pacienteSeleccionado?.colonia }}, {{ pacienteSeleccionado?.estado }}
               </p>
             </div>
           </div>
@@ -499,7 +509,7 @@
         <h5>PACIENTE</h5>
         <p class="mb-1"><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos
           }}</p>
-        <p class="mb-1"><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefono }}</p>
+        <p class="mb-1"><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefonos }}</p>
       </div>
 
       <!-- Datos del médico -->

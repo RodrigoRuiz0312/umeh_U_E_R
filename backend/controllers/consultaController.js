@@ -8,23 +8,71 @@ class ConsultaController {
     try {
       const { nombre, apellidos } = req.query;
 
+      // Primero obtenemos los datos básicos del paciente
       let query = `
-        SELECT id_paciente, nombre, apellidos, fecha_nacimiento, telefono, 
-               correo, sexo, calle, num, colonia, ciudad, codigo_postal
-        FROM paciente 
-        WHERE LOWER(nombre) LIKE LOWER($1)
+        SELECT p.id_paciente, p.nombre, p.apellidos, p.fecha_nacimiento, 
+               p.sexo, p.calle, p.num, p.colonia, p.municipio, p.estado, p.codigo_postal
+        FROM paciente p
+        WHERE LOWER(p.nombre) LIKE LOWER($1)
       `;
       const params = [`%${nombre}%`];
 
       if (apellidos) {
-        query += ` AND LOWER(apellidos) LIKE LOWER($2)`;
+        query += ` AND LOWER(p.apellidos) LIKE LOWER($${params.length + 1})`;
         params.push(`%${apellidos}%`);
       }
 
-      query += ` ORDER BY nombre, apellidos LIMIT 10`;
+      query += ` ORDER BY p.nombre, p.apellidos LIMIT 10`;
 
-      const result = await pool.query(query, params);
-      res.json(result.rows);
+      // Ejecutamos la consulta principal
+      const pacientesResult = await pool.query(query, params);
+      
+      if (pacientesResult.rows.length === 0) {
+        return res.json([]);
+      }
+
+      // Obtenemos los IDs de los pacientes encontrados
+      const pacientesIds = pacientesResult.rows.map(p => p.id_paciente);
+      
+      // Consulta para obtener los teléfonos de los pacientes
+      const telefonosQuery = `
+        SELECT pt.id_paciente, array_agg(pt.telefono) as telefonos
+        FROM paciente_telefonos pt
+        WHERE pt.id_paciente = ANY($1::bigint[])
+        GROUP BY pt.id_paciente
+      `;
+      
+      // Consulta para obtener los correos de los pacientes
+      const correosQuery = `
+        SELECT pc.id_paciente, array_agg(pc.correo) as correos
+        FROM paciente_correos pc
+        WHERE pc.id_paciente = ANY($1::bigint[])
+        GROUP BY pc.id_paciente
+      `;
+      
+      // Ejecutamos ambas consultas en paralelo
+      const [telefonosResult, correosResult] = await Promise.all([
+        pool.query(telefonosQuery, [pacientesIds]),
+        pool.query(correosQuery, [pacientesIds])
+      ]);
+      
+      // Creamos mapas para acceder rápidamente a los teléfonos y correos por ID de paciente
+      const telefonosMap = new Map(
+        telefonosResult.rows.map(row => [row.id_paciente, row.telefonos])
+      );
+      
+      const correosMap = new Map(
+        correosResult.rows.map(row => [row.id_paciente, row.correos])
+      );
+      
+      // Combinamos los resultados
+      const pacientes = pacientesResult.rows.map(paciente => ({
+        ...paciente,
+        telefonos: telefonosMap.get(paciente.id_paciente) || [],
+        correos: correosMap.get(paciente.id_paciente) || []
+      }));
+      
+      res.json(pacientes);
     } catch (error) {
       console.error('Error buscando paciente:', error);
       res.status(500).json({ error: 'Error al buscar paciente' });
@@ -99,12 +147,12 @@ class ConsultaController {
           p.nombre as paciente_nombre,
           p.apellidos as paciente_apellidos,
           p.fecha_nacimiento,
-          p.telefono as paciente_telefono,
+          (SELECT telefono FROM paciente_telefonos WHERE id_paciente = p.id_paciente LIMIT 1) as paciente_telefono,
           p.sexo,
           p.calle,
           p.num,
           p.colonia,
-          p.ciudad,
+          p.municipio,
           p.codigo_postal,
           m.nombre as medico_nombre,
           m.apellidos as medico_apellidos,
@@ -450,7 +498,7 @@ class ConsultaController {
         c.observaciones,
         p.nombre as paciente_nombre,
         p.apellidos as paciente_apellidos,
-        p.telefono as paciente_telefono,
+        (SELECT telefono FROM paciente_telefonos WHERE id_paciente = p.id_paciente LIMIT 1) as paciente_telefono,
         m.nombre as medico_nombre,
         m.apellidos as medico_apellidos,
         json_agg(
@@ -479,7 +527,7 @@ class ConsultaController {
         LEFT JOIN procedimientos proc ON ci.tipo = 'procedimiento' AND ci.id_insumo = proc.id_procedimiento
         WHERE c.id_consulta = $1
         GROUP BY c.id_consulta, c.fecha, c.total, c.observaciones,
-        p.nombre, p.apellidos, p.telefono, m.nombre, m.apellidos`,
+        p.id_paciente, p.nombre, p.apellidos, m.nombre, m.apellidos`,
         [id_consulta]
       );
 
@@ -590,44 +638,58 @@ class ConsultaController {
 
 async function obtenerHojaConsultaInterna(id_consulta) {
   const { pool } = require('../db');
-  const result = await pool.query(
-    `SELECT 
+  
+  // Primero obtenemos los datos básicos de la consulta
+  const consultaQuery = `
+    SELECT 
       c.id_consulta, c.fecha, c.motivo, c.estatus,
-        p.nombre as paciente_nombre, p.apellidos as paciente_apellidos,
-        p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
-        p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
-        m.nombre as medico_nombre, m.apellidos as medico_apellidos,
-        m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
-     FROM consultas c
-     INNER JOIN paciente p ON c.id_paciente = p.id_paciente
-     LEFT JOIN medico m ON c.id_medico = m.id_medico
-     WHERE c.id_consulta = $1`,
-    [id_consulta]
-  );
+      p.id_paciente, p.nombre as paciente_nombre, p.apellidos as paciente_apellidos,
+      p.fecha_nacimiento, p.sexo, p.calle, p.num, p.colonia, p.municipio, p.codigo_postal,
+      m.nombre as medico_nombre, m.apellidos as medico_apellidos,
+      m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
+    FROM consultas c
+    INNER JOIN paciente p ON c.id_paciente = p.id_paciente
+    LEFT JOIN medico m ON c.id_medico = m.id_medico
+    WHERE c.id_consulta = $1`;
 
-  return result.rows[0] || null;
+  const consultaResult = await pool.query(consultaQuery, [id_consulta]);
+  
+  if (!consultaResult.rows[0]) {
+    return null;
+  }
+  
+  const consultaData = consultaResult.rows[0];
+  
+  // Obtenemos los teléfonos del paciente
+  const telefonosQuery = `
+    SELECT telefono 
+    FROM paciente_telefonos 
+    WHERE id_paciente = $1`;
+  
+  const telefonosResult = await pool.query(telefonosQuery, [consultaData.id_paciente]);
+  const telefonos = telefonosResult.rows.map(t => t.telefono);
+  
+  // Obtenemos los correos del paciente
+  const correosQuery = `
+    SELECT correo 
+    FROM paciente_correos 
+    WHERE id_paciente = $1`;
+  
+  const correosResult = await pool.query(correosQuery, [consultaData.id_paciente]);
+  const correos = correosResult.rows.map(c => c.correo);
+  
+  // Combinamos los resultados
+  return {
+    ...consultaData,
+    paciente_telefono: telefonos[0] || null, // Tomamos el primer teléfono como principal
+    telefonos,
+    correos
+  };
 }
 
 const controller = new ConsultaController();
 
 // Función auxiliar fuera de la clase
-controller.obtenerHojaConsultaInterna = async function (id_consulta) {
-  const result = await pool.query(
-    `SELECT 
-      c.id_consulta, c.fecha, c.motivo, c.estatus,
-        p.nombre as paciente_nombre, p.apellidos as paciente_apellidos,
-        p.fecha_nacimiento, p.telefono as paciente_telefono, p.sexo,
-        p.calle, p.num, p.colonia, p.ciudad, p.codigo_postal,
-        m.nombre as medico_nombre, m.apellidos as medico_apellidos,
-        m.especialidad as medico_especialidad, m.cedula_prof as medico_cedula
-     FROM consultas c
-     INNER JOIN paciente p ON c.id_paciente = p.id_paciente
-     LEFT JOIN medico m ON c.id_medico = m.id_medico
-     WHERE c.id_consulta = $1`,
-    [id_consulta]
-  );
-
-  return result.rows[0] || null;
-};
+controller.obtenerHojaConsultaInterna = obtenerHojaConsultaInterna;
 
 module.exports = controller;
