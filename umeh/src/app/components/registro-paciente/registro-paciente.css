@@ -402,3 +402,91 @@
   color: red;
   margin-bottom: 0.5rem;
 }
+
+/* --- Estilos para campos dinámicos (Teléfono/Correo) --- */
+
+/* 1. Contenedor para la etiqueta y el botón "Agregar" */
+.dynamic-label-row {
+  display: flex;
+  justify-content: space-between; /* Empuja la etiqueta a la izq. y el botón a la der. */
+  align-items: center;
+  margin-bottom: 8px; /* Espacio antes del primer input */
+}
+
+/* Quitar el margen inferior de la etiqueta cuando está en esta fila */
+.dynamic-label-row label {
+  margin-bottom: 0;
+}
+
+/* 2. Botón "Agregar" (+ Agregar teléfono / + Agregar correo) */
+.btn-add {
+  background-color: #198754; /* Verde para "agregar" (color agradable) */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0; /* Evita que el botón se encoja si la etiqueta es larga */
+}
+
+.btn-add:hover {
+  background-color: #157347; /* Verde más oscuro al pasar el mouse */
+}
+
+/* 3. Fila para cada input dinámico (el input y su botón "remove") */
+.dynamic-input-row {
+  position: relative; /* Clave para posicionar el botón "remove" dentro */
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Espacio entre múltiples inputs */
+}
+
+.dynamic-input-row:last-child {
+  margin-bottom: 0; /* Sin margen en el último */
+}
+
+/* 4. Input dentro de la fila dinámica */
+/* Hacemos que ocupe todo el ancho y dejamos espacio a la derecha para el botón */
+.dynamic-input-row input {
+  width: 100%;
+  padding-right: 40px !important; /* Espacio para el botón "X" */
+}
+
+/* 5. Botón "Eliminar" (X) */
+.btn-remove {
+  position: absolute; /* Posiciona el botón DENTRO del input-row */
+  right: 1px; /* A la derecha */
+  top: 50%; /* Centrado verticalmente */
+  transform: translateY(-50%);
+  
+  /* Estilo del botón */
+  background: transparent;
+  border: none;
+  color: var(--danger-color, #dc3545); /* Rojo para "eliminar" */
+  cursor: pointer;
+  
+  /* Estilo del texto (X) */
+  font-size: 1.75rem; /* Hace la 'X' más grande y fácil de clickear */
+  font-weight: bold;
+  line-height: 1;
+  
+  /* Dimensiones y padding */
+  height: 90%; /* Ocupa casi toda la altura del input */
+  width: 38px; /* Ancho fijo para el área de click */
+  padding: 0;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-remove:hover {
+  color: #a71d2a; /* Rojo más oscuro */
+  background-color: #f8f9fa; /* Un fondo muy sutil al pasar el mouse */
+  border-radius: 0 6px 6px 0; /* Redondea las esquinas derechas */
+}
