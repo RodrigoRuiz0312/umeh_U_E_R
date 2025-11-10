@@ -1,57 +1,95 @@
 <div class="modal-overlay" (click)="onClose()">
-
   <div class="modal-content" (click)="$event.stopPropagation()">
 
+
     <div class="modal-header">
-      <h2>Editar informacion del paciente</h2>
+      <h2>Editar información del paciente</h2>
       <button class="close-btnP" (click)="onClose()">&times;</button>
     </div>
 
     <div class="modal-body">
-      <form class="paciente-form">
+      <form class="paciente-form" [formGroup]="editForm" (ngSubmit)="guardarCambios()">
+
         <div class="form-groupP">
           <label for="nombreP">Nombre:</label>
-          <input type="text" id="nombreP" name="nombre" [(ngModel)]="paciente.nombre">
+          <input type="text" id="nombreP" formControlName="nombre">
         </div>
         <div class="form-groupP">
           <label for="apellidosP">Apellidos:</label>
-          <input type="text" id="apellidosP" name="apellidos" [(ngModel)]="paciente.apellidos">
-        </div>
-        <div class="form-groupP">
-          <label for="telefonoP">Telefono:</label>
-          <input type="tel" id="telefonoP" name="telefono" [(ngModel)]="paciente.telefono">
+          <input type="text" id="apellidosP" formControlName="apellidos">
         </div>
 
         <div class="form-groupP">
-          <label for="correoP">Correo:</label>
-          <input type="text" id="correoP" name="correo" [(ngModel)]="paciente.correo">
+          <label for="sexoP">Sexo:</label>
+          <select id="sexoP" formControlName="sexo">
+            <option value="">Seleccione...</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+          </select>
+        </div>
+
+        <div class="form-groupP">
+          <label for="fechaNacP">Fecha de Nacimiento:</label>
+          <input type="date" id="fechaNacP" formControlName="fecha_nacimiento">
+        </div>
+
+        <div class="form-groupP" formArrayName="telefonos">
+          <div class="dynamic-label-row">
+            <label>Teléfono(s):</label>
+            <button type="button" class="btn-add" (click)="addTelefono()">+ Agregar</button>
+          </div>
+          <div *ngFor="let tel of telefonos.controls; let i = index" class="dynamic-input-row">
+            <input type="text" [formControlName]="i" placeholder="Ej. 8112345678">
+            <button type="button" class="btn-remove" (click)="removeTelefono(i)">&times;</button>
+          </div>
+          <i *ngIf="telefonos.length === 0" class="data-display-na">N/A</i>
+        </div>
+
+        <div class="form-groupP" formArrayName="correos">
+          <div class="dynamic-label-row">
+            <label>Correo(s):</label>
+            <button type="button" class="btn-add" (click)="addCorreo()">+ Agregar</button>
+          </div>
+          <div *ngFor="let correo of correos.controls; let i = index" class="dynamic-input-row">
+            <input type="email" [formControlName]="i" placeholder="Ej. paciente@correo.com">
+            <button type="button" class="btn-remove" (click)="removeCorreo(i)">&times;</button>
+          </div>
+          <i *ngIf="correos.length === 0" class="data-display-na">N/A</i>
         </div>
 
         <div class="form-groupP">
           <label for="codigoP">Codigo postal:</label>
-          <input type="text" id="codigoP" name="codigo_postal" [(ngModel)]="paciente.codigo_postal">
+          <input type="text" id="codigoP" formControlName="codigo_postal">
         </div>
+
 
         <div class="form-groupP">
           <label for="calleP">Calle:</label>
-          <input type="text" id="calleP" name="calle" [(ngModel)]="paciente.calle">
+          <input type="text" id="calleP" formControlName="calle">
+        </div>
+        <div class="form-groupP">
+          <label for="numP">Número:</label> <input type="text" id="numP" formControlName="num">
         </div>
 
         <div class="form-groupP">
           <label for="coloniaP">Colonia:</label>
-          <input type="text" id="coloniaP" name="colonia" [(ngModel)]="paciente.colonia">
+          <input type="text" id="coloniaP" formControlName="colonia">
         </div>
 
         <div class="form-groupP">
-          <label for="ciudadP">Ciudad:</label>
-          <input type="text" id="ciudadP" name="ciudad" [(ngModel)]="paciente.municipio">
+          <label for="municipioP">Municipio:</label>
+          <input type="text" id="municipioP" formControlName="municipio">
+        </div>
+
+        <div class="form-groupP">
+          <label for="estadoP">Estado:</label> <input type="text" id="estadoP" formControlName="estado">
         </div>
 
       </form>
     </div>
 
     <div class="modal-footer">
-      <button class="save-btnP" (click)="guardarCambios()">Guardar Cambios</button>
+      <button type="submit" class="save-btnP" (click)="guardarCambios()">Guardar Cambios</button>
     </div>
 
   </div>

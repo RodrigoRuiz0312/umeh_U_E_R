@@ -40,36 +40,47 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let paciente of pacientesView">
-          <td>{{ paciente.nombre }}</td>
-          <td>{{ paciente.apellidos }}</td>
-          <td>
-            <div *ngFor="let tel of paciente.telefonos">
-              {{ tel }}
-            </div>
-            <i *ngIf="!paciente.telefonos || paciente.telefonos.length === 0">N/A</i>
-          </td>
-          <td>
-            <div *ngFor="let correo of paciente.correos">
-              {{ correo }}
-            </div>
-            <i *ngIf="!paciente.correos || paciente.correos.length === 0">N/A</i>
-          </td>
-          <td>{{ paciente.sexo }}</td>
-          <td>{{ paciente.calle }} #{{ paciente.num }}, Col. {{ paciente.colonia }}, {{ paciente.municipio }}</td>
-          <td class="actions">
-            <button class="action-btnP" (click)="openEditModal(paciente)">
-              <img src="assets/img/edit.png" class="btn-iconP">
-            </button>
-            <button class="action-btnP" (click)="borrarPaciente(paciente.id_paciente)">
-              <img src="assets/img/delet.png" class="btn-iconP">
-            </button>
+        <tr *ngIf="!pacientes || pacientes.length === 0">
+          <td colspan="7" style="text-align:center; opacity:0.8; padding:12px;">
+            No hay pacientes registrados.
           </td>
         </tr>
+
+        <ng-container *ngIf="pacientes && pacientes.length > 0">
+          <tr *ngFor="let paciente of pacientesView">
+            <td>{{ paciente.nombre }}</td>
+            <td>{{ paciente.apellidos }}</td>
+            <td>
+              <div *ngFor="let tel of paciente.telefonos">
+                {{ tel }}
+              </div>
+              <i *ngIf="!paciente.telefonos || paciente.telefonos.length === 0">N/A</i>
+            </td>
+            <td>
+              <div *ngFor="let correo of paciente.correos">
+                {{ correo }}
+              </div>
+              <i *ngIf="!paciente.correos || paciente.correos.length === 0">N/A</i>
+            </td>
+            <td>{{ paciente.sexo || 'N/A' }}</td>
+            <td>{{ paciente.calle }} #{{ paciente.num }}, Col. {{ paciente.colonia }}, {{ paciente.municipio }}</td>
+            <td class="actions">
+              <button class="action-btnP" (click)="openEditModal(paciente)">
+                <img src="assets/img/edit.png" class="btn-iconP">
+              </button>
+              <button class="action-btnP" (click)="confirmarEliminacion(paciente.id_paciente, paciente.nombre)">
+                <img src="assets/img/delet.png" class="btn-iconP">
+              </button>
+            </td>
+          </tr>
+        </ng-container>
       </tbody>
     </table>
   </div>
 </div>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
 
 <app-edit-paciente-modal *ngIf="isModalVisible" (close)="closeModal()" [paciente]="pacienteSeleccionado"
   (pacienteActualizado)="recargarPacientes()">

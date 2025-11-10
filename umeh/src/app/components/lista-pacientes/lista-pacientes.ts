@@ -3,13 +3,17 @@ import { EditPacienteModal } from '../../utils/edit-paciente-modal/edit-paciente
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-lista-pacientes',
   standalone: true,
-  imports: [CommonModule, EditPacienteModal, FormsModule],
+  imports: [CommonModule, EditPacienteModal, FormsModule, ToastModule, ConfirmDialogModule],
   templateUrl: './lista-pacientes.html',
-  styleUrl: './lista-pacientes.css'
+  styleUrl: './lista-pacientes.css',
+  providers: [MessageService, ConfirmationService]
 })
 export class ListaPacientes implements OnInit {
   isModalVisible = false;
@@ -20,7 +24,7 @@ export class ListaPacientes implements OnInit {
   sortColumn: 'nombre' | 'apellidos' | 'telefonos' | 'correos' | 'sexo' = 'nombre';
   sortDirection: 'asc' | 'desc' = 'asc';
 
-  constructor(private api: ApiService) { }
+  constructor(private api: ApiService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
 
   ngOnInit() {
     this.cargarPacientes();
@@ -49,19 +53,38 @@ export class ListaPacientes implements OnInit {
     this.cargarPacientes();
   }
 
-  borrarPaciente(id: number) {
-    if (!confirm('¿Estás seguro de que quieres eliminar a este paciente?')) {
-      return;
-    }
+  confirmarEliminacion(id: number, nombrePaciente: string) {
+    this.confirmationService.confirm({
+      message: `¿Estás seguro de que deseas eliminar a <strong>${nombrePaciente}</strong>? Esta acción no se puede deshacer.`,
+      header: 'Confirmar eliminación',
+      icon: 'pi pi-exclamation-triangle', // Ícono de advertencia
+      acceptLabel: 'Sí, eliminar',
+      rejectLabel: 'No, cancelar',
+      accept: () => {
+        // Si el usuario hace clic en "Sí", llamamos a la función que realmente borra
+        this.eliminarPaciente(id);
+      }
+      // No necesitamos un 'reject', por defecto simplemente cierra el modal.
+    });
+  }
+
+  private eliminarPaciente(id: number) {
     this.api.deletePaciente(id).subscribe({
       next: (response) => {
-        alert('Paciente eliminado con éxito');
-        console.log(response);
-        this.pacientes = this.pacientes.filter(p => p.id_paciente !== id);
-        this.applyFilters();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminado',
+          detail: 'El paciente ha sido eliminado correctamente.'
+        });
+        // Aquí deberías recargar tu lista de pacientes
+        // this.cargarPacientes(); 
       },
       error: (error) => {
-        alert('Error al eliminar el paciente');
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo eliminar al paciente.'
+        });
         console.error(error);
       }
     });
