@@ -3,35 +3,94 @@ const router = express.Router();
 const { pool } = require('../db');
 
 // Registrar paciente
+// EN: pacientes.js
+
+// Registrar paciente (¡ACTUALIZADO!)
 router.post('/', async (req, res) => {
+  const client = await pool.connect();
   try {
     const {
-      nombre, apellidos, telefono, correo, sexo, fecha_nacimiento,
-      codigo_postal, calle, num, colonia, ciudad
+      nombre, apellidos, sexo, fecha_nacimiento,
+      codigo_postal, calle, num, colonia, municipio, estado,
+      // Esperamos arrays para teléfonos y correos
+      telefonos, // Ejemplo: ['111222333', '444555666']
+      correos    // Ejemplo: ['paciente@mail.com']
     } = req.body;
 
-    const query = `
-      INSERT INTO paciente (
-        nombre, apellidos, telefono, correo, sexo, fecha_nacimiento, 
-        codigo_postal, calle, num, colonia, ciudad
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`;
+    // Iniciar transacción
+    await client.query('BEGIN');
 
-    const values = [nombre, apellidos, telefono, correo, sexo, fecha_nacimiento, codigo_postal, calle, num, colonia, ciudad];
-    const result = await pool.query(query, values);
-    res.status(201).json({ message: 'Paciente registrado con éxito', paciente: result.rows[0] });
+    // 1. Insertar el paciente (sin teléfono ni correo)
+    const pacienteQuery = `
+      INSERT INTO paciente (
+        nombre, apellidos, sexo, fecha_nacimiento, 
+        codigo_postal, calle, num, colonia, municipio, estado
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id_paciente`;
+
+    const pacienteValues = [nombre, apellidos, sexo, fecha_nacimiento, codigo_postal, calle, num, colonia, municipio, estado];
+    const resultPaciente = await client.query(pacienteQuery, pacienteValues);
+    const nuevoPacienteId = resultPaciente.rows[0].id_paciente;
+
+    // 2. Insertar los teléfonos (si existen)
+    if (telefonos && telefonos.length > 0) {
+      const telefonoQuery = 'INSERT INTO paciente_telefonos (id_paciente, telefono) VALUES ($1, $2)';
+      for (const tel of telefonos) {
+        if (tel) { // Evitar guardar strings vacíos
+          await client.query(telefonoQuery, [nuevoPacienteId, tel]);
+        }
+      }
+    }
+
+    // 3. Insertar los correos (si existen)
+    if (correos && correos.length > 0) {
+      const correoQuery = 'INSERT INTO paciente_correos (id_paciente, correo) VALUES ($1, $2)';
+      for (const correo of correos) {
+        if (correo) { // Evitar guardar strings vacíos
+          await client.query(correoQuery, [nuevoPacienteId, correo]);
+        }
+      }
+    }
+
+    // Confirmar transacción
+    await client.query('COMMIT');
+
+    res.status(201).json({ message: 'Paciente registrado con éxito', paciente: { id_paciente: nuevoPacienteId, ...req.body } });
+
   } catch (err) {
+    // Revertir transacción en caso de error
+    await client.query('ROLLBACK');
     console.error('Error al registrar paciente:', err);
     res.status(500).json({ error: 'Error interno al registrar el paciente' });
+  } finally {
+    // Liberar la conexión
+    client.release();
   }
 });
 
-// Obtener TODOS los pacientes (sin paginación)
+// Obtener TODOS los pacientes (¡ACTUALIZADO!)
 router.get('/', async (req, res) => {
   try {
-    const pacientesResult = await pool.query(
-      'SELECT * FROM paciente ORDER BY id_paciente ASC'
-    );
+    // Usamos array_agg para agrupar teléfonos y correos en listas
+    const query = `
+      SELECT 
+        p.*, 
+        COALESCE(json_agg(DISTINCT t.telefono) FILTER (WHERE t.telefono IS NOT NULL), '[]') AS telefonos,
+        COALESCE(json_agg(DISTINCT c.correo) FILTER (WHERE c.correo IS NOT NULL), '[]') AS correos
+      FROM 
+        paciente p
+      LEFT JOIN 
+        paciente_telefonos t ON p.id_paciente = t.id_paciente
+      LEFT JOIN 
+        paciente_correos c ON p.id_paciente = c.id_paciente
+      GROUP BY 
+        p.id_paciente
+      ORDER BY 
+        p.id_paciente ASC;
+    `;
+
+    const pacientesResult = await pool.query(query);
     res.json({ pacientes: pacientesResult.rows });
+
   } catch (err) {
     console.error('Error al obtener pacientes:', err);
     res.status(500).json({ error: 'Error interno al obtener los pacientes' });
@@ -57,23 +116,87 @@ router.get('/buscar', async (req, res) => {
   }
 });
 
-// Actualizar paciente
+// Actualizar paciente (¡ACTUALIZADO!)
 router.put('/:id', async (req, res) => {
+  const client = await pool.connect();
+  const { id } = req.params; // id_paciente a actualizar
+
   try {
-    const { id } = req.params;
-    const { nombre, apellidos, telefono, correo, codigo_postal, calle, colonia, ciudad } = req.body;
+    const {
+      nombre, apellidos, sexo, fecha_nacimiento, // Datos de la tabla 'paciente'
+      codigo_postal, calle, num, colonia, municipio, estado, // Domicilio
 
-    const query = `
+      telefonos, // Array de teléfonos: ['111', '222']
+      correos    // Array de correos: ['a@b.com']
+    } = req.body;
+
+    // Iniciar transacción
+    await client.query('BEGIN');
+
+    // 1. Actualizar la tabla principal 'paciente'
+    // (Asegúrate de incluir todos los campos que permites editar)
+    const pacienteQuery = `
       UPDATE paciente 
-      SET nombre=$1, apellidos=$2, telefono=$3, correo=$4, codigo_postal=$5, calle=$6, colonia=$7, ciudad=$8
-      WHERE id_paciente=$9 RETURNING *`;
+      SET 
+        nombre = $1, 
+        apellidos = $2, 
+        sexo = $3, 
+        fecha_nacimiento = $4, 
+        codigo_postal = $5, 
+        calle = $6, 
+        num = $7, 
+        colonia = $8, 
+        municipio = $9, 
+        estado = $10
+      WHERE id_paciente = $11`;
 
-    const result = await pool.query(query, [nombre, apellidos, telefono, correo, codigo_postal, calle, colonia, ciudad, id]);
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Paciente no encontrado' });
-    res.json({ message: 'Paciente actualizado con éxito', paciente: result.rows[0] });
+    const pacienteValues = [
+      nombre, apellidos, sexo, fecha_nacimiento,
+      codigo_postal, calle, num, colonia, municipio, estado,
+      id
+    ];
+
+    await client.query(pacienteQuery, pacienteValues);
+
+    // 2. Sincronizar teléfonos: Borrar todos los anteriores del paciente
+    await client.query('DELETE FROM paciente_telefonos WHERE id_paciente = $1', [id]);
+
+    // 2b. Insertar los nuevos teléfonos
+    if (telefonos && telefonos.length > 0) {
+      const telefonoQuery = 'INSERT INTO paciente_telefonos (id_paciente, telefono) VALUES ($1, $2)';
+      for (const tel of telefonos) {
+        if (tel) { // Evitar guardar strings vacíos
+          await client.query(telefonoQuery, [id, tel]);
+        }
+      }
+    }
+
+    // 3. Sincronizar correos: Borrar todos los anteriores
+    await client.query('DELETE FROM paciente_correos WHERE id_paciente = $1', [id]);
+
+    // 3b. Insertar los nuevos correos
+    if (correos && correos.length > 0) {
+      const correoQuery = 'INSERT INTO paciente_correos (id_paciente, correo) VALUES ($1, $2)';
+      for (const correo of correos) {
+        if (correo) { // Evitar guardar strings vacíos
+          await client.query(correoQuery, [id, correo]);
+        }
+      }
+    }
+
+    // Confirmar transacción
+    await client.query('COMMIT');
+
+    res.json({ message: 'Paciente actualizado con éxito', paciente: { id_paciente: id, ...req.body } });
+
   } catch (err) {
+    // Revertir en caso de error
+    await client.query('ROLLBACK');
     console.error('Error al actualizar paciente:', err);
     res.status(500).json({ error: 'Error interno al actualizar el paciente' });
+  } finally {
+    // Liberar la conexión
+    client.release();
   }
 });
 

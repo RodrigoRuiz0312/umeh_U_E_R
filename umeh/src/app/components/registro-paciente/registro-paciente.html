@@ -2,87 +2,161 @@
   <div class="card-header">
     <h2>Registro de paciente</h2>
   </div>
-  
+
+  <p-toast></p-toast>
+
+  <!-- Modal de campos obligatorios -->
+  <div class="modal-overlay" *ngIf="mostrarModalCamposObligatorios" (click)="cerrarModalCamposObligatorios()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>⚠️ Campos obligatorios faltantes</h3>
+        <button class="modal-close" (click)="cerrarModalCamposObligatorios()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-info">
+          Los campos marcados con <span class="asterisco-demo">*</span> son obligatorios.
+        </p>
+        <p class="modal-subtitle">Por favor completa los siguientes campos:</p>
+        <ul class="campos-faltantes">
+          <li *ngFor="let campo of camposFaltantes">
+            <span class="campo-icono">📋</span>
+            {{ campo }}
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-entendido" (click)="cerrarModalCamposObligatorios()">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="card-body">
-    <form class="paciente-form" (ngSubmit)="onSubmit()">
+    <form class="paciente-form" [formGroup]="pacienteForm" (ngSubmit)="onSubmit()">
+
+      <h2 class="section-title">Datos personales</h2>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="nombreP">Nombre</label>
-          <input type="text" id="nombreP" name="nombre" [(ngModel)]="pacienteData.nombre" required>
+          <label for="nombreP">Nombre <span class="requerido">*</span></label>
+          <input type="text" id="nombreP" name="nombre" formControlName="nombre" required>
         </div>
         <div class="form-group">
-          <label for="apellidosP">Apellidos</label>
-          <input type="text" id="apellidosP" name="apellidos" [(ngModel)]="pacienteData.apellidos" required>
+          <label for="apellidosP">Apellidos <span class="requerido">*</span></label>
+          <input type="text" id="apellidosP" name="apellidos" formControlName="apellidos" required>
+        </div>
+      </div>
+
+      <div class="form-group" formArrayName="telefonos">
+        <label>Teléfono(s) <span class="requerido">*</span></label>
+
+        <div *ngFor="let tel of telefonos.controls; let i = index" class="dynamic-input-row">
+
+          <input type="text" [formControlName]="i" placeholder="Ej. 8112345678" required>
+
+          <button type="button" class="btn-remove" (click)="removeTelefono(i)" *ngIf="telefonos.length > 1">
+            &times;
+          </button>
+        </div>
+
+        <button type="button" class="btn-add" (click)="addTelefono()">
+          + Agregar teléfono
+        </button>
+
+        <div *ngIf="telefonos.invalid && (telefonos.dirty || telefonos.touched)" class="error-message">
+          Se requiere al menos un teléfono válido (10-15 dígitos).
+        </div>
+      </div>
+
+      <div class="form-group" formArrayName="correos">
+        <label>Correo(s) electrónico(s)</label>
+
+        <div *ngFor="let correo of correos.controls; let i = index" class="dynamic-input-row">
+
+          <input type="email" [formControlName]="i" placeholder="Ej. paciente@correo.com">
+
+          <button type="button" class="btn-remove" (click)="removeCorreo(i)">
+            &times;
+          </button>
+        </div>
+
+        <button type="button" class="btn-add" (click)="addCorreo()">
+          + Agregar correo
+        </button>
+
+        <div *ngIf="correos.invalid && (correos.dirty || correos.touched)" class="error-message">
+          Una o más direcciones de correo no son válidas.
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="telefonoP">Teléfono</label>
-          <input type="text" id="telefonoP" name="telefono" [(ngModel)]="pacienteData.telefono">
-        </div>
-        <div class="form-group">
-          <label for="correoP">Correo electrónico</label>
-          <input type="text" id="correoP" name="correo" [(ngModel)]="pacienteData.correo">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Sexo:</label>
+          <label>Sexo: <span class="requerido">*</span></label>
           <div class="radio-group">
             <div class="radio-option">
-              <input type="radio" id="sexo-masculino" name="sexo" value="Masculino" [(ngModel)]="pacienteData.sexo">
+              <input type="radio" id="sexo-masculino" name="sexo" value="Masculino" formControlName="sexo" required>
               <label for="sexo-masculino">Masculino</label>
             </div>
             <div class="radio-option">
-              <input type="radio" id="sexo-femenino" name="sexo" value="Femenino" [(ngModel)]="pacienteData.sexo">
+              <input type="radio" id="sexo-femenino" name="sexo" value="Femenino" formControlName="sexo" required>
               <label for="sexo-femenino">Femenino</label>
             </div>
           </div>
         </div>
         <div class="form-group">
-          <label for="date_birthdayP">Fecha de nacimiento</label>
-          <input type="date" id="date_birthdayP" name="fecha_nacimiento" [(ngModel)]="pacienteData.fecha_nacimiento">
+          <label for="date_birthdayP">Fecha de nacimiento <span class="requerido">*</span></label>
+          <input type="date" id="date_birthdayP" name="fecha_nacimiento" formControlName="fecha_nacimiento" required>
         </div>
       </div>
 
       <h2 class="section-title">Domicilio</h2>
 
       <div class="form-group">
-        <label for="codigoP">Código postal</label>
-        <input type="text" id="codigoP" name="codigo_postal" [(ngModel)]="pacienteData.codigo_postal">
+        <label for="codigoP">Código postal <span class="requerido">*</span></label>
+        <input id="codigo_postal" formControlName="codigo_postal" maxlength="5" placeholder="Ej. 67173"
+          (blur)="buscarCP()">
+      </div>
+
+      <div *ngIf="cargando" class="loader">Buscando...</div>
+      <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+
+      <div class="form-group">
+        <label>Estado <span class="requerido">*</span></label>
+        <input formControlName="estado" readonly>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="calleP">Calle</label>
-          <input type="text" id="calleP" name="calle" [(ngModel)]="pacienteData.calle">
+          <label>Colonia <span class="requerido">*</span></label>
+          <select formControlName="colonia">
+            <option value="">Seleccione una colonia</option>
+            <option *ngFor="let c of colonias" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Municipio <span class="requerido">*</span></label>
+          <input formControlName="municipio" readonly>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="calleP">Calle <span class="requerido">*</span></label>
+          <input type="text" id="calleP" name="calle" formControlName="calle" required>
         </div>
         <div class="form-group">
           <label for="numP">Número</label>
-          <input type="text" id="numP" name="num" [(ngModel)]="pacienteData.num">
+          <input type="text" id="numP" name="num" formControlName="num" required>
         </div>
       </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label for="coloniaP">Colonia</label>
-          <input type="text" id="coloniaP" name="colonia" [(ngModel)]="pacienteData.colonia">
-        </div>
-        <div class="form-group">
-          <label for="ciudadP">Ciudad</label>
-          <input type="text" id="ciudadP" name="ciudad" [(ngModel)]="pacienteData.ciudad">
-        </div>
-      </div>
-      
+
       <div class="form-actions">
         <button type="button" class="btn btn-secondary-1" (click)="verRegistros()">Ver Registros</button>
         <button type="button" class="btn btn-secondary-2" (click)="irAConsultaRecepcion()">Realizar Consulta</button>
         <button type="submit" class="btn btn-primary">Guardar Datos</button>
       </div>
-      
+
     </form>
   </div>
 </div>
