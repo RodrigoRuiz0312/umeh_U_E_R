@@ -100,7 +100,7 @@
               <tr *ngFor="let cita of citasDelDia">
                 <td>{{ cita.hora.substring(0, 5) }} hrs</td>
                 <td>{{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</td>
-                <td>{{ cita.nombre_medico }}</td>
+                <td>{{ cita.nombre_medico }} {{ cita.apellidos_medico }}</td>
                 <td>{{ cita.estado }}</td>
                 <td>
                   <button class="btn-sel btn-sm btn-success" (click)="seleccionarCitaParaConsulta(cita)">
@@ -209,29 +209,34 @@
           </div>
         </div>
 
-        <!-- Selección de médico -->
+         <!-- Selección de médico -->
         <div class="form-row two-cols">
-          <div class="form-group">
-            <label for="medico">Médico Asignado *</label>
-            <select id="medico" [(ngModel)]="medicoSeleccionado">
-              <option [ngValue]="null">Seleccione un médico</option>
-              <option *ngFor="let medico of medicos" [ngValue]="medico.id_medico">
-                {{ medico.nombre }} {{ medico.apellidos }} - {{ medico.especialidad }}
-              </option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="motivo">Motivo de Consulta</label>
-            <input type="text" id="motivo" [(ngModel)]="motivoConsulta" placeholder="Opcional">
-          </div>
+        <div class="form-group">
+          <label for="medico">Médico Asignado *</label>
+         <select id="medico" [(ngModel)]="formConsulta.id_medico">
+          <option [ngValue]="null">Seleccione un médico</option>
+          <option *ngFor="let medico of medicos" [ngValue]="medico.id_medico">
+            {{ medico.nombre }} {{ medico.apellidos }} - {{ medico.especialidad }}
+          </option>
+        </select>
         </div>
+
+        <div class="form-group">
+          <label for="motivo">Motivo de Consulta</label>
+          <input type="text" id="motivo" [(ngModel)]="formConsulta.motivo" placeholder="Opcional">
+        </div>
+      </div>
+
+
+
 
         <div class="mt-16 flex justify-between">
           <button class="btn btn-secondary" (click)="paso = 'busqueda'">
             <i class="bi bi-arrow-left"></i> Regresar
           </button>
           <div class="flex gap-16">
-            <button class="btn btn-primary" (click)="crearConsulta()" [disabled]="cargando || !medicoSeleccionado">
+            <!--<button class="btn btn-primary" (click)="crearConsulta()" [disabled]="cargando || !medicoSeleccionado">-->
+            <button class="btn btn-primary" (click)="crearConsulta()" [disabled]="cargando || !formConsulta.id_medico">
               <span *ngIf="cargando" class="spinner-border spinner-border-sm mr-8"></span>
               Crear Consulta e Imprimir Hoja
             </button>
@@ -255,7 +260,8 @@
         <!-- Información del paciente (resumida) -->
         <div class="alert alert-light">
           <strong>Paciente:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos }} |
-          <strong>Médico:</strong> {{ getMedicoNombre(medicoSeleccionado!) }}
+          <strong>Médico:</strong> {{ getMedicoNombre(formConsulta.id_medico) }}
+
         </div>
 
         <div class="row-insumos-costos">
@@ -514,7 +520,7 @@
 
       <!-- Datos del médico -->
       <div class="seccion mb-4">
-        <p class="mb-0"><strong>Atendió:</strong> Dr(a). {{ getMedicoNombre(medicoSeleccionado!) }}</p>
+        <p class="mb-0"><strong>Atendió:</strong> Dr(a). {{ getMedicoNombre(formConsulta.id_medico) }}</p>
       </div>
 
       <!-- Detalle de insumos -->

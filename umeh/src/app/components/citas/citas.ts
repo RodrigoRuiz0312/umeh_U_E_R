@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AgendarCitaModal } from '../../utils//agendar-cita-modal/agendar-cita-modal';
 import { ApiService } from '../../services/api';
 import { DetallesCitaModal } from '../../utils/detalles-cita-modal/detalles-cita-modal';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-citas',
@@ -46,7 +47,7 @@ export class Citas implements OnInit {
   isDetailsModalVisible = false;
   citaSeleccionada: any;
 
-  constructor(private api: ApiService) { }
+  constructor(private api: ApiService, private router: Router) { }
 
   ngOnInit() { }
 
@@ -119,7 +120,6 @@ export class Citas implements OnInit {
     this.isDetailsModalVisible = true;
   }
  
-
   closeDetailsModal() {
     this.isDetailsModalVisible = false;
   }

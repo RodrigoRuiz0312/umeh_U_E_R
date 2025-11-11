@@ -167,7 +167,7 @@ router.get("/hoy", async (req, res) => {
       SELECT 
         c.*,  -- Trae todas las columnas de la cita
         p.nombre AS nombre_paciente, p.apellidos AS apellidos_paciente,
-        m.nombre AS nombre_medico, m.especialidad
+        m.nombre AS nombre_medico, m.apellidos AS apellidos_medico, m.especialidad
       FROM citas c
       JOIN paciente p ON c.id_paciente = p.id_paciente
       JOIN medico m ON c.id_medico = m.id_medico

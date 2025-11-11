@@ -6,6 +6,8 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api';
+import { ActivatedRoute } from '@angular/router';
+import { Input } from '@angular/core';
 
 interface Paciente {
   id_paciente: number;
@@ -79,7 +81,10 @@ interface Extra {
 })
 export class ConsultaRecepcion implements OnInit {
 
+  
   citasDelDia: any[] = [];
+  idCita!: number;
+  @Input() cita: any;
 
   // Control de flujo
   paso: 'busqueda' | 'seleccion-medico' | 'captura-insumos' | 'nota-remision' = 'busqueda';
@@ -173,12 +178,26 @@ export class ConsultaRecepcion implements OnInit {
   }
 
 
-  constructor(private consultaService: ConsultaService, private api: ApiService, private router: Router) { }
+  constructor(private route: ActivatedRoute, private consultaService: ConsultaService, private api: ApiService, private router: Router) { }
+
+  formConsulta = {
+    id_medico: null,
+    motivo: ''
+  }; 
 
   ngOnInit(): void {
-    this.cargarMedicos();
+    this.cargarMedicos(); 
     this.cargarCitasDelDia();
     this.obtenerConsultasActivas();
+
+    this.route.queryParams.subscribe(params =>{
+      this.idCita = params['id_cita'];
+    })
+
+    if(this.cita){
+      this.formConsulta.id_medico = this.cita.id_medico;
+      this.medicoSeleccionado = this.cita.id_medico;
+    }
   }
 
 
@@ -213,6 +232,9 @@ export class ConsultaRecepcion implements OnInit {
   seleccionarCitaParaConsulta(cita: any): void {
 
     this.cargando = true;
+
+    this.idCita = cita.id_cita;
+    this.formConsulta.id_medico = cita.id_medico; 
     this.consultaService.buscarPaciente(cita.nombre_paciente, cita.apellidos_paciente).subscribe({
       next: (pacientes) => {
         if (pacientes.length > 0) {
@@ -301,7 +323,7 @@ export class ConsultaRecepcion implements OnInit {
   }
 
   crearConsulta(): void {
-    if (!this.pacienteSeleccionado || !this.medicoSeleccionado) {
+    if (!this.pacienteSeleccionado || !this.formConsulta.id_medico) {
       this.mensajeError = 'Debe seleccionar un médico';
       return;
     }
@@ -318,13 +340,13 @@ export class ConsultaRecepcion implements OnInit {
 
     console.log('Creando consulta con:', {
       id_paciente: this.pacienteSeleccionado.id_paciente,
-      id_medico: this.medicoSeleccionado,
+      id_medico: this.formConsulta.id_medico,
       motivo: this.motivoConsulta
     });
 
     this.consultaService.crearConsulta(
       this.pacienteSeleccionado.id_paciente,
-      this.medicoSeleccionado,
+      this.formConsulta.id_medico,
       this.motivoConsulta
     ).subscribe({
       next: (consulta: any) => {
@@ -646,7 +668,12 @@ export class ConsultaRecepcion implements OnInit {
 
     this.consultaService.finalizarConsulta(this.consultaActual.id_consulta, '')
       .subscribe({
-        next: (response) => {
+        next: () => {
+             if (this.idCita) {
+          this.api.actualizarEstadoCita(this.idCita, 'Finalizada')
+            .subscribe(() => this.cargarCitasDelDia());
+        }
+          
           this.cargando = false;
           this.paso = 'nota-remision';
           this.mensajeExito = 'Consulta finalizada correctamente';
@@ -689,10 +716,13 @@ export class ConsultaRecepcion implements OnInit {
   // UTILIDADES
   // ============================================
 
-  getMedicoNombre(id: number): string {
-    const medico = this.medicos.find(m => m.id_medico === id);
-    return medico ? `${medico.nombre} ${medico.apellidos}` : '';
-  }
+  getMedicoNombre(id_medico: number | null): string {
+  if (!id_medico || !this.medicos) return 'No asignado';
+
+  const medico = this.medicos.find(m => m.id_medico === id_medico);
+  return medico ? `${medico.nombre} ${medico.apellidos} - ${medico.especialidad}` : 'No encontrado';
+}
+
 
   formatearFecha(fecha: string): string {
     return new Date(fecha).toLocaleDateString('es-MX', {
