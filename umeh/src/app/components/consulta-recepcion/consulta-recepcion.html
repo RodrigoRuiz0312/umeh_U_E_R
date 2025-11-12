@@ -65,9 +65,12 @@
                   <td>{{ paciente.telefonos || 'N/A' }}</td>
                   <td>{{ paciente.fecha_nacimiento | date: 'dd/MM/yyyy' }}</td>
                   <td>
-                    <button class="btn-sel btn-sm btn-success" (click)="seleccionarPaciente(paciente)">
-                      Seleccionar
-                    </button>
+                    <button
+                    class="btn-sel btn-sm btn-success"
+                    (click)="seleccionarPaciente(paciente)"
+                    [disabled]="isPacienteEnConsultaActiva(paciente)">
+                    Seleccionar
+                  </button>
                   </td>
                 </tr>
               </tbody>
@@ -103,9 +106,12 @@
                 <td>{{ cita.nombre_medico }} {{ cita.apellidos_medico }}</td>
                 <td>{{ cita.estado }}</td>
                 <td>
-                  <button class="btn-sel btn-sm btn-success" (click)="seleccionarCitaParaConsulta(cita)">
-                    Iniciar Consulta
-                  </button>
+                  <button class="btn-sel btn-sm btn-success"
+                  (click)="seleccionarCitaParaConsulta(cita)"
+                  [disabled]="isCitaDeshabilitada(cita)">
+                  <!--{{ cita.estado === 'Agendada' ? 'Iniciar Consulta' : cita.estado }}-->
+                   Iniciar Consulta
+                </button>
                 </td>
               </tr>
             </tbody>
