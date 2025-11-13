@@ -19,7 +19,7 @@
       <div class="submenu" *ngIf="pacientesOpen">
         <div class="submenu-item" routerLink="/pacientes/registro"><i
             class="fa-regular fa-address-card"></i><span>Registrar Paciente</span></div>
-        <div class="submenu-item" routerLink="/pacientes/lista"><i class="fa-solid fa-list"></i><span>Pacientes</span>
+        <div class="submenu-item" routerLink="/pacientes/lista"><i class="fa-solid fa-list"></i><span>Pacientes registrados</span>
         </div>
       </div>
       <div class="menu-item" routerLink="/agenda"><i class="fa-regular fa-calendar-check"></i><span>Agenda</span></div>
@@ -32,10 +32,11 @@
         <div class="submenu-item" routerLink="/pacientes/doctores"><i
             class="fa-solid fa-user-doctor"></i><span>Registrar Doctor</span></div>
         <div class="submenu-item" routerLink="/pacientes/lista-doctores"><i
-            class="fa-solid fa-users"></i><span>Doctores</span></div>
+            class="fa-solid fa-users"></i><span>Doctores registrados</span></div>
       </div>
 
-      <div class="menu-item" routerLink="/pacientes/recepcion"><i class="fa-solid fa-user-doctor"></i><span>Consultas</span></div>
+      <div class="menu-item" routerLink="/pacientes/recepcion"><i
+          class="fa-solid fa-user-doctor"></i><span>Consultas</span></div>
 
       <!-- Insumos -->
       <div class="menu-item" (click)="toggleInsumos()">
@@ -53,8 +54,9 @@
         <div class="submenu-item" routerLink="/insumos/procedimientos"><i
             class="fa-solid fa-syringe"></i><span>Procedimientos</span></div>
       </div>
-      
-      <div class="menu-item" routerLink="/pacientes/estadisticas"><i class="fa-solid fa-user-doctor"></i><span>Estadisticas</span></div>
+
+      <div class="menu-item" routerLink="/pacientes/estadisticas"><i
+          class="fa-solid fa-user-doctor"></i><span>Estadisticas</span></div>
     </div>
   </div>
 

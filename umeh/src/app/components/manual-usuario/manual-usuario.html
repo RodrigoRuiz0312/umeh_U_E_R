@@ -1,0 +1,140 @@
+<!-- 
+  Hola de nuevo.
+  He actualizado la sección 3 con tu nueva información.
+  - He renombrado el "Paso 4" para incluir todos los botones.
+  - He añadido la sección "5. Manejo de Errores" que describe el modal.
+  - He re-numerado el paso de "Confirmación" al final.
+-->
+<div class="card manual-container">
+  <div class="card-header">
+    <h2 class="text-center mb-0">Manual de Usuario</h2>
+  </div>
+  <div class="card-body">
+    <p>Bienvenido al manual de usuario de la aplicación UMEH. Aquí encontrará instrucciones detalladas sobre cómo
+      utilizar las diferentes funcionalidades del sistema.</p>
+    <p>Utilice las secciones desplegables a continuación para navegar por los distintos temas del manual.</p>
+
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>1. Inicio</mat-panel-title>
+        </mat-expansion-panel-header>
+        <p>El apartado Inicio representa la pantalla principal del sistema. En ella se muestra un resumen general del
+          estado actual del inventario, ofreciendo una visión rápida de las existencias disponibles.
+          Además, cuenta con una sección de acciones rápidas, diseñada para facilitar el acceso inmediato a las
+          funciones más utilizadas, como el registro y gestión de pacientes, así como la administración de insumos.
+          Esta sección permite orientarse de manera ágil dentro del sistema y acceder con eficiencia a las
+          operaciones más comunes.</p>
+        <img src="assets/manual/home.png" alt="Pantalla de inicio" class="img-manual" />
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>2. Menú Lateral (Navegación)</mat-panel-title>
+        </mat-expansion-panel-header>
+        <p>El componente Sidebar funciona como el menú principal de navegación dentro del sistema.
+          A través de este panel, el usuario puede acceder de forma organizada y rápida a las distintas secciones que
+          conforman la plataforma. El menú lateral contiene enlaces directos hacia las siguientes áreas funcionales:</p>
+
+        <ul>
+
+          <li>Inicio: Redirige a la pantalla principal del sistema.</li>
+          <li>Pacientes: Es un submenu desplegable para las operaciones de "Registrar paciente" y "Pacientes
+            registrados".</li>
+          <li>Registrar Paciente: Acceso directo al formulario de alta de nuevos pacientes.</li>
+          <li>Pacientes registrados: Acceso directo a la lista de pacientes registrados.</li>
+          <li>Agenda: Permite programar citas médicas para una fecha específica.</li>
+          <li>Doctores: Es un submenu desplegable para las operaciones de "Registrar doctor" y "Doctores registrados".
+          </li>
+          <li>Registrar Doctor: Acceso directo al formulario de alta de nuevos doctores.</li>
+          <li>Doctores registrados: Acceso directo a la lista de doctores registrados.</li>
+          <li>Consultas: Apartado que permite iniciar el proceso de atención al paciente.</li>
+          <li>Insumos: Es un submenu para las operaciones referentes a insumos.</li>
+          <li>Registrar Insumo: Permite agregar nuevos insumos al sistema, ya sea medicamentos, material general, de
+            TRIAGE o procedimientos.</li>
+          <li>Medicamentos: Presenta el catálogo de medicamentos registrados.</li>
+          <li>Material general: Presenta el catálogo de material general registrado.</li>
+          <li>Material TRIAGE: Presenta el catálogo de material TRIAGE registrado.</li>
+          <li>Procedimientos: Presenta el catálogo de procedimientos clínicos registrados.</li>
+          <li>Configuración: Espacio donde se gestionan parámetros del sistema y opciones personalizables.</li>
+        </ul>
+
+        <img src="assets/manual/sidebar.png" alt="Menú lateral" class="img-manual" />
+      </mat-expansion-panel>
+
+      <!-- 
+        *** SECCIÓN ACTUALIZADA ***
+        Aquí he integrado tus nuevos puntos.
+      -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>3. Cómo Registrar un Nuevo Paciente</mat-panel-title>
+        </mat-expansion-panel-header>
+        <p>A continuación se detallan los pasos para registrar un nuevo paciente en el sistema.</p>
+
+        <h4>Pasos a seguir:</h4>
+        <ol>
+          <li>
+            <strong>Acceder al formulario:</strong>
+            En el Menú Lateral, haga clic en el submenú "Pacientes" y seleccione "Registrar Paciente".
+            <br />
+            <em>(Alternativa: Desde la pantalla de "Inicio", puede usar el acceso directo "Registrar paciente").</em>
+          </li>
+          <li>
+            <strong>Completar Datos Personales:</strong>
+            Llene los campos requeridos en la sección "Datos personales", como nombre, apellidos, teléfono(s), sexo y
+            fecha de
+            nacimiento.
+          </li>
+          <li>
+            <strong>Completar Datos Domiciliarios (con autocompletado):</strong>
+            <ul>
+              <li>Ingrese el <strong>Código Postal</strong> del paciente.</li>
+              <li>Al ingresarlo, el sistema buscará y rellenará automáticamente los campos "Estado" y "Municipio".</li>
+              <li>Haga clic en el campo "Colonia" y seleccione la colonia correcta de la lista desplegable que
+                aparecerá.</li>
+              <li>Complete manualmente la "Calle" y "Número".</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Guardar el registro</strong>
+            Una vez que haya verificado que toda la información es correcta, haga clic en el botón "Guardar datos" en la esquina superior derecha.
+          </li>
+          
+        </ol>
+        <p><strong>Nota:</strong> Los campos marcados con un asterisco (<span class="requerido">*</span>) son obligatorios.</p>
+        <img src="assets/manual/registroPaciente.png" alt="Formulario de registro de paciente" class="img-manual" />
+
+        <h4>5. Otras acciones del formulario</h4>
+        <p>Además de las acciones mencionadas anteriormente, el formulario cuenta con otras funcionalidades:</p>
+        <ul>
+          <li><strong>Ver registros:</strong> Este botón lo llevará a la lista de todos los pacientes registrados.</li>
+          <li><strong>Realizar consulta:</strong> Este botón lo redirige automáticamente al
+            módulo de "Consultas" para iniciar la atención médica (vease Consultas).
+          </li>
+        </ul>
+
+        <h4>6. Manejo de Errores (Campos Faltantes)</h4>
+        <p>Si intenta "Guardar datos" sin haber llenado todos los campos obligatorios, el sistema
+          no continuará. En su lugar, mostrará una ventana emergente (modal) con el título <strong>"Campos obligatorios
+            faltantes"</strong>.</p>
+        <p>Este modal le presentará una lista clara de todos los campos que debe completar (ej. Nombre, Apellidos,
+          Código postal, etc.) para poder continuar.</p>
+        <ul>
+          <li>Haga clic en el botón <strong>"Entendido"</strong> para cerrar la ventana.</li>
+          <li>Regrese al formulario y complete la información que se le indicó.</li>
+          <li>Intente guardar nuevamente.</li>
+        </ul>
+        <!-- 
+          He usado una ruta lógica para la imagen que me mostraste. 
+          Asegúrate de que la ruta 'src' sea correcta en tu proyecto.
+        -->
+        <img src="assets/manual/camposFaltantes.png" alt="Modal de campos obligatorios faltantes" class="img-manual" />
+
+        <h4>7. Confirmación de Éxito</h4>
+        <p>Si el registro es exitoso (después de hacer clic en "Guardar datos"), el sistema le
+          mostrará un mensaje de confirmación.</p>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+</div>
