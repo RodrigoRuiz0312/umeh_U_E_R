@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Tema } from '../../services/tema';
 import { InsumoService } from '../../services/insumos';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-configuracion',
@@ -15,7 +16,11 @@ export class Configuracion implements OnInit {
   limiteStock: number = 0; // valor por defecto
   isDark: boolean = false;
 
-  constructor(private temaServicio: Tema, private insumosService: InsumoService) { }
+  constructor(private temaServicio: Tema, private insumosService: InsumoService, private router: Router) { }
+
+  navegarAManual() {
+    this.router.navigate(['/manual-usuario']);
+  }
 
   ngOnInit() {
     this.isDark = this.temaServicio.theme() === 'dark';

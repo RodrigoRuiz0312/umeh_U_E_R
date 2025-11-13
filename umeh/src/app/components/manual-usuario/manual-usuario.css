@@ -1,0 +1,69 @@
+.card {
+  width: 99%;
+  margin: 24px auto;
+  padding: 20px;
+  background: var(--card-bg);
+  color: var(--card-text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  height: 95%;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body {
+  flex: 1;
+  overflow-y: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, color-mix(in oklab, var(--primary-color) 80%, white) 100%);
+  position: sticky;  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border);
+  padding: 10px 24px;
+  border-radius: 12px;
+}
+
+.card-header h2 {
+  margin: 0 0 0 0;
+  font-size: 1.5rem;
+  color: white;
+}
+
+.config-section {
+  padding-left: 30px;
+}
+
+.config-section h3 span {
+  font-size: 15px;
+  color: #ff7700;
+}
+
+.config-section label {
+  padding-right: 10px;
+}
+
+.config-section input[type="number"] {
+  margin-right: 10px;
+}
+
+.img-manual {
+  display: block;
+  margin: 10px auto;
+  max-width: 80%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  height: auto;
+}
+
+.requerido {
+  color: var(--danger-color);
+  font-weight: bold;
+  margin-left: 2px;
+}

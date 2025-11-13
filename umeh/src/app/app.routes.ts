@@ -13,6 +13,7 @@ import { Reportes } from './components/reportes/reportes';
 import { ConsultaRecepcion } from './components/consulta-recepcion/consulta-recepcion';
 import { Configuracion } from './components/configuracion/configuracion';
 import { Estadisticas } from './components/estadisticas/estadisticas';
+import { ManualUsuario } from './components/manual-usuario/manual-usuario';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'agenda', component: Citas },
   { path: 'reportes', component: Reportes },
   { path: 'configuracion', component: Configuracion },
+  { path: 'manual-usuario', component: ManualUsuario },
 
   // Rutas agrupadas para Insumos
   {
