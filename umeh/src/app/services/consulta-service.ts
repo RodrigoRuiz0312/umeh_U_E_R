@@ -148,6 +148,13 @@ export class ConsultaService {
     return this.http.patch(`${this.apiUrl}/consultas/actConsulta/${id_consulta}/estatus`, { nuevoEstatus });
   }
 
+ 
+    actualizarEstadoCita(id_cita: number, estado: string) {
+      return this.http.patch(`${this.apiUrl}/citas/${id_cita}/estado`, {
+        estado 
+      });
+    }
+
   finalizarConsulta(id_consulta: number, observaciones?: string) {
     return this.http.put(`${this.apiUrl}/consultas/${id_consulta}/finalizar`, { observaciones });
   }

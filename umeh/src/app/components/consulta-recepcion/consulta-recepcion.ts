@@ -43,6 +43,7 @@ interface Consulta {
   paciente_apellidos?: string;
   medico_nombre?: string;
   medico_apellidos?: string;
+   id_cita?: number;
 }
 
 interface Insumo {
@@ -181,7 +182,7 @@ export class ConsultaRecepcion implements OnInit {
   constructor(private route: ActivatedRoute, private consultaService: ConsultaService, private api: ApiService, private router: Router) { }
 
   formConsulta = {
-    id_medico: null,
+    id_medico: null as number | null,
     motivo: ''
   }; 
 
@@ -214,40 +215,73 @@ export class ConsultaRecepcion implements OnInit {
 
   //Añadi esta nueva funcion
   cargarCitasDelDia(): void {
-    const hoy = this.getTodayLocalYYYYMMDD();
+  const hoy = this.getTodayLocalYYYYMMDD();
+  console.log(`Cargando citas para la fecha local: ${hoy}`);
 
-    console.log(`Cargando citas para la fecha local: ${hoy}`);
+  this.api.getAgendaCompletaDelDia(hoy).subscribe({
+    next: (data) => {
+      console.log(' Citas recibidas:', data);
+      if (data.length > 0) {
+  console.log('Ejemplo de cita recibida:', data[0]);
+}
+      this.citasDelDia = Array.isArray(data)
+        ? data.filter(
+            (cita) =>
+              cita.estado === 'Agendada' ||
+              cita.estado === 'En espera' ||
+              cita.estado === 'Pendiente'
+          )
+        : [];
+    },
+    error: (err) => {
+      console.error('Error cargando la agenda del día:', err);
+      this.mensajeError = 'No se pudo cargar la agenda del día.';
+      this.citasDelDia = [];
+    },
+  });
+}
 
-    this.api.getAgendaCompletaDelDia(hoy).subscribe({
-      next: (data) => {
-        this.citasDelDia = data;
-      },
-      error: (err) => {
-        console.error('Error cargando la agenda del día:', err);
-        this.mensajeError = 'No se pudo cargar la agenda del día.';
-      }
-    });
-  }
 
   seleccionarCitaParaConsulta(cita: any): void {
+ 
+  const yaActiva = this.consultasActivas?.some(
+    (c) => c.id_cita === cita.id_cita
+  );
 
-    this.cargando = true;
-
-    this.idCita = cita.id_cita;
-    this.formConsulta.id_medico = cita.id_medico; 
-    this.consultaService.buscarPaciente(cita.nombre_paciente, cita.apellidos_paciente).subscribe({
-      next: (pacientes) => {
-        if (pacientes.length > 0) {
-          this.seleccionarPaciente(pacientes[0]);
-        }
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.mensajeError = 'Error al seleccionar el paciente de la cita.';
-        this.cargando = false;
-      }
-    });
+  if (yaActiva) {
+    this.mensajeError = 'Esta cita ya tiene una consulta activa.';
+    return; 
   }
+
+
+  this.cargando = true;
+
+
+  this.idCita = cita.id_cita;
+
+ 
+  this.formConsulta.id_medico = Number(cita.id_medico);
+  this.formConsulta.motivo = cita.motivo || '';
+
+  this.medicoSeleccionado = Number(cita.id_medico);
+
+  this.consultaService.buscarPaciente(cita.nombre_paciente, cita.apellidos_paciente).subscribe({
+    next: (pacientes) => {
+      if (pacientes.length > 0) {
+        this.seleccionarPaciente(pacientes[0]);
+      } else {
+        this.mensajeError = 'No se encontró el paciente en la base de datos';
+      }
+      this.cargando = false;
+    },
+    error: (err) => {
+      console.error('Error al seleccionar paciente de la cita:', err);
+      this.mensajeError = 'Error al seleccionar el paciente de la cita.';
+      this.cargando = false;
+    }
+  });
+}
+
 
 
   // ============================================
@@ -323,12 +357,14 @@ export class ConsultaRecepcion implements OnInit {
   }
 
   crearConsulta(): void {
-    if (!this.pacienteSeleccionado || !this.formConsulta.id_medico) {
+    const idMedico = Number(this.formConsulta.id_medico);
+
+    if (!this.pacienteSeleccionado || !idMedico) {
       this.mensajeError = 'Debe seleccionar un médico';
       return;
     }
 
-    // Validar que el paciente tenga ID válido
+   
     if (!this.pacienteSeleccionado.id_paciente) {
       this.mensajeError = 'Error: El paciente seleccionado no tiene un ID válido';
       console.error('Paciente sin ID:', this.pacienteSeleccionado);
@@ -338,16 +374,18 @@ export class ConsultaRecepcion implements OnInit {
     this.cargando = true;
     this.mensajeError = '';
 
+    const motivo = this.formConsulta.motivo || '';
+
     console.log('Creando consulta con:', {
       id_paciente: this.pacienteSeleccionado.id_paciente,
-      id_medico: this.formConsulta.id_medico,
-      motivo: this.motivoConsulta
+      id_medico: idMedico,
+      motivo
     });
 
     this.consultaService.crearConsulta(
       this.pacienteSeleccionado.id_paciente,
-      this.formConsulta.id_medico,
-      this.motivoConsulta
+      idMedico,
+      motivo,
     ).subscribe({
       next: (consulta: any) => {
         this.consultaActual = consulta;
@@ -356,6 +394,24 @@ export class ConsultaRecepcion implements OnInit {
         // Cambiar estatus a 'en_atencion' automáticamente
         this.consultaService.actualizarEstatus(consulta.id_consulta, 'en_atencion').subscribe({
           next: () => {
+            console.log('Consulta creada y en atencion', consulta);
+
+            if(this.idCita){
+              this.consultaService.actualizarEstadoCita(this.idCita, "En Consulta")
+              .subscribe({
+                next: () => {
+                console.log("Estado actualizado");
+                this.cargarCitasDelDia();   
+                this.obtenerConsultasActivas();
+                },
+                error: (err) => {
+                  console.error("Error actualizando la cita:", err);
+                }
+              });
+            } else {
+              this.obtenerConsultasActivas();
+            }
+
             this.paso = 'captura-insumos';
             this.cargarExtras();
             this.cargarInsumosConsulta();
@@ -387,6 +443,23 @@ export class ConsultaRecepcion implements OnInit {
       }
     });
   }
+
+ isCitaDeshabilitada(cita: any): boolean {
+  if (!cita) return false;
+  if (cita.estado && cita.estado !== 'Agendada') return true;
+  if (!this.consultasActivas || !Array.isArray(this.consultasActivas)) return false;
+
+  return this.consultasActivas.some((c: any) => {
+    return (
+      (c.id_cita && cita.id_cita && c.id_cita === cita.id_cita) ||
+      (c.id_consulta && cita.id_cita && c.id_consulta === cita.id_cita) ||
+      (c.paciente?.id_paciente && cita.id_paciente && c.paciente.id_paciente === cita.id_paciente) ||
+      (c.paciente_nombre && cita.nombre_paciente && c.paciente_nombre === cita.nombre_paciente)
+    );
+  });
+}
+
+
 
   // ============================================
   // PASO 3: HOJA DE IMPRESIÓN
@@ -747,6 +820,22 @@ export class ConsultaRecepcion implements OnInit {
       error: (err) => console.error(err)
     });
   }
+
+ 
+isPacienteEnConsultaActiva(paciente: any): boolean {
+  if (!paciente) return false;
+  const idPaciente = paciente.id_paciente ?? (paciente.paciente?.id_paciente);
+  if (!idPaciente) return false;
+  if (!this.consultasActivas || !Array.isArray(this.consultasActivas)) return false;
+
+  return this.consultasActivas.some((c: any) => {
+    if (c.paciente && c.paciente.id_paciente && c.paciente.id_paciente === idPaciente) return true;
+    if (c.id_paciente && c.id_paciente === idPaciente) return true;
+    if (c.paciente_nombre && paciente.nombre && c.paciente_nombre === `${paciente.nombre}`) return true;
+    return false;
+  });
+}
+
 
   // Retomar una consulta en espera para continuar con la captura de insumos
   retomarConsultaActiva(consulta: Consulta): void {
