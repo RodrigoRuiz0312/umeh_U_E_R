@@ -40,28 +40,10 @@ export class ConsultaService {
     return this.http.get<any[]>(`${this.apiUrl}/consultas/medicos`);
   }
 
-  // Crear consulta
-  /*
-  crearConsulta(id_paciente: number, id_medico: number, motivo: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/consultas/crearConsulta`, {
-      id_paciente,
-      id_medico,
-      motivo
-    });
-  }*/
-
   // Obtener datos para hoja de consulta
   obtenerHojaConsulta(id_consulta: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/consultas/${id_consulta}/hoja`);
   }
-
-  // Actualizar estatus de consulta
-  /*
-  actualizarEstatus(id_consulta: number, estatus: string): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/consultas/actConsulta/${id_consulta}/estatus`, {
-      estatus
-    });
-  }*/
 
   // Obtener insumos de una consulta
   obtenerInsumosConsulta(id_consulta: number): Observable<any[]> {
@@ -88,13 +70,6 @@ export class ConsultaService {
   eliminarInsumo(id_insumo_consulta: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/consultas/consulta-insumos/${id_insumo_consulta}`);
   }
-
-  // Finalizar consulta
-  /*finalizarConsulta(id_consulta: number, observaciones: string): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/consultas/finalizarConsulta/${id_consulta}/finalizar`, {
-      observaciones
-    });
-  }*/
 
   // Buscar medicamentos
   buscarMedicamentos(busqueda: string): Observable<any[]> {
@@ -148,14 +123,41 @@ export class ConsultaService {
     return this.http.patch(`${this.apiUrl}/consultas/actConsulta/${id_consulta}/estatus`, { nuevoEstatus });
   }
 
- 
-    actualizarEstadoCita(id_cita: number, estado: string) {
-      return this.http.patch(`${this.apiUrl}/citas/${id_cita}/estado`, {
-        estado 
-      });
-    }
+
+  actualizarEstadoCita(id_cita: number, estado: string) {
+    return this.http.patch(`${this.apiUrl}/citas/${id_cita}/estado`, {
+      estado
+    });
+  }
 
   finalizarConsulta(id_consulta: number, observaciones?: string) {
     return this.http.put(`${this.apiUrl}/consultas/${id_consulta}/finalizar`, { observaciones });
+  }
+
+  // En tu consulta-service.ts - agregar estos métodos
+
+  generarNotaRemision(idConsulta: number, modoDetallado: boolean = false): Observable<any> {
+    return this.http.get(`${this.apiUrl}/notas/${idConsulta}/nota-remision`, {
+      params: { modo_detallado: modoDetallado.toString() },
+      responseType: 'blob'
+    });
+  }
+
+  actualizarModoNotaRemision(idConsulta: number, modoDetallado: boolean): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/notas/${idConsulta}/modo-nota`, {
+      modo_detallado: modoDetallado
+    });
+  }
+
+  getHistorialConsultas(filtro: any) {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/notas/historial`, {
+      params: {
+        nombre: filtro.nombre,
+        apellidos: filtro.apellidos,
+        fecha: filtro.fecha
+      }
+    }
+    );
   }
 }

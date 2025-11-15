@@ -28,6 +28,7 @@ const doctoresRouter = require('./routes/doctores');
 const citasRouter = require('./routes/citas');
 const consultaRouter = require('./routes/consultaRoutes');
 
+
 // Rutas API INSUMOS
 app.use('/api/medicamentos', medicamentosRouter);
 app.use('/api/triage', triageRouter);
@@ -46,6 +47,9 @@ app.use('/api/consultas', consultaRouter);
 
 const consultaExtrasRoutes = require('./routes/consultaExtrasRoutes');
 app.use('/api/consultas/extras', consultaExtrasRoutes);
+
+const notaRoutes = require('./routes/nota');       
+app.use('/api/notas', notaRoutes);
 
 // Servir Angular (build de producción) - ajusta 'umeh' si tu carpeta difiere
 const angularDistPath = path.join(__dirname, 'dist', 'umeh', 'browser');

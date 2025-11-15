@@ -1,6 +1,68 @@
 <!-- gestion-consulta.component.html -->
 <div class="gestion-consulta-container">
 
+  <!-- Modal Buscar Nota -->
+  <div class="modal-backdrop" *ngIf="mostrarModalNotas">
+    <div class="modal-container">
+
+      <h3>Buscar Nota de Remisión</h3>
+
+      <div class="form-group">
+        <label>Nombre del paciente *</label>
+        <input type="text" [(ngModel)]="filtro.nombre">
+      </div>
+
+      <div class="form-group">
+        <label>Apellidos (opcional)</label>
+        <input type="text" [(ngModel)]="filtro.apellidos">
+      </div>
+
+      <div class="form-group">
+        <label>Fecha de consulta *</label>
+        <input type="date" [(ngModel)]="filtro.fecha">
+      </div>
+
+      <button class="btn btn-primary w-100" (click)="buscarNotas()">
+        Buscar
+      </button>
+
+      <hr>
+
+      <div *ngIf="resultados.length === 0 && intentado">
+        <p class="text-muted">No se encontraron consultas en esa fecha.</p>
+      </div>
+
+      <table class="table" *ngIf="resultados.length > 0">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Médico</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let r of resultados">
+            <td>{{ r.fecha | date:'HH:mm' }}</td>
+            <td>{{ r.medico_nombre }} {{ r.medico_apellidos }}</td>
+            <td>{{ r.total | currency:'MXN' }}</td>
+            <td>
+              <button class="btn btn-success btn-sm" (click)="imprimirNota(r.id_consulta)">
+                Imprimir
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button class="btn btn-secondary w-100 mt-3" (click)="cerrarModal()">
+        Cerrar
+      </button>
+
+    </div>
+  </div>
+
   <!-- Mensajes de error y éxito -->
   <div *ngIf="mensajeError" class="notice notice-danger mb-16">
     {{ mensajeError }}
@@ -20,7 +82,9 @@
       <div class="card-header d-flex align-items-center justify-content-between">
         <h3 class="mb-0">Nueva Consulta - Búsqueda de Paciente</h3>
         <div class="d-flex align-items-center gap-2">
-          <button class="btn-reg btn-outline-primary">Generar Notas</button>
+          <button class="btn btn-primary" (click)="abrirModalNotas()">
+            Generar Nota Histórica
+          </button>
           <button class="btn-reg btn-outline-primary" (click)="irARegistroPaciente()">
             <i class="bi bi-person-plus"></i> Registrar Nuevo Paciente
           </button>
@@ -65,12 +129,10 @@
                   <td>{{ paciente.telefonos || 'N/A' }}</td>
                   <td>{{ paciente.fecha_nacimiento | date: 'dd/MM/yyyy' }}</td>
                   <td>
-                    <button
-                    class="btn-sel btn-sm btn-success"
-                    (click)="seleccionarPaciente(paciente)"
-                    [disabled]="isPacienteEnConsultaActiva(paciente)">
-                    Seleccionar
-                  </button>
+                    <button class="btn-sel btn-sm btn-success" (click)="seleccionarPaciente(paciente)"
+                      [disabled]="isPacienteEnConsultaActiva(paciente)">
+                      Seleccionar
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -106,12 +168,11 @@
                 <td>{{ cita.nombre_medico }} {{ cita.apellidos_medico }}</td>
                 <td>{{ cita.estado }}</td>
                 <td>
-                  <button class="btn-sel btn-sm btn-success"
-                  (click)="seleccionarCitaParaConsulta(cita)"
-                  [disabled]="isCitaDeshabilitada(cita)">
-                  <!--{{ cita.estado === 'Agendada' ? 'Iniciar Consulta' : cita.estado }}-->
-                   Iniciar Consulta
-                </button>
+                  <button class="btn-sel btn-sm btn-success" (click)="seleccionarCitaParaConsulta(cita)"
+                    [disabled]="isCitaDeshabilitada(cita)">
+                    <!--{{ cita.estado === 'Agendada' ? 'Iniciar Consulta' : cita.estado }}-->
+                    Iniciar Consulta
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -215,23 +276,23 @@
           </div>
         </div>
 
-         <!-- Selección de médico -->
+        <!-- Selección de médico -->
         <div class="form-row two-cols">
-        <div class="form-group">
-          <label for="medico">Médico Asignado *</label>
-         <select id="medico" [(ngModel)]="formConsulta.id_medico">
-          <option [ngValue]="null">Seleccione un médico</option>
-          <option *ngFor="let medico of medicos" [ngValue]="medico.id_medico">
-            {{ medico.nombre }} {{ medico.apellidos }} - {{ medico.especialidad }}
-          </option>
-        </select>
-        </div>
+          <div class="form-group">
+            <label for="medico">Médico Asignado *</label>
+            <select id="medico" [(ngModel)]="formConsulta.id_medico">
+              <option [ngValue]="null">Seleccione un médico</option>
+              <option *ngFor="let medico of medicos" [ngValue]="medico.id_medico">
+                {{ medico.nombre }} {{ medico.apellidos }} - {{ medico.especialidad }}
+              </option>
+            </select>
+          </div>
 
-        <div class="form-group">
-          <label for="motivo">Motivo de Consulta</label>
-          <input type="text" id="motivo" [(ngModel)]="formConsulta.motivo" placeholder="Opcional">
+          <div class="form-group">
+            <label for="motivo">Motivo de Consulta</label>
+            <input type="text" id="motivo" [(ngModel)]="formConsulta.motivo" placeholder="Opcional">
+          </div>
         </div>
-      </div>
 
 
 
@@ -498,80 +559,81 @@
 
     <!-- Botones de acción (no imprimibles) -->
     <div class="no-print mb-3">
-      <div class="d-flex justify-content-end gap-2">
-        <button class="btn btn-primary" (click)="imprimirNotaRemision()">
-          <i class="bi bi-printer"></i> Imprimir Nota
-        </button>
-        <button class="btn btn-success" (click)="nuevaConsulta()">
-          <i class="bi bi-plus-circle"></i> Nueva Consulta
-        </button>
+      <div class="d-flex justify-content-between align-items-center">
+        <!-- Selector de modo -->
+        <div class="d-flex align-items-center gap-2">
+          <span><strong>Modo de visualización:</strong></span>
+
+          <div *ngIf="!editandoModoNota" class="d-flex align-items-center gap-2">
+            <span class="badge" [ngClass]="modoDetallado ? 'bg-info' : 'bg-secondary'">
+              {{ modoDetallado ? 'Detallado' : 'Resumido' }}
+            </span>
+            <button class="btn btn-outline-primary btn-sm" (click)="editandoModoNota = true">
+              <i class="bi bi-pencil"></i> Cambiar
+            </button>
+          </div>
+
+          <div *ngIf="editandoModoNota" class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm" [(ngModel)]="modoDetallado" style="width: auto;">
+              <option [value]="false">Resumido (por categorías)</option>
+              <option [value]="true">Detallado (ítem por ítem)</option>
+            </select>
+            <button class="btn btn-success btn-sm" (click)="cambiarModoNota()">
+              <i class="bi bi-check"></i> Guardar
+            </button>
+            <button class="btn btn-secondary btn-sm" (click)="editandoModoNota = false">
+              <i class="bi bi-x"></i> Cancelar
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary" (click)="generarNotaRemision()" [disabled]="cargando">
+            <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+            <i class="bi bi-download"></i> Descargar Nota
+          </button>
+          <button class="btn btn-success" (click)="nuevaConsulta()">
+            <i class="bi bi-plus-circle"></i> Nueva Consulta
+          </button>
+        </div>
+      </div>
+
+      <!-- Información sobre los modos -->
+      <div class="alert alert-info mt-2 small">
+        <strong>Modo Resumido:</strong> Agrupa los insumos por categoría (Medicamento, Material, Procedimiento).<br>
+        <strong>Modo Detallado:</strong> Muestra cada insumo individualmente con su nombre específico.
       </div>
     </div>
 
-    <!-- Nota de remisión imprimible -->
-    <div class="nota-remision print-area">
-      <div class="nota-header text-center mb-4">
-        <h2>NOTA DE REMISIÓN</h2>
-        <p class="mb-0">No. {{ consultaActual?.id_consulta }}</p>
-        <p>Fecha: {{ consultaActual?.fecha | date: 'dd/MM/yyyy HH:mm' }}</p>
+    <!-- Vista previa de la nota (solo para referencia) -->
+    <div class="card no-print mb-4">
+      <div class="card-header">
+        <h6 class="mb-0">Vista previa de la nota (resumen)</h6>
       </div>
+      <div class="card-body">
+        <div class="seccion mb-3">
+          <h6>PACIENTE</h6>
+          <p class="mb-1"><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos
+            }}</p>
+          <p class="mb-1"><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefonos?.join(', ') || 'N/A' }}</p>
+        </div>
 
-      <!-- Datos del paciente -->
-      <div class="seccion mb-3">
-        <h5>PACIENTE</h5>
-        <p class="mb-1"><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos
-          }}</p>
-        <p class="mb-1"><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefonos }}</p>
+        <div class="seccion mb-3">
+          <h6>DETALLE {{ modoDetallado ? '(DETALLADO)' : '(RESUMIDO)' }}</h6>
+          <div *ngIf="listaCostosCombinada.length === 0" class="text-muted">
+            No hay insumos registrados
+          </div>
+          <div *ngIf="listaCostosCombinada.length > 0">
+            <div *ngFor="let grupo of getInsumosAgrupados()" class="mb-2">
+              <strong>{{ grupo.categoria }}:</strong>
+              {{ grupo.total | currency:'MXN':'symbol':'1.2-2' }}
+            </div>
+            <div><strong>Costo de Consulta:</strong> {{ costoConsulta | currency:'MXN':'symbol':'1.2-2' }}</div>
+            <hr>
+            <div><strong>TOTAL:</strong> {{ totalConsulta | currency:'MXN':'symbol':'1.2-2' }}</div>
+          </div>
+        </div>
       </div>
-
-      <!-- Datos del médico -->
-      <div class="seccion mb-4">
-        <p class="mb-0"><strong>Atendió:</strong> Dr(a). {{ getMedicoNombre(formConsulta.id_medico) }}</p>
-      </div>
-
-      <!-- Detalle de insumos -->
-      <div class="seccion mb-4">
-        <h5>DETALLE</h5>
-        <table class="table table-bordered">
-          <thead class="table-light">
-            <tr>
-              <th>Descripción</th>
-              <th class="text-center">Cantidad</th>
-              <th class="text-end">Precio Unit.</th>
-              <th class="text-end">Importe</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let insumo of insumosConsulta">
-              <td>{{ insumo.nombre_insumo }}</td>
-              <td class="text-center">{{ insumo.cantidad }} {{ insumo.unidad }}</td>
-              <td class="text-end">{{ formatearMoneda(insumo.costo_unitario) }}</td>
-              <td class="text-end">{{ formatearMoneda(insumo.subtotal) }}</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr class="table-active">
-              <td colspan="3" class="text-end"><strong>TOTAL:</strong></td>
-              <td class="text-end fw-bold fs-5">{{ formatearMoneda(totalConsulta) }}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <!-- Pie de nota -->
-      <div class="nota-footer text-center mt-5">
-        <p class="small text-muted">Gracias por su preferencia</p>
-        <p class="small">Esta nota no es válida como factura fiscal</p>
-      </div>
-    </div>
-
-    <!-- Mensaje de éxito -->
-    <div class="no-print mt-4 alert alert-success">
-      <i class="bi bi-check-circle-fill"></i>
-      <strong>¡Consulta finalizada exitosamente!</strong>
-      <br>
-      La nota de remisión se ha generado. Puede imprimirla o iniciar una nueva consulta.
     </div>
   </div>
-
 </div>

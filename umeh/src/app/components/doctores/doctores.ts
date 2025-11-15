@@ -53,11 +53,11 @@ export class Doctores implements OnInit {
     if (!this.doctorData.cedula_prof || this.doctorData.cedula_prof.trim() === '') {
       faltantes.push('Cédula profesional');
     }
-    
-    if (!this.doctorData.nombre_agenda){
+
+    if (!this.doctorData.nombre_agenda) {
       faltantes.push('Agenda');
     }
-    
+
     // Los siguientes son opcionales, pero puedes validar formato si quieres:
     if (this.doctorData.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.doctorData.correo)) {
       faltantes.push('Correo electrónico inválido');
@@ -70,6 +70,9 @@ export class Doctores implements OnInit {
     return faltantes;
   }
 
+  capitalize(text: string) {
+    return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  }
   // 🔹 Enviar formulario
   onSubmit() {
     const faltantes = this.recolectarCamposFaltantes();

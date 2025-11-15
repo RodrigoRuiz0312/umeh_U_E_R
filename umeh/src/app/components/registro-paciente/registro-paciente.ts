@@ -182,7 +182,10 @@ export class RegistroPaciente {
     });
   }
 
-  // Método para manejar el envío del formulario
+  capitalize(text: string) {
+    return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
   onSubmit() {
     // Marcar todo como "tocado" para mostrar errores de validación
     this.pacienteForm.markAllAsTouched(); 
@@ -197,6 +200,9 @@ export class RegistroPaciente {
     // Preparamos los datos del formulario
     const datosAEnviar = {
       ...this.pacienteForm.value,
+      nombre: this.capitalize(this.pacienteForm.value.nombre),
+      apellidos: this.capitalize(this.pacienteForm.value.apellidos),
+      calle: this.capitalize(this.pacienteForm.value.calle),
       fecha_ingreso: new Date().toISOString().split('T')[0]
     };
 
@@ -210,19 +216,12 @@ export class RegistroPaciente {
           life: 3000
         });
 
-        // --- LÓGICA DE RESET ACTUALIZADA ---
         this.pacienteForm.reset();
         this.colonias = [];
-        
-        // Limpiar y reiniciar FormArrays
         this.telefonos.clear();
         this.correos.clear();
-        
-        // Añadir el primer campo obligatorio de vuelta
-        this.addTelefono(); 
-        // Añadir el primer campo opcional de vuelta
-        this.addCorreo(); 
-        // --- FIN LÓGICA DE RESET ---
+        this.addTelefono();
+        this.addCorreo();
       },
       error: (error: any) => {
         console.error('Error al registrar paciente:', error);
