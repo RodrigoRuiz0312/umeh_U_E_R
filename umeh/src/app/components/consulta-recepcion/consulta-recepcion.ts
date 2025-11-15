@@ -43,7 +43,7 @@ interface Consulta {
   paciente_apellidos?: string;
   medico_nombre?: string;
   medico_apellidos?: string;
-   id_cita?: number;
+  id_cita?: number;
 }
 
 interface Insumo {
@@ -82,7 +82,7 @@ interface Extra {
 })
 export class ConsultaRecepcion implements OnInit {
 
-  
+
   citasDelDia: any[] = [];
   idCita!: number;
   @Input() cita: any;
@@ -150,6 +150,20 @@ export class ConsultaRecepcion implements OnInit {
 
   consultasActivas: Consulta[] = [];
 
+  // En consulta-recepcion.ts - agregar estas propiedades
+  modoDetallado: boolean = false;
+  editandoModoNota: boolean = false;
+
+  mostrarModalNotas = false;
+  resultados: any[] = [];
+  intentado = false;
+
+  filtro = {
+    nombre: '',
+    apellidos: '',
+    fecha: ''
+  };
+
   get listaCostosCombinada() {
     const insumos = this.insumosConsulta.map(i => ({
       tipo: i.tipo,
@@ -184,18 +198,18 @@ export class ConsultaRecepcion implements OnInit {
   formConsulta = {
     id_medico: null as number | null,
     motivo: ''
-  }; 
+  };
 
   ngOnInit(): void {
-    this.cargarMedicos(); 
+    this.cargarMedicos();
     this.cargarCitasDelDia();
     this.obtenerConsultasActivas();
 
-    this.route.queryParams.subscribe(params =>{
+    this.route.queryParams.subscribe(params => {
       this.idCita = params['id_cita'];
     })
 
-    if(this.cita){
+    if (this.cita) {
       this.formConsulta.id_medico = this.cita.id_medico;
       this.medicoSeleccionado = this.cita.id_medico;
     }
@@ -215,72 +229,72 @@ export class ConsultaRecepcion implements OnInit {
 
   //Añadi esta nueva funcion
   cargarCitasDelDia(): void {
-  const hoy = this.getTodayLocalYYYYMMDD();
-  console.log(`Cargando citas para la fecha local: ${hoy}`);
+    const hoy = this.getTodayLocalYYYYMMDD();
+    console.log(`Cargando citas para la fecha local: ${hoy}`);
 
-  this.api.getAgendaCompletaDelDia(hoy).subscribe({
-    next: (data) => {
-      console.log(' Citas recibidas:', data);
-      if (data.length > 0) {
-  console.log('Ejemplo de cita recibida:', data[0]);
-}
-      this.citasDelDia = Array.isArray(data)
-        ? data.filter(
+    this.api.getAgendaCompletaDelDia(hoy).subscribe({
+      next: (data) => {
+        console.log(' Citas recibidas:', data);
+        if (data.length > 0) {
+          console.log('Ejemplo de cita recibida:', data[0]);
+        }
+        this.citasDelDia = Array.isArray(data)
+          ? data.filter(
             (cita) =>
               cita.estado === 'Agendada' ||
               cita.estado === 'En espera' ||
               cita.estado === 'Pendiente'
           )
-        : [];
-    },
-    error: (err) => {
-      console.error('Error cargando la agenda del día:', err);
-      this.mensajeError = 'No se pudo cargar la agenda del día.';
-      this.citasDelDia = [];
-    },
-  });
-}
-
-
-  seleccionarCitaParaConsulta(cita: any): void {
- 
-  const yaActiva = this.consultasActivas?.some(
-    (c) => c.id_cita === cita.id_cita
-  );
-
-  if (yaActiva) {
-    this.mensajeError = 'Esta cita ya tiene una consulta activa.';
-    return; 
+          : [];
+      },
+      error: (err) => {
+        console.error('Error cargando la agenda del día:', err);
+        this.mensajeError = 'No se pudo cargar la agenda del día.';
+        this.citasDelDia = [];
+      },
+    });
   }
 
 
-  this.cargando = true;
+  seleccionarCitaParaConsulta(cita: any): void {
 
+    const yaActiva = this.consultasActivas?.some(
+      (c) => c.id_cita === cita.id_cita
+    );
 
-  this.idCita = cita.id_cita;
-
- 
-  this.formConsulta.id_medico = Number(cita.id_medico);
-  this.formConsulta.motivo = cita.motivo || '';
-
-  this.medicoSeleccionado = Number(cita.id_medico);
-
-  this.consultaService.buscarPaciente(cita.nombre_paciente, cita.apellidos_paciente).subscribe({
-    next: (pacientes) => {
-      if (pacientes.length > 0) {
-        this.seleccionarPaciente(pacientes[0]);
-      } else {
-        this.mensajeError = 'No se encontró el paciente en la base de datos';
-      }
-      this.cargando = false;
-    },
-    error: (err) => {
-      console.error('Error al seleccionar paciente de la cita:', err);
-      this.mensajeError = 'Error al seleccionar el paciente de la cita.';
-      this.cargando = false;
+    if (yaActiva) {
+      this.mensajeError = 'Esta cita ya tiene una consulta activa.';
+      return;
     }
-  });
-}
+
+
+    this.cargando = true;
+
+
+    this.idCita = cita.id_cita;
+
+
+    this.formConsulta.id_medico = Number(cita.id_medico);
+    this.formConsulta.motivo = cita.motivo || '';
+
+    this.medicoSeleccionado = Number(cita.id_medico);
+
+    this.consultaService.buscarPaciente(cita.nombre_paciente, cita.apellidos_paciente).subscribe({
+      next: (pacientes) => {
+        if (pacientes.length > 0) {
+          this.seleccionarPaciente(pacientes[0]);
+        } else {
+          this.mensajeError = 'No se encontró el paciente en la base de datos';
+        }
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error('Error al seleccionar paciente de la cita:', err);
+        this.mensajeError = 'Error al seleccionar el paciente de la cita.';
+        this.cargando = false;
+      }
+    });
+  }
 
 
 
@@ -364,7 +378,7 @@ export class ConsultaRecepcion implements OnInit {
       return;
     }
 
-   
+
     if (!this.pacienteSeleccionado.id_paciente) {
       this.mensajeError = 'Error: El paciente seleccionado no tiene un ID válido';
       console.error('Paciente sin ID:', this.pacienteSeleccionado);
@@ -390,24 +404,24 @@ export class ConsultaRecepcion implements OnInit {
       next: (consulta: any) => {
         this.consultaActual = consulta;
         this.cargando = false;
-        
+
         // Cambiar estatus a 'en_atencion' automáticamente
         this.consultaService.actualizarEstatus(consulta.id_consulta, 'en_atencion').subscribe({
           next: () => {
             console.log('Consulta creada y en atencion', consulta);
 
-            if(this.idCita){
+            if (this.idCita) {
               this.consultaService.actualizarEstadoCita(this.idCita, "En Consulta")
-              .subscribe({
-                next: () => {
-                console.log("Estado actualizado");
-                this.cargarCitasDelDia();   
-                this.obtenerConsultasActivas();
-                },
-                error: (err) => {
-                  console.error("Error actualizando la cita:", err);
-                }
-              });
+                .subscribe({
+                  next: () => {
+                    console.log("Estado actualizado");
+                    this.cargarCitasDelDia();
+                    this.obtenerConsultasActivas();
+                  },
+                  error: (err) => {
+                    console.error("Error actualizando la cita:", err);
+                  }
+                });
             } else {
               this.obtenerConsultasActivas();
             }
@@ -415,12 +429,12 @@ export class ConsultaRecepcion implements OnInit {
             this.paso = 'captura-insumos';
             this.cargarExtras();
             this.cargarInsumosConsulta();
-            
+
             // Actualizar lista de consultas activas
             this.obtenerConsultasActivas();
-            
+
             console.log('Consulta creada y en atención:', consulta);
-            
+
             // ✅ Abrir automáticamente la hoja PDF generada en el backend
             const pdfUrl = `${this.consultaService.apiUrl}/consultas/${consulta.id_consulta}/hoja-pdf`;
             window.open(pdfUrl, '_blank');
@@ -444,20 +458,20 @@ export class ConsultaRecepcion implements OnInit {
     });
   }
 
- isCitaDeshabilitada(cita: any): boolean {
-  if (!cita) return false;
-  if (cita.estado && cita.estado !== 'Agendada') return true;
-  if (!this.consultasActivas || !Array.isArray(this.consultasActivas)) return false;
+  isCitaDeshabilitada(cita: any): boolean {
+    if (!cita) return false;
+    if (cita.estado && cita.estado !== 'Agendada') return true;
+    if (!this.consultasActivas || !Array.isArray(this.consultasActivas)) return false;
 
-  return this.consultasActivas.some((c: any) => {
-    return (
-      (c.id_cita && cita.id_cita && c.id_cita === cita.id_cita) ||
-      (c.id_consulta && cita.id_cita && c.id_consulta === cita.id_cita) ||
-      (c.paciente?.id_paciente && cita.id_paciente && c.paciente.id_paciente === cita.id_paciente) ||
-      (c.paciente_nombre && cita.nombre_paciente && c.paciente_nombre === cita.nombre_paciente)
-    );
-  });
-}
+    return this.consultasActivas.some((c: any) => {
+      return (
+        (c.id_cita && cita.id_cita && c.id_cita === cita.id_cita) ||
+        (c.id_consulta && cita.id_cita && c.id_consulta === cita.id_cita) ||
+        (c.paciente?.id_paciente && cita.id_paciente && c.paciente.id_paciente === cita.id_paciente) ||
+        (c.paciente_nombre && cita.nombre_paciente && c.paciente_nombre === cita.nombre_paciente)
+      );
+    });
+  }
 
 
 
@@ -722,6 +736,79 @@ export class ConsultaRecepcion implements OnInit {
     this.totalConsulta = this.costoConsulta + subtotalInsumos + subtotalExtras;
   }
 
+  generarNotaRemision(): void {
+    if (!this.consultaActual) return;
+
+    this.cargando = true;
+
+    this.consultaService.generarNotaRemision(this.consultaActual.id_consulta, this.modoDetallado)
+      .subscribe({
+        next: (pdfBlob: Blob) => {
+          this.cargando = false;
+
+          // Crear y descargar el PDF
+          const url = window.URL.createObjectURL(pdfBlob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `nota_remision_${this.consultaActual?.id_consulta}.pdf`;
+          link.click();
+          window.URL.revokeObjectURL(url);
+
+          this.mensajeExito = 'Nota de remisión generada correctamente';
+        },
+        error: (error) => {
+          console.error('Error generando nota de remisión:', error);
+          this.mensajeError = 'Error al generar la nota de remisión';
+          this.cargando = false;
+        }
+      });
+  }
+
+  // Método para agrupar insumos por categoría (para la vista previa)
+  getInsumosAgrupados(): any[] {
+    const agrupados: any = {};
+
+    this.listaCostosCombinada.forEach(item => {
+      let categoria = '';
+
+      if (item.esExtra) {
+        categoria = 'Extras';
+      } else {
+        switch (item.tipo) {
+          case 'medicamento': categoria = 'Medicamentos'; break;
+          case 'material': categoria = 'Material'; break;
+          case 'procedimiento': categoria = 'Procedimientos'; break;
+          default: categoria = 'Otros';
+        }
+      }
+
+      if (!agrupados[categoria]) {
+        agrupados[categoria] = { categoria, total: 0 };
+      }
+      agrupados[categoria].total += item.subtotal;
+    });
+
+    return Object.values(agrupados);
+  }
+
+  // Método para cambiar el modo de la nota
+  cambiarModoNota(): void {
+    if (!this.consultaActual) return;
+
+    this.consultaService.actualizarModoNotaRemision(this.consultaActual.id_consulta, this.modoDetallado)
+      .subscribe({
+        next: () => {
+          this.mensajeExito = `Modo ${this.modoDetallado ? 'detallado' : 'resumido'} guardado`;
+          this.editandoModoNota = false;
+          setTimeout(() => this.mensajeExito = '', 3000);
+        },
+        error: (error) => {
+          console.error('Error actualizando modo de nota:', error);
+          this.mensajeError = 'Error al actualizar el modo de la nota';
+        }
+      });
+  }
+
 
 
   // ============================================
@@ -742,15 +829,15 @@ export class ConsultaRecepcion implements OnInit {
     this.consultaService.finalizarConsulta(this.consultaActual.id_consulta, '')
       .subscribe({
         next: () => {
-             if (this.idCita) {
-          this.api.actualizarEstadoCita(this.idCita, 'Finalizada')
-            .subscribe(() => this.cargarCitasDelDia());
-        }
-          
+          if (this.idCita) {
+            this.api.actualizarEstadoCita(this.idCita, 'Finalizada')
+              .subscribe(() => this.cargarCitasDelDia());
+          }
+
           this.cargando = false;
           this.paso = 'nota-remision';
           this.mensajeExito = 'Consulta finalizada correctamente';
-          
+
           // Actualizar lista de consultas activas (esta consulta ya no aparecerá)
           this.obtenerConsultasActivas();
         },
@@ -790,11 +877,11 @@ export class ConsultaRecepcion implements OnInit {
   // ============================================
 
   getMedicoNombre(id_medico: number | null): string {
-  if (!id_medico || !this.medicos) return 'No asignado';
+    if (!id_medico || !this.medicos) return 'No asignado';
 
-  const medico = this.medicos.find(m => m.id_medico === id_medico);
-  return medico ? `${medico.nombre} ${medico.apellidos} - ${medico.especialidad}` : 'No encontrado';
-}
+    const medico = this.medicos.find(m => m.id_medico === id_medico);
+    return medico ? `${medico.nombre} ${medico.apellidos} - ${medico.especialidad}` : 'No encontrado';
+  }
 
 
   formatearFecha(fecha: string): string {
@@ -821,20 +908,20 @@ export class ConsultaRecepcion implements OnInit {
     });
   }
 
- 
-isPacienteEnConsultaActiva(paciente: any): boolean {
-  if (!paciente) return false;
-  const idPaciente = paciente.id_paciente ?? (paciente.paciente?.id_paciente);
-  if (!idPaciente) return false;
-  if (!this.consultasActivas || !Array.isArray(this.consultasActivas)) return false;
 
-  return this.consultasActivas.some((c: any) => {
-    if (c.paciente && c.paciente.id_paciente && c.paciente.id_paciente === idPaciente) return true;
-    if (c.id_paciente && c.id_paciente === idPaciente) return true;
-    if (c.paciente_nombre && paciente.nombre && c.paciente_nombre === `${paciente.nombre}`) return true;
-    return false;
-  });
-}
+  isPacienteEnConsultaActiva(paciente: any): boolean {
+    if (!paciente) return false;
+    const idPaciente = paciente.id_paciente ?? (paciente.paciente?.id_paciente);
+    if (!idPaciente) return false;
+    if (!this.consultasActivas || !Array.isArray(this.consultasActivas)) return false;
+
+    return this.consultasActivas.some((c: any) => {
+      if (c.paciente && c.paciente.id_paciente && c.paciente.id_paciente === idPaciente) return true;
+      if (c.id_paciente && c.id_paciente === idPaciente) return true;
+      if (c.paciente_nombre && paciente.nombre && c.paciente_nombre === `${paciente.nombre}`) return true;
+      return false;
+    });
+  }
 
 
   // Retomar una consulta en espera para continuar con la captura de insumos
@@ -858,22 +945,22 @@ isPacienteEnConsultaActiva(paciente: any): boolean {
           estado: datos.estado,
           codigo_postal: datos.codigo_postal
         };
-        
+
         // Cargar datos de la consulta
         this.consultaActual = consulta;
         this.motivoConsulta = consulta.motivo || '';
-        
+
         // Buscar el médico en la lista
-        const medico = this.medicos.find(m => 
+        const medico = this.medicos.find(m =>
           m.nombre === datos.medico_nombre && m.apellidos === datos.medico_apellidos
         );
         this.medicoSeleccionado = medico ? medico.id_medico : null;
-        
+
         // Cambiar a paso de captura de insumos
         this.paso = 'captura-insumos';
         this.cargarExtras();
         this.cargarInsumosConsulta();
-        
+
         // Actualizar estatus a 'en_atencion'
         this.consultaService.actualizarEstatus(consulta.id_consulta, 'en_atencion').subscribe({
           next: () => {
@@ -889,6 +976,38 @@ isPacienteEnConsultaActiva(paciente: any): boolean {
         this.mensajeError = 'Error al cargar los datos de la consulta';
       }
     });
+  }
+
+  abrirModalNotas() {
+    this.mostrarModalNotas = true;
+    this.resultados = [];
+    this.intentado = false;
+  }
+
+  cerrarModal() {
+    this.mostrarModalNotas = false;
+  }
+
+  buscarNotas() {
+    if (!this.filtro.nombre.trim() || !this.filtro.fecha) {
+      alert("El nombre y la fecha son obligatorios");
+      return;
+    }
+
+    this.consultaService.getHistorialConsultas(this.filtro).subscribe({
+      next: (data) => {
+        this.resultados = data;
+        this.intentado = true;
+      },
+      error: () => {
+        alert("Error buscando notas.");
+      }
+    });
+  }
+
+  imprimirNota(id_consulta: number) {
+    const url = `http://localhost:4000/api/notas/${id_consulta}/nota-remision`;
+    window.open(url, '_blank');
   }
 
   // Método eliminado - ya no se finaliza desde la tabla de consultas activas

@@ -304,11 +304,7 @@ function generarHojaPDF(datos, res) {
     .fontSize(9)
     .font('Helvetica')
     .fillColor('#000')
-    .text(`Especialidad: ${datos.medico_especialidad || 'No especificada'}`, 0, doc.y + 10, { align: 'center' });
-
-  doc
-    .fontSize(9)
-    .text(`Cédula Profesional: ${datos.medico_cedula || 'No especificada'}`, 0, doc.y + 13, { align: 'center' });
+    .text(`Especialidad: ${datos.medico_especialidad || 'No especificada'}`, 0, doc.y + 10, { align: 'center' }); 
 
   // === PIE DE PÁGINA ===
   const footerY = doc.page.height - 50;
