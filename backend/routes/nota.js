@@ -4,7 +4,6 @@ const { pool } = require('../db');
 const PDFDocument = require('pdfkit');
 
 // Función para obtener datos de una consulta
-// Función para obtener datos de una consulta
 async function getConsultaById(id) {
     const query = `
         SELECT 
@@ -305,14 +304,11 @@ router.get('/:id/nota-remision', async (req, res) => {
     }
 });
 
-// Ruta para actualizar el modo de nota
 router.patch('/:id/modo-nota', async (req, res) => {
     try {
         const { id } = req.params;
         const { modo_detallado } = req.body;
 
-        // Por ahora, solo retornamos éxito sin guardar en BD
-        // Si necesitas persistencia, puedes agregar una tabla nota_configuracion más tarde
         console.log(`Modo de nota para consulta ${id}: ${modo_detallado ? 'detallado' : 'resumido'}`);
 
         res.json({ mensaje: 'Modo de nota actualizado correctamente' });
@@ -327,11 +323,30 @@ router.get('/historial', async (req, res) => {
   const { nombre, apellidos, fecha } = req.query;
 
   if (!nombre || !fecha) {
-    return res.status(400).json({ mensaje: "Nombre y fecha son obligatorios" });
+    return res.status(400).json({ mensaje: "El nombre y la fecha son obligatorios" });
   }
 
   try {
-    const result = await pool.query(`
+    let apellidosArray = [];
+    if (apellidos && apellidos.trim() !== '') {
+      apellidosArray = apellidos
+        .trim()
+        .split(/\s+/)
+        .map(a => a.toLowerCase());
+    }
+
+    let apellidoConditions = "";
+    let apellidoParams = [];
+
+    if (apellidosArray.length > 0) {
+      apellidoConditions = apellidosArray
+        .map((a, index) => `LOWER(p.apellidos) LIKE $${3 + index}`)
+        .join(" AND ");
+
+      apellidoParams = apellidosArray.map(a => `%${a}%`);
+    }
+
+    const sql = `
       SELECT
         c.id_consulta,
         c.fecha,
@@ -345,16 +360,26 @@ router.get('/historial', async (req, res) => {
       JOIN medico m ON m.id_medico = c.id_medico
       WHERE LOWER(p.nombre) LIKE LOWER($1)
         AND c.fecha::date = $2
-        AND ($3 = '' OR LOWER(p.apellidos) LIKE LOWER($3))
+        ${apellidoConditions ? `AND ${apellidoConditions}` : ""}
       ORDER BY c.fecha ASC
-    `, [`%${nombre}%`, fecha, apellidos ?? '' ]);
+    `;
 
-    res.json(result.rows);
+    const params = [
+      `%${nombre}%`,
+      fecha,
+      ...apellidoParams
+    ];
+
+    const { rows } = await pool.query(sql, params);
+
+    res.json(rows);
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ mensaje: 'Error consultando historial' });
+    res.status(500).json({ mensaje: 'Error consultando historial avanzado' });
   }
 });
+
 
 function getCategoriaNombre(tipo) {
     const categorias = {

@@ -1,35 +1,38 @@
-<!-- gestion-consulta.component.html -->
-<div class="gestion-consulta-container">
+<!-- Modal Buscar Nota -->
+<div class="modal-backdrop" *ngIf="mostrarModalNotas">
+  <div class="modal-container">
 
-  <!-- Modal Buscar Nota -->
-  <div class="modal-backdrop" *ngIf="mostrarModalNotas">
-    <div class="modal-container">
+    <h3>Buscar Nota de Remisión Histórica</h3>
 
-      <h3>Buscar Nota de Remisión</h3>
-
-      <div class="form-group">
-        <label>Nombre del paciente *</label>
+    <!-- Fila con 3 inputs -->
+    <div class="form-row-1">
+      <div class="form-group flex-1">
+        <label>Nombre *</label>
         <input type="text" [(ngModel)]="filtro.nombre">
       </div>
 
-      <div class="form-group">
-        <label>Apellidos (opcional)</label>
+      <div class="form-group flex-1">
+        <label>Apellidos</label>
         <input type="text" [(ngModel)]="filtro.apellidos">
       </div>
 
-      <div class="form-group">
-        <label>Fecha de consulta *</label>
+      <div class="form-group flex-1">
+        <label>Fecha *</label>
         <input type="date" [(ngModel)]="filtro.fecha">
       </div>
+    </div>
 
-      <button class="btn btn-primary w-100" (click)="buscarNotas()">
-        Buscar
-      </button>
+    <button class="btn btn-primary w-100 mt-2" (click)="buscarNotas()">
+      Buscar
+    </button>
 
-      <hr>
+    <hr>
 
-      <div *ngIf="resultados.length === 0 && intentado">
-        <p class="text-muted">No se encontraron consultas en esa fecha.</p>
+    <!-- Contenedor con scroll -->
+    <div class="result-scroll">
+
+      <div *ngIf="resultados.length === 0 && intentado" class="text-muted">
+        No se encontraron consultas en esa fecha.
       </div>
 
       <table class="table" *ngIf="resultados.length > 0">
@@ -38,7 +41,7 @@
             <th>Hora</th>
             <th>Médico</th>
             <th>Total</th>
-            <th></th>
+            <th>Nota</th>
           </tr>
         </thead>
 
@@ -48,20 +51,29 @@
             <td>{{ r.medico_nombre }} {{ r.medico_apellidos }}</td>
             <td>{{ r.total | currency:'MXN' }}</td>
             <td>
-              <button class="btn btn-success btn-sm" (click)="imprimirNota(r.id_consulta)">
-                Imprimir
+              <button class="btn btn-sm btn-light border" (click)="imprimirNotaHistorica(r.id_consulta, false)">
+                Resumida
+              </button>
+
+              <button class="btn btn-sm btn-info text-white" (click)="imprimirNotaHistorica(r.id_consulta, true)">
+                Detallada
               </button>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <button class="btn btn-secondary w-100 mt-3" (click)="cerrarModal()">
-        Cerrar
-      </button>
-
     </div>
+
+    <button class="btn btn-secondary w-100 mt-3" (click)="cerrarModal()">
+      Cerrar
+    </button>
+
   </div>
+</div>
+
+<!-- gestion-consulta.component.html -->
+<div class="gestion-consulta-container">
 
   <!-- Mensajes de error y éxito -->
   <div *ngIf="mensajeError" class="notice notice-danger mb-16">
@@ -314,7 +326,7 @@
   </div>
 
   <!-- ============================================ -->
-  <!-- PASO 4: CAPTURA DE INSUMOS -->
+  <!-- PASO 3: CAPTURA DE INSUMOS -->
   <!-- ============================================ -->
   <div *ngIf="paso === 'captura-insumos'" class="paso-captura-insumos">
     <div class="card">
@@ -543,10 +555,17 @@
           <button class="btn btn-secondary" (click)="paso = 'seleccion-medico'">
             <i class="bi bi-arrow-left"></i> Regresar
           </button>
-          <button class="btn btn-success btn-lg" (click)="finalizarConsulta()" [disabled]="cargando">
-            <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
-            <i class="bi bi-check-circle"></i> Finalizar y Generar Nota de Remisión
-          </button>
+          <div class="d-flex gap-2">
+            <!-- ✅ NUEVO: Botón para cancelar consulta -->
+            <button class="btn btn-danger" (click)="cancelarConsulta()" [disabled]="cargando"
+              title="Cancelar consulta y restaurar inventario">
+              <i class="bi bi-x-circle"></i> Cancelar Consulta
+            </button>
+            <button class="btn btn-success btn-lg" (click)="finalizarConsulta()" [disabled]="cargando">
+              <span *ngIf="cargando" class="spinner-border spinner-border-sm me-2"></span>
+              <i class="bi bi-check-circle"></i> Finalizar y Generar Nota de Remisión
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -560,7 +579,6 @@
     <!-- Botones de acción (no imprimibles) -->
     <div class="no-print mb-3">
       <div class="d-flex justify-content-between align-items-center">
-        <!-- Selector de modo -->
         <div class="d-flex align-items-center gap-2">
           <span><strong>Modo de visualización:</strong></span>
 

@@ -1253,3 +1253,122 @@
 .celda-tipo.bg-warning {
   color: #000 !important;
 }
+
+/* ---- Fondo del modal ---- */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 40px;
+  z-index: 9999;
+}
+
+/* ---- Contenedor principal ---- */
+.modal-container {
+  background: #fff;
+  width: 95%;
+  max-width: 600px;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+  animation: modalEntrada 0.23s ease-out;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Animación */
+@keyframes modalEntrada {
+  from { opacity: 0; transform: translateY(-25px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- FORM ROW (tres inputs en fila) ---- */
+.form-row-1 {
+  display: flex;
+  gap: 12px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/* ---- Inputs ---- */
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 4px rgba(13,110,253,0.5);
+}
+
+/* ---- Scroll interno para la tabla ---- */
+.result-scroll {
+  margin-top: 10px;
+  max-height: 45vh;        /* Ajusta si quieres más/menos altura */
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+/* Barra de scroll más fina */
+.result-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.result-scroll::-webkit-scrollbar-thumb {
+  background: #c2c2c2;
+  border-radius: 4px;
+}
+
+/* ---- Ajuste y estilo de la tabla ---- */
+.modal-container table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.modal-container table th,
+.modal-container table td {
+  padding: 8px;
+  border: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+.modal-container table th {
+  font-weight: bold;
+  text-align: left;
+}
+
+.modal-container table tbody tr:hover {
+  background-color: #f2f2f2;
+}
+
+/* Botones dentro de la tabla */
+.modal-container .btn-sm {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+}
+
+.modal-container .btn-info {
+  color: #fff;
+}
