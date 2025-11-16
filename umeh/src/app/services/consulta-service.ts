@@ -160,4 +160,9 @@ export class ConsultaService {
     }
     );
   }
+
+  // ✅ NUEVO: Cancelar consulta y restaurar inventario
+  cancelarConsulta(id_consulta: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/consultas/${id_consulta}/cancelar`, {});
+  }
 }

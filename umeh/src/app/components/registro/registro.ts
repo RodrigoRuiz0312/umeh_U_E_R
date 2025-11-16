@@ -326,73 +326,22 @@ export class Registro implements OnInit {
     ctrl.patchValue({ id: null, encoded: '', tipo: null, nombre: '' });
   }
 
-  // NUEVO MÉTODO: Solo valida y muestra advertencia, NO actualiza inventario
+  // NUEVO MÉTODO: Solo muestra información del insumo seleccionado, no valida inventario
   private validarDisponibilidadInsumo(index: number) {
     const ctrl = this.insumosFA.at(index) as FormGroup;
-    const id = ctrl.get('id')?.value as number | null;
-    const tipo = ctrl.get('tipo')?.value as 'medicamento' | 'material' | null;
+    const nombre = ctrl.get('nombre')?.value || 'Insumo';
     const cantidadSolicitada = Number(ctrl.get('cantidad')?.value || 0);
 
-    if (!id || !tipo || cantidadSolicitada <= 0) return;
-
-    // Inventario actual del insumo seleccionado
-    const inventarioActual = tipo === 'medicamento'
-      ? (this.medicamentos.find(m => m.id === id)?.cantidad ?? 0)
-      : (this.materiales.find(m => m.id === id)?.cantidad ?? 0);
-
-    // Sumar todo lo solicitado en el formulario para este insumo (incluye esta fila)
-    let totalSolicitado = 0;
-    for (let i = 0; i < this.insumosFA.length; i++) {
-      const c = this.insumosFA.at(i) as FormGroup;
-      if (c.get('id')?.value === id && c.get('tipo')?.value === tipo) {
-        totalSolicitado += Number(c.get('cantidad')?.value || 0);
-      }
-    }
-
-    // Disponibilidad restante considerando todas las líneas (incluyendo esta)
-    const remaining = inventarioActual - totalSolicitado;
-    // Disponible antes de aplicar la cantidad de ESTA línea (para mensaje de "Disponible")
-    const disponibleAntes = inventarioActual - (totalSolicitado - cantidadSolicitada);
-    const nombre = ctrl.get('nombre')?.value || 'Insumo';
-
-    if (remaining < 0) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Inventario insuficiente',
-        detail: `${nombre}: Solicitado ${cantidadSolicitada}, Disponible ${disponibleAntes}`,
-        life: 3000
-      });
-    } else {
+    if (nombre && cantidadSolicitada > 0) {
       this.messageService.add({
         severity: 'info',
-        summary: 'Vista previa',
-        detail: `${nombre}: Quedarían ${remaining} disponibles`,
+        summary: 'Insumo agregado',
+        detail: `${nombre}: ${cantidadSolicitada} unidad(es)`,
         life: 2000
       });
     }
   }
 
-  // MÉTODO AUXILIAR: Calcular el inventario disponible considerando todos los insumos agregados
-  private calcularDisponibleReal(id: number, tipo: 'medicamento' | 'material'): number {
-    // Obtener inventario actual desde los arrays cargados
-    const inventarioActual = tipo === 'medicamento'
-      ? (this.medicamentos.find(m => m.id === id)?.cantidad ?? 0)
-      : (this.materiales.find(m => m.id === id)?.cantidad ?? 0);
-
-    // Restar todas las cantidades ya agregadas en el formulario para este mismo insumo
-    let totalSolicitado = 0;
-    for (let i = 0; i < this.insumosFA.length; i++) {
-      const ctrl = this.insumosFA.at(i) as FormGroup;
-      const insumoId = ctrl.get('id')?.value;
-      const insumoTipo = ctrl.get('tipo')?.value;
-
-      if (insumoId === id && insumoTipo === tipo) {
-        totalSolicitado += Number(ctrl.get('cantidad')?.value || 0);
-      }
-    }
-
-    return inventarioActual - totalSolicitado;
-  }
 
   toggleMetodo(id: number, checked: boolean) {
     this.metodosTouched = true;
@@ -461,19 +410,9 @@ export class Registro implements OnInit {
     if (tipo === 'procedimiento') {
       const proc = this.procGroup.value;
 
-      // VALIDAR INVENTARIO antes de registrar
-      const inventarioSuficiente = await this.validarInventarioProcedimiento();
-      if (!inventarioSuficiente) {
-        this.loading = false;
-        return;
-      }
-
       try {
-        // Registrar el procedimiento
+        // Registrar el procedimiento (sin descontar inventario)
         await firstValueFrom(this.insumoService.crearProcedimiento(proc));
-
-        // AHORA SÍ actualizar el inventario
-        await this.actualizarInventarioProcedimiento();
 
         // Limpiar formulario
         this.procGroup.reset({ descripcion: '', observaciones: '' });
@@ -483,7 +422,7 @@ export class Registro implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Procedimiento registrado',
-          detail: 'El procedimiento fue guardado exitosamente.'
+          detail: 'El procedimiento fue guardado. El inventario se descontará al agregarlo a una consulta.'
         });
       } catch (err: any) {
         this.messageService.add({
@@ -535,89 +474,5 @@ export class Registro implements OnInit {
         });
       }
     });
-  }
-
-  // Validar que hay suficiente inventario para todos los insumos
-  private async validarInventarioProcedimiento(): Promise<boolean> {
-    const errores: string[] = [];
-
-    for (let i = 0; i < this.insumosFA.length; i++) {
-      const ctrl = this.insumosFA.at(i) as FormGroup;
-      const id = ctrl.get('id')?.value as number | null;
-      const tipo = ctrl.get('tipo')?.value as 'medicamento' | 'material' | null;
-      const cantidad = Number(ctrl.get('cantidad')?.value || 0);
-
-      if (!id || !tipo || cantidad <= 0) continue;
-
-      // Usar el cálculo REAL que considera otros insumos del mismo formulario
-      const disponible = this.calcularDisponibleReal(id, tipo);
-      const nombre = ctrl.get('nombre')?.value || 'Insumo';
-
-      if (cantidad > disponible) {
-        errores.push(`${nombre}: solicitado ${cantidad}, disponible ${disponible}`);
-      }
-    }
-
-    if (errores.length > 0) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Inventario insuficiente',
-        detail: errores.join(' | '),
-        life: 5000
-      });
-      return false;
-    }
-
-    return true;
-  }
-
-  // Actualizar el inventario después de registrar el procedimiento
-  private async actualizarInventarioProcedimiento(): Promise<void> {
-    const updates: Promise<any>[] = [];
-
-    for (let i = 0; i < this.insumosFA.length; i++) {
-      const ctrl = this.insumosFA.at(i) as FormGroup;
-      const id = ctrl.get('id')?.value as number | null;
-      const tipo = ctrl.get('tipo')?.value as 'medicamento' | 'material' | null;
-      const cantidad = Number(ctrl.get('cantidad')?.value || 0);
-
-      if (!id || !tipo || cantidad <= 0) continue;
-
-      // Obtener la cantidad actual REAL del servidor (no de cache)
-      const disponible = tipo === 'medicamento'
-        ? (this.medicamentos.find(m => m.id === id)?.cantidad ?? 0)
-        : (this.materiales.find(m => m.id === id)?.cantidad ?? 0);
-
-      const nuevaCantidad = disponible - cantidad;
-
-      // Actualizar en el backend según el tipo
-      if (tipo === 'medicamento') {
-        updates.push(
-          firstValueFrom(this.insumoService.updateInsumo(id, { cantidad: nuevaCantidad }))
-        );
-      } else {
-        updates.push(
-          firstValueFrom(this.insumoService.updateTriage(id, { cantidad: nuevaCantidad }))
-        );
-      }
-    }
-
-    // Esperar a que todas las actualizaciones terminen
-    await Promise.all(updates);
-
-    // Limpiar cache y recargar datos
-    this.insumoService.clearCache();
-
-    // Recargar medicamentos
-    const medicamentosActualizados = await firstValueFrom(
-      this.insumoService.getInsumos()
-    );
-    this.medicamentos = medicamentosActualizados || [];
-
-    // Recargar materiales de triage
-    const materialesActualizados = await firstValueFrom(
-      this.insumoService.getMaterial_Triage()
-    );
-    this.materiales = materialesActualizados || [];
   }
 }

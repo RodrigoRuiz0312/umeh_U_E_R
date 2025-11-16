@@ -267,7 +267,7 @@ class ConsultaController {
         });
       }
 
-      // Insertar insumo en consulta (el trigger descontará automáticamente)
+      // Insertar insumo en consulta (el trigger descontar_inventario() descuenta automáticamente)
       const insert = await client.query(
         `INSERT INTO consulta_insumos 
    (id_consulta, id_insumo, tipo, cantidad, costo_unitario, descripcion)
@@ -377,7 +377,7 @@ class ConsultaController {
       } else if (tipo === 'procedimiento') {
         await client.query(
           `UPDATE medicamentos m
-         SET cantidad = cantidad + (pi.cantidad * $1)
+         SET cantidad = m.cantidad + (pi.cantidad * $1)
          FROM procedimiento_insumos pi
          WHERE pi.id_procedimiento = $2
          AND pi.tipo = 'medicamento'
@@ -387,7 +387,7 @@ class ConsultaController {
 
         await client.query(
           `UPDATE mat_triage mt
-         SET cantidad = cantidad + (pi.cantidad * $1)
+         SET cantidad = mt.cantidad + (pi.cantidad * $1)
          FROM procedimiento_insumos pi
          WHERE pi.id_procedimiento = $2
          AND pi.tipo = 'material'
@@ -632,6 +632,81 @@ class ConsultaController {
     } catch (error) {
       console.error('Error obteniendo médicos:', error);
       res.status(500).json({ error: 'Error al obtener médicos' });
+    }
+  }
+
+  // ✅ NUEVO: Cancelar consulta y restaurar todo el inventario
+  async cancelarConsulta(req, res) {
+    const client = await pool.connect();
+    try {
+      const { id_consulta } = req.params;
+
+      await client.query('BEGIN');
+
+      // Obtener todos los insumos de la consulta antes de cancelarla
+      const insumosResult = await client.query(
+        'SELECT id_insumo, tipo, cantidad FROM consulta_insumos WHERE id_consulta = $1',
+        [id_consulta]
+      );
+
+      // Restaurar inventario para cada insumo
+      for (const insumo of insumosResult.rows) {
+        const { id_insumo, tipo, cantidad } = insumo;
+
+        if (tipo === 'medicamento') {
+          await client.query(
+            'UPDATE medicamentos SET cantidad = cantidad + $1 WHERE id = $2',
+            [cantidad, id_insumo]
+          );
+        } else if (tipo === 'material') {
+          await client.query(
+            'UPDATE mat_triage SET cantidad = cantidad + $1 WHERE id = $2',
+            [cantidad, id_insumo]
+          );
+        } else if (tipo === 'procedimiento') {
+          // Restaurar los insumos del procedimiento
+          await client.query(
+            `UPDATE medicamentos m
+             SET cantidad = m.cantidad + (pi.cantidad * $1)
+             FROM procedimiento_insumos pi
+             WHERE pi.id_procedimiento = $2
+             AND pi.tipo = 'medicamento'
+             AND pi.id_insumo = m.id`,
+            [cantidad, id_insumo]
+          );
+
+          await client.query(
+            `UPDATE mat_triage mt
+             SET cantidad = mt.cantidad + (pi.cantidad * $1)
+             FROM procedimiento_insumos pi
+             WHERE pi.id_procedimiento = $2
+             AND pi.tipo = 'material'
+             AND pi.id_insumo = mt.id`,
+            [cantidad, id_insumo]
+          );
+        }
+      }
+
+      // Marcar consulta como cancelada
+      await client.query(
+        `UPDATE consultas 
+         SET estatus = 'cancelada', activo = false 
+         WHERE id_consulta = $1`,
+        [id_consulta]
+      );
+
+      await client.query('COMMIT');
+
+      res.json({
+        mensaje: 'Consulta cancelada y inventario restaurado correctamente',
+        insumosRestaurados: insumosResult.rows.length
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error('Error cancelando consulta:', error);
+      res.status(500).json({ error: 'Error al cancelar consulta' });
+    } finally {
+      client.release();
     }
   }
 }

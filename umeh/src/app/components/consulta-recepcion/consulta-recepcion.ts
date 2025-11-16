@@ -1,4 +1,3 @@
-// gestion-consulta.component.ts
 import { Component, OnInit } from '@angular/core';
 import { ConsultaService } from '../../services/consulta-service';
 import { CommonModule } from '@angular/common';
@@ -1005,10 +1004,45 @@ export class ConsultaRecepcion implements OnInit {
     });
   }
 
-  imprimirNota(id_consulta: number) {
-    const url = `http://localhost:4000/api/notas/${id_consulta}/nota-remision`;
+  imprimirNotaHistorica(id_consulta: number, modoDetallado: boolean) {
+    const url = `http://localhost:4000/api/notas/${id_consulta}/nota-remision?modo_detallado=${modoDetallado}`;
     window.open(url, '_blank');
   }
 
-  // Método eliminado - ya no se finaliza desde la tabla de consultas activas
+  // ✅ NUEVO: Cancelar consulta y restaurar inventario
+  cancelarConsulta(): void {
+    if (!this.consultaActual) return;
+
+    if (!confirm('¿Está seguro de cancelar esta consulta? Se restaurará todo el inventario de insumos utilizados.')) {
+      return;
+    }
+
+    this.cargando = true;
+    this.consultaService.cancelarConsulta(this.consultaActual.id_consulta).subscribe({
+      next: (response) => {
+        this.mensajeExito = `Consulta cancelada. ${response.insumosRestaurados} insumo(s) restaurado(s).`;
+
+        // Actualizar cita si existe
+        if (this.idCita) {
+          this.api.actualizarEstadoCita(this.idCita, 'Cancelada')
+            .subscribe(() => this.cargarCitasDelDia());
+        }
+
+        // Actualizar lista de consultas activas
+        this.obtenerConsultasActivas();
+
+        // Resetear formulario después de 2 segundos
+        setTimeout(() => {
+          this.nuevaConsulta();
+        }, 2000);
+
+        this.cargando = false;
+      },
+      error: (error) => {
+        console.error('Error cancelando consulta:', error);
+        this.mensajeError = error.error?.mensaje || 'Error al cancelar la consulta';
+        this.cargando = false;
+      }
+    });
+  }
 }
