@@ -26,14 +26,14 @@ class ConsultaController {
 
       // Ejecutamos la consulta principal
       const pacientesResult = await pool.query(query, params);
-      
+
       if (pacientesResult.rows.length === 0) {
         return res.json([]);
       }
 
       // Obtenemos los IDs de los pacientes encontrados
       const pacientesIds = pacientesResult.rows.map(p => p.id_paciente);
-      
+
       // Consulta para obtener los teléfonos de los pacientes
       const telefonosQuery = `
         SELECT pt.id_paciente, array_agg(pt.telefono) as telefonos
@@ -41,7 +41,7 @@ class ConsultaController {
         WHERE pt.id_paciente = ANY($1::bigint[])
         GROUP BY pt.id_paciente
       `;
-      
+
       // Consulta para obtener los correos de los pacientes
       const correosQuery = `
         SELECT pc.id_paciente, array_agg(pc.correo) as correos
@@ -49,29 +49,29 @@ class ConsultaController {
         WHERE pc.id_paciente = ANY($1::bigint[])
         GROUP BY pc.id_paciente
       `;
-      
+
       // Ejecutamos ambas consultas en paralelo
       const [telefonosResult, correosResult] = await Promise.all([
         pool.query(telefonosQuery, [pacientesIds]),
         pool.query(correosQuery, [pacientesIds])
       ]);
-      
+
       // Creamos mapas para acceder rápidamente a los teléfonos y correos por ID de paciente
       const telefonosMap = new Map(
         telefonosResult.rows.map(row => [row.id_paciente, row.telefonos])
       );
-      
+
       const correosMap = new Map(
         correosResult.rows.map(row => [row.id_paciente, row.correos])
       );
-      
+
       // Combinamos los resultados
       const pacientes = pacientesResult.rows.map(paciente => ({
         ...paciente,
         telefonos: telefonosMap.get(paciente.id_paciente) || [],
         correos: correosMap.get(paciente.id_paciente) || []
       }));
-      
+
       res.json(pacientes);
     } catch (error) {
       console.error('Error buscando paciente:', error);
@@ -225,37 +225,40 @@ class ConsultaController {
           inventarioDisponible = true;
           costoUnitario = parseFloat(mat.rows[0].costo_unitario); // ✅ Convertir aquí
         }
+        // En el método agregarInsumo, dentro del if (tipo === 'procedimiento'):
       } else if (tipo === 'procedimiento') {
         // Para procedimientos, verificar que todos sus insumos estén disponibles
         const verificacion = await client.query(
           `SELECT 
-            COALESCE(
-              BOOL_AND(
-                CASE 
-                  WHEN pi.tipo = 'medicamento' THEN m.cantidad >= (pi.cantidad * $2)
-                  WHEN pi.tipo = 'material' THEN mt.cantidad >= (pi.cantidad * $2)
-                  ELSE true
-                END
-              ), 
-              true
-            ) as disponible
-          FROM procedimiento_insumos pi
-          LEFT JOIN medicamentos m ON pi.tipo = 'medicamento' AND pi.id_insumo = m.id
-          LEFT JOIN mat_triage mt ON pi.tipo = 'material' AND pi.id_insumo = mt.id
-          WHERE pi.id_procedimiento = $1`,
+      COALESCE(
+        BOOL_AND(
+          CASE 
+            WHEN pi.tipo = 'medicamento' THEN m.cantidad >= (pi.cantidad * $2)
+            WHEN pi.tipo = 'material' THEN mt.cantidad >= (pi.cantidad * $2)
+            ELSE true
+          END
+        ), 
+        true
+      ) as disponible
+    FROM procedimiento_insumos pi
+    LEFT JOIN medicamentos m ON pi.tipo = 'medicamento' AND pi.id_insumo = m.id
+    LEFT JOIN mat_triage mt ON pi.tipo = 'material' AND pi.id_insumo = mt.id
+    WHERE pi.id_procedimiento = $1`,
           [id_insumo, cantidad]
         );
 
         inventarioDisponible = verificacion.rows[0].disponible;
 
-        // Obtener costo del procedimiento
+        // Obtener costo del procedimiento (SOLO los costos de responsables, NO de insumos)
         const costoProcedimiento = await client.query(
-          'SELECT costo_total FROM vista_costo_procedimientos WHERE id_procedimiento = $1',
+          `SELECT COALESCE(SUM(pr.costo), 0) as costo_total 
+     FROM procedimiento_responsables pr 
+     WHERE pr.id_procedimiento = $1`,
           [id_insumo]
         );
 
         if (costoProcedimiento.rows.length > 0) {
-          costoUnitario = parseFloat(costoProcedimiento.rows[0].costo_total); // ✅ Convertir aquí
+          costoUnitario = parseFloat(costoProcedimiento.rows[0].costo_total);
         }
       }
 
@@ -599,16 +602,22 @@ class ConsultaController {
 
       const result = await pool.query(
         `SELECT 
-          vcp.id_procedimiento as id,
-        vcp.descripcion as nombre,
-        vcp.costo_total as costo_unitario,
+        p.id_procedimiento as id,
+        p.descripcion as nombre,
+        COALESCE(c.costo_total, 0) as costo_unitario,
         'procedimiento' as unidad
-         FROM vista_costo_procedimientos vcp
-         INNER JOIN procedimientos p ON vcp.id_procedimiento = p.id_procedimiento
-         WHERE p.activo = true 
-         AND LOWER(vcp.descripcion) LIKE LOWER($1)
-         ORDER BY vcp.descripcion
-         LIMIT 20`,
+       FROM procedimientos p
+       LEFT JOIN (
+         SELECT 
+           pr.id_procedimiento,
+           SUM(pr.costo) as costo_total
+         FROM procedimiento_responsables pr
+         GROUP BY pr.id_procedimiento
+       ) c ON p.id_procedimiento = c.id_procedimiento
+       WHERE p.activo = true 
+       AND LOWER(p.descripcion) LIKE LOWER($1)
+       ORDER BY p.descripcion
+       LIMIT 20`,
         [`%${busqueda}%`]
       );
 
@@ -635,7 +644,7 @@ class ConsultaController {
     }
   }
 
-  // ✅ NUEVO: Cancelar consulta y restaurar todo el inventario
+  // Cancelar consulta y restaurar todo el inventario
   async cancelarConsulta(req, res) {
     const client = await pool.connect();
     try {
@@ -713,7 +722,7 @@ class ConsultaController {
 
 async function obtenerHojaConsultaInterna(id_consulta) {
   const { pool } = require('../db');
-  
+
   // Primero obtenemos los datos básicos de la consulta
   const consultaQuery = `
     SELECT 
@@ -728,31 +737,31 @@ async function obtenerHojaConsultaInterna(id_consulta) {
     WHERE c.id_consulta = $1`;
 
   const consultaResult = await pool.query(consultaQuery, [id_consulta]);
-  
+
   if (!consultaResult.rows[0]) {
     return null;
   }
-  
+
   const consultaData = consultaResult.rows[0];
-  
+
   // Obtenemos los teléfonos del paciente
   const telefonosQuery = `
     SELECT telefono 
     FROM paciente_telefonos 
     WHERE id_paciente = $1`;
-  
+
   const telefonosResult = await pool.query(telefonosQuery, [consultaData.id_paciente]);
   const telefonos = telefonosResult.rows.map(t => t.telefono);
-  
+
   // Obtenemos los correos del paciente
   const correosQuery = `
     SELECT correo 
     FROM paciente_correos 
     WHERE id_paciente = $1`;
-  
+
   const correosResult = await pool.query(correosQuery, [consultaData.id_paciente]);
   const correos = correosResult.rows.map(c => c.correo);
-  
+
   // Combinamos los resultados
   return {
     ...consultaData,

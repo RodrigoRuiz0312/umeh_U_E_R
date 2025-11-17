@@ -63,9 +63,6 @@
       <label for="costo_unitario">Costo unitario</label>
       <input id="costo_unitario" type="number" step="0.01" min="0" formControlName="costo_unitario"
         placeholder="Ej. 12.50" />
-      <div class="error" *ngIf="costo_unitario?.touched && costo_unitario?.invalid">
-        <small *ngIf="costo_unitario?.errors?.['min']">El costo no puede ser negativo.</small>
-      </div>
     </div>
 
     <!-- Métodos de aplicación (solo si es medicamento) -->
