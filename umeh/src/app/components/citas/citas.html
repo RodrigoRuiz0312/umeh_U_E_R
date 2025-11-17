@@ -49,21 +49,38 @@
         </div>
 
         <div class="time-slots">
-          <button
-          *ngFor="let horario of horariosDelDia"
-          class="time-slot"
-          [class.ocupado]="isHourBooked(doctor, horario)"
-          (click)="isHourBooked(doctor, horario) ? verDetallesCita(getAppointmentForHour(doctor, horario)) : abrirModalAgendar(doctor, horario)">
-          
-          <span *ngIf="!isHourBooked(doctor, horario)">
-            {{ horario.substring(0, 5) }} hrs
-          </span>
+          <div *ngFor="let par of horariosDelDia" class="time-slot-row">
+            
+            <button
+              class="time-slot"
+              [class.ocupado]="isHourBooked(doctor, par.h1)"
+              (click)="isHourBooked(doctor, par.h1) ? verDetallesCita(getAppointmentForHour(doctor, par.h1)) : abrirModalAgendar(doctor, par.h1)">
+              
+              <span *ngIf="!isHourBooked(doctor, par.h1)">
+                {{ par.h1.substring(0, 5) }} hrs
+              </span>
+              <span *ngIf="isHourBooked(doctor, par.h1)">
+                <strong>Ocupado</strong>
+                </span>
+            </button>
+            
+            <button
+              *ngIf="par.h2"
+              class="time-slot"
+              [class.ocupado]="isHourBooked(doctor, par.h2)"
+              (click)="isHourBooked(doctor, par.h2) ? verDetallesCita(getAppointmentForHour(doctor, par.h2)) : abrirModalAgendar(doctor, par.h2)">
+              
+              <span *ngIf="!isHourBooked(doctor, par.h2)">
+                {{ par.h2.substring(0, 5) }} hrs
+              </span>
+              <span *ngIf="isHourBooked(doctor, par.h2)">
+                <strong>Ocupado</strong>
+                </span>
+            </button>
 
-          <span *ngIf="isHourBooked(doctor, horario)">
-            <strong> Ocupado</strong> <br>
-            <small> {{ getAppointmentForHour(doctor, horario)?.nombre_paciente }}</small>
-          </span>
-        </button>
+            <div *ngIf="!par.h2" class="time-slot-placeholder"></div>
+            
+          </div>
         </div>
       </div>
     </div>

@@ -174,14 +174,26 @@
 /* Estilo para cada botón de horario. */
 .time-slot {
   width: 100%;
-  padding: 12px;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 6px;
   background: var(--card-bg);
   cursor: pointer;
   text-align: center;
   font-weight: 600;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
+}
+
+.time-slot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  gap: 8px; 
+}
+
+
+.time-slot-placeholder {
+  display: none; 
 }
 
 /* Efecto al pasar el mouse sobre un horario LIBRE. */
