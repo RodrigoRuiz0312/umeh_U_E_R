@@ -50,6 +50,7 @@ router.post('/finalizarConsulta/:id_consulta/finalizar', consultaController.fina
 // Búsqueda de insumos disponibles
 router.get('/medicamentos/buscar', consultaController.buscarMedicamentos);
 router.get('/materiales/buscar', consultaController.buscarMateriales);
+router.get('/mat-general/buscar', consultaController.buscarMatGeneral);
 router.get('/procedimientos/buscar', consultaController.buscarProcedimientos);
 
 router.get('/activas', consultaController.obtenerConsultasActivas);

@@ -47,19 +47,22 @@ async function getInsumosConsulta(id) {
             ci.*,
             CASE 
                 WHEN ci.tipo = 'medicamento' THEN med.nombre
-                WHEN ci.tipo = 'material' THEN mat.nombre  
+                WHEN ci.tipo = 'material' THEN mat.nombre
+                WHEN ci.tipo = 'mat_general' THEN mg.nombre  
                 WHEN ci.tipo = 'procedimiento' THEN proc.descripcion
                 ELSE ci.descripcion
             END as nombre_insumo,
             CASE 
                 WHEN ci.tipo = 'medicamento' THEN med.unidad
                 WHEN ci.tipo = 'material' THEN mat.unidad
+                WHEN ci.tipo = 'mat_general' THEN mg.unidad
                 WHEN ci.tipo = 'procedimiento' THEN 'servicio'
                 ELSE 'unidad'
             END as unidad
         FROM consulta_insumos ci
         LEFT JOIN medicamentos med ON ci.id_insumo = med.id AND ci.tipo = 'medicamento'
         LEFT JOIN mat_triage mat ON ci.id_insumo = mat.id AND ci.tipo = 'material'
+        LEFT JOIN mat_general mg ON ci.id_insumo = mg.id AND ci.tipo = 'mat_general'
         LEFT JOIN procedimientos proc ON ci.id_insumo = proc.id_procedimiento AND ci.tipo = 'procedimiento'
         WHERE ci.id_consulta = $1
         ORDER BY ci.tipo, ci.id
@@ -385,6 +388,7 @@ function getCategoriaNombre(tipo) {
     const categorias = {
         'medicamento': 'Medicamentos',
         'material': 'Material de curación',
+        'mat_general': 'Material general',
         'procedimiento': 'Procedimientos médicos',
         'extra': 'Servicios adicionales'
     };

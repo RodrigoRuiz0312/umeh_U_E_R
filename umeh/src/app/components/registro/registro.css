@@ -109,7 +109,6 @@
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-color) 20%, transparent);
 }
 
-button[type="submit"],
 button[type="button"] {
   appearance: none;
   border: none;
@@ -122,12 +121,10 @@ button[type="button"] {
   transition: transform 0.05s ease, background-color 0.2s ease, opacity 0.2s ease;
 }
 
-button[type="submit"]:hover,
 button[type="button"]:hover {
   background: color-mix(in oklab, var(--primary-color) 90%, #000);
 }
 
-button[type="submit"]:active,
 button[type="button"]:active {
   transform: translateY(1px);
 }
@@ -135,12 +132,6 @@ button[type="button"]:active {
 button[disabled] {
   opacity: 0.7;
   cursor: not-allowed;
-}
-
-.registro-container form > button[type="submit"] {
-  grid-column: 1 / -1;
-  justify-self: end;
-  align-self: end;
 }
 
 .proc-grid {
@@ -261,7 +252,7 @@ p-toast {
 .registro-container form > button[type="submit"] {
   position: fixed;
   top: 40px;
-  right: 40px;
+  right: 50px;
   font-size: 1rem;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   z-index: 1000;

@@ -17,6 +17,11 @@ BEGIN
         UPDATE mat_triage
         SET cantidad = cantidad - NEW.cantidad
         WHERE id = NEW.id_insumo;
+    
+    ELSIF NEW.tipo = 'mat_general' THEN
+        UPDATE mat_general
+        SET cantidad = cantidad - NEW.cantidad
+        WHERE id = NEW.id_insumo;
         
     ELSIF NEW.tipo = 'procedimiento' THEN
         -- ✅ CORREGIDO: Descontar insumos del procedimiento con m.cantidad y mt.cantidad explícitos
@@ -33,6 +38,13 @@ BEGIN
         WHERE pi.id_procedimiento = NEW.id_insumo
         AND pi.tipo = 'material'
         AND pi.id_insumo = mt.id;
+        
+        UPDATE mat_general mg
+        SET cantidad = mg.cantidad - (pi.cantidad * NEW.cantidad)
+        FROM procedimiento_insumos pi
+        WHERE pi.id_procedimiento = NEW.id_insumo
+        AND pi.tipo = 'mat_general'
+        AND pi.id_insumo = mg.id;
     END IF;
     
     RETURN NEW;

@@ -14,33 +14,33 @@ import { Router } from '@angular/router';
   styleUrl: './citas.css'
 })
 export class Citas implements OnInit {
-
   agendaSeleccionada: string | null = null;
   agenda: any[] = [];
-
-
-  terminoBusquedaCita: string ='';
+  terminoBusquedaCita: string = '';
   resultadoBusqueda: any[] = [];
-
   fechaSeleccionada: string = new Date().toISOString().split('T')[0];
 
-  horariosDelDia: any[] = [
-    {h1:'07:00:00',h2:'07:30:00'},
-    {h1:'08:00:00',h2:'08:30:00'},
-    {h1:'09:00:00',h2:'09:30:00'},
-    {h1:'10:00:00',h2:'10:30:00'},
-    {h1:'11:00:00',h2:'11:30:00'},
-    {h1:'12:00:00',h2:'12:30:00'},
-    {h1:'13:00:00',h2:'13:30:00'},
-    {h1:'14:00:00',h2:'14:30:00'},
-    {h1:'15:00:00',h2:'15:30:00'},
-    {h1:'16:00:00',h2:'16:30:00'},
-    {h1:'17:00:00',h2:'17:30:00'},
-    {h1:'18:00:00',h2:'18:30:00'},
-    {h1:'19:00:00',h2:'19:30:00'},
-    {h1:'20:00:00',h2:'20:30:00'},
-    {h1:'21:00:00',h2:null}
+  horariosManana: string[] = [
+    '07:00:00', '07:30:00',
+    '08:00:00', '08:30:00',
+    '09:00:00', '09:30:00',
+    '10:00:00', '10:30:00',
+    '11:00:00', '11:30:00',
+    '12:00:00', '12:30:00',
+    '13:00:00', '13:30:00'
   ];
+
+  horariosTarde: string[] = [
+    '14:00:00', '14:30:00',
+    '15:00:00', '15:30:00',
+    '16:00:00', '16:30:00',
+    '17:00:00', '17:30:00',
+    '18:00:00', '18:30:00',
+    '19:00:00', '19:30:00',
+    '20:00:00', '20:30:00',
+    '21:00:00'
+  ];
+
   isAgendarModalVisible = false;
   datosParaNuevaCita: any = {};
 
@@ -67,8 +67,8 @@ export class Citas implements OnInit {
     });
   }
 
-  buscarCitas(){
-    if(this.terminoBusquedaCita.length < 3) {
+  buscarCitas() {
+    if (this.terminoBusquedaCita.length < 3) {
       this.resultadoBusqueda = [];
       return;
     }
@@ -119,12 +119,12 @@ export class Citas implements OnInit {
     this.citaSeleccionada = cita;
     this.isDetailsModalVisible = true;
   }
- 
+
   closeDetailsModal() {
     this.isDetailsModalVisible = false;
   }
 
-  
+
   citaActualizadaConExito() {
     this.closeDetailsModal();
     this.cargarAgenda();

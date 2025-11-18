@@ -3,6 +3,7 @@ import { HomeComponent } from './components/home/home';
 import { Tabla } from './components/tabla/tabla';
 import { Registro } from './components/registro/registro';
 import { MatTriage } from './components/mat-triage/mat-triage';
+import { MatGeneralComponent } from './components/mat-general/mat-general';
 import { Procedimientos } from './components/procedimientos/procedimientos';
 import { RegistroPaciente } from './components/registro-paciente/registro-paciente';
 import { ListaPacientes } from './components/lista-pacientes/lista-pacientes';
@@ -32,6 +33,7 @@ export const routes: Routes = [
       { path: 'registro', component: Registro },
       { path: 'medicamentos', component: Tabla },
       { path: 'triage', component: MatTriage },
+      { path: 'mat-general', component: MatGeneralComponent },
       { path: 'procedimientos', component: Procedimientos },
     ]
   },

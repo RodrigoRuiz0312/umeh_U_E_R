@@ -163,79 +163,23 @@
   color: var(--card-text);
 }
 
-/* ---Los Botones de Horario --- */
-
-.time-slots {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Estilo para cada botón de horario. */
-.time-slot {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background: var(--card-bg);
-  cursor: pointer;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.time-slot-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr; 
-  gap: 8px; 
-}
-
-
-.time-slot-placeholder {
-  display: none; 
-}
-
-/* Efecto al pasar el mouse sobre un horario LIBRE. */
-.time-slot:hover:not(:disabled) {
-  background: var(--card-bg);
-  border-color: #0d6efd;
-  transform: scale(1.02);
-}
-
-/* Estilo para los horarios OCUPADOS. */
-.time-slot.ocupado {
-  background-color: #ffebee;
-  border-color: #e57373;
-  color: #c62828;
-  cursor: not-allowed;
-  opacity: 0.8;
-}
-
-/* Estilo para el nombre del paciente en la cita ocupada. */
-.time-slot.ocupado small {
-  color: #d32f2f;
-  font-weight: normal;
-}
-
-
 .resultados-busqueda {
-  display: flex;        
-  flex-direction: row;  
-  overflow-x: auto;     
-  background: #f8f9fa;  
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  background: #f8f9fa;
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #eee;
-  margin-top: 10px; 
+  margin-top: 10px;
 }
 
 /* Cada tarjeta individual de resultado */
 .resultado-item {
-  flex-shrink: 0;   
-  width: 300px;     
+  flex-shrink: 0;
+  width: 300px;
   padding: 15px;
-  
+
 
   border-right: 1px solid #ddd;
 }
@@ -247,7 +191,7 @@
 
 /* Estilos para el texto dentro de cada tarjeta de resultado */
 .resultado-item p {
-  margin: 0 0 8px 0; 
+  margin: 0 0 8px 0;
   font-size: 0.9rem;
 }
 
@@ -255,11 +199,67 @@
   color: #333;
 }
 
-.input-name{
-
- width: 300px;
+.input-name {
+  width: 300px;
   border-radius: 50px;
   padding: 12px 20px;
   border: 1px solid #ddd;
   background-color: #f8f8f8;
+}
+
+.time-slots-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.time-group-header {
+  margin: 12px 0 8px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--card-text);
+  opacity: 0.7;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+
+.pills-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.time-pill {
+  width: 100%;
+  padding: 10px 5px;
+  border: 1px solid #0d6efd;
+  color: #0d6efd;
+  background: #ffffff;
+  border-radius: 50px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.time-pill:hover:not(.ocupado) {
+  background: #0d6efd;
+  color: #ffffff;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+.time-pill.ocupado {
+  background-color: #ff0000;
+  border-color: #dee2e6;
+  color: #adb5bd;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.time-pill.ocupado:hover {
+  transform: none;
+  box-shadow: none;
 }

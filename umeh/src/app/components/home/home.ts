@@ -1,4 +1,3 @@
-// home.component.ts
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -44,6 +43,14 @@ export class HomeComponent implements OnInit {
       icon: 'fa-kit-medical',
       route: '/insumos/triage',
       color: 'success'
+    },
+    {
+      id: 'general',
+      title: 'Material General',
+      description: 'Ver material general',
+      icon: 'fa-kit-medical',
+      route: '/insumos/mat-general',
+      color: 'warning'
     }
   ];
 

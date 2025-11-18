@@ -109,34 +109,6 @@
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-color) 20%, transparent);
 }
 
-button[type="submit"],
-button[type="button"] {
-  appearance: none;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--primary-color);
-  color: #fff;
-  transition: transform 0.05s ease, background-color 0.2s ease, opacity 0.2s ease;
-}
-
-button[type="submit"]:hover,
-button[type="button"]:hover {
-  background: color-mix(in oklab, var(--primary-color) 90%, #000);
-}
-
-button[type="submit"]:active,
-button[type="button"]:active {
-  transform: translateY(1px);
-}
-
-button[disabled] {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
 @media (max-width: 640px) {
   .proc-grid {
     grid-template-columns: 1fr;
@@ -156,7 +128,7 @@ p-toast {
 .registro-container form > button[type="submit"] {
   position: fixed;
   top: 40px;
-  right: 40px;
+  right: 50px;
   font-size: 1rem;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   z-index: 1000;
@@ -340,8 +312,6 @@ p-toast {
   font-weight: bold;
   margin-left: 2px;
 }
-
-/* --- Estilos para los Radio Buttons de Agenda --- */
 
 /* Contenedor principal de las opciones de radio */
 .form-field .radio-group {

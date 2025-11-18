@@ -1,13 +1,13 @@
 <div class="card">
   <div *ngIf="!agendaSeleccionada" class="seleccion_container">
     <div class="card-header">
-       <h2>Agendación de citas</h2>
+      <h2>Agendación de citas</h2>
     </div>
 
     <div class="buscador general">
       <h3>Buscar cita existente</h3>
-      <input class="input-name"type="text" placeholder="Escriba nombre del paciente..."
-      [(ngModel)]="terminoBusquedaCita" (keyup)="buscarCitas()">
+      <input class="input-name" type="text" placeholder="Escriba nombre del paciente..."
+        [(ngModel)]="terminoBusquedaCita" (keyup)="buscarCitas()">
 
       <div class="resultados-busqueda" *ngIf="resultadoBusqueda.length > 0">
         <div *ngFor="let cita of resultadoBusqueda" class="resultado-item">
@@ -28,7 +28,7 @@
         <div class="agenda-title">Agenda Neuropediatra</div>
       </div>
 
-      <div class="agenda-cover cirujano" (click)="seleccionarAgenda('Cirujano')"> 
+      <div class="agenda-cover cirujano" (click)="seleccionarAgenda('Cirujano')">
         <div class="agenda-title">Agenda Cirujano</div>
       </div>
     </div>
@@ -36,7 +36,7 @@
 
   <div *ngIf="agendaSeleccionada" class="tablero-container">
     <h2>Agenda: {{ agendaSeleccionada | titlecase }}</h2>
-    
+
     <div class="date-selector">
       <label for="fecha"> Selecciona la fecha:</label>
       <input type="date" id="fecha" [(ngModel)]="fechaSeleccionada" (change)="cargarAgenda()">
@@ -48,58 +48,52 @@
           <h3>{{ doctor.nombre }} {{ doctor.apellidos }}</h3>
         </div>
 
-        <div class="time-slots">
-          <div *ngFor="let par of horariosDelDia" class="time-slot-row">
-            
-            <button
-              class="time-slot"
-              [class.ocupado]="isHourBooked(doctor, par.h1)"
-              (click)="isHourBooked(doctor, par.h1) ? verDetallesCita(getAppointmentForHour(doctor, par.h1)) : abrirModalAgendar(doctor, par.h1)">
-              
-              <span *ngIf="!isHourBooked(doctor, par.h1)">
-                {{ par.h1.substring(0, 5) }} hrs
-              </span>
-              <span *ngIf="isHourBooked(doctor, par.h1)">
-                <strong>Ocupado</strong>
-                </span>
-            </button>
-            
-            <button
-              *ngIf="par.h2"
-              class="time-slot"
-              [class.ocupado]="isHourBooked(doctor, par.h2)"
-              (click)="isHourBooked(doctor, par.h2) ? verDetallesCita(getAppointmentForHour(doctor, par.h2)) : abrirModalAgendar(doctor, par.h2)">
-              
-              <span *ngIf="!isHourBooked(doctor, par.h2)">
-                {{ par.h2.substring(0, 5) }} hrs
-              </span>
-              <span *ngIf="isHourBooked(doctor, par.h2)">
-                <strong>Ocupado</strong>
-                </span>
-            </button>
+        <div class="time-slots-wrapper">
+          <h4 class="time-group-header">Mañana</h4>
+          <div class="pills-container">
+            <button *ngFor="let horario of horariosManana" class="time-pill"
+              [class.ocupado]="isHourBooked(doctor, horario)"
+              (click)="isHourBooked(doctor, horario) ? verDetallesCita(getAppointmentForHour(doctor, horario)) : abrirModalAgendar(doctor, horario)">
 
-            <div *ngIf="!par.h2" class="time-slot-placeholder"></div>
-            
+              <span *ngIf="isHourBooked(doctor, horario)">
+                Ocupado
+              </span>
+
+              <span *ngIf="!isHourBooked(doctor, horario)">
+                {{ horario.substring(0, 5) }}
+              </span>
+            </button>
           </div>
+
+          <h4 class="time-group-header">Tarde</h4>
+          <div class="pills-container">
+            <button *ngFor="let horario of horariosTarde" class="time-pill"
+              [class.ocupado]="isHourBooked(doctor, horario)"
+              (click)="isHourBooked(doctor, horario) ? verDetallesCita(getAppointmentForHour(doctor, horario)) : abrirModalAgendar(doctor, horario)">
+
+              <span *ngIf="isHourBooked(doctor, horario)">
+                Ocupado
+              </span>
+
+              <span *ngIf="!isHourBooked(doctor, horario)">
+                {{ horario.substring(0, 5) }}
+              </span>
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
-    
+
     <button class='btn btn-primary' (click)="volverASeleccion()">&lt; Volver a seleccionar agenda</button>
   </div>
-  
+
 </div>
 
-<app-agendar-cita-modal
-  *ngIf="isAgendarModalVisible"
-  [datosCita]="datosParaNuevaCita"
-  (close)="cerrarModalAgendar()"
+<app-agendar-cita-modal *ngIf="isAgendarModalVisible" [datosCita]="datosParaNuevaCita" (close)="cerrarModalAgendar()"
   (citaCreada)="citaAgendadaConExito()">
 </app-agendar-cita-modal>
 
-<app-detalles-cita-modal
-  *ngIf="isDetailsModalVisible"
-  [cita]="citaSeleccionada"
-  (close)="closeDetailsModal()"
-  (citaActualizada)="citaActualizadaConExito()"> 
+<app-detalles-cita-modal *ngIf="isDetailsModalVisible" [cita]="citaSeleccionada" (close)="closeDetailsModal()"
+  (citaActualizada)="citaActualizadaConExito()">
 </app-detalles-cita-modal>

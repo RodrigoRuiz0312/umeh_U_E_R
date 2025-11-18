@@ -49,7 +49,7 @@ interface Insumo {
   id?: number;
   id_insumo: number;
   nombre_insumo: string;
-  tipo: 'medicamento' | 'material' | 'procedimiento';
+  tipo: 'medicamento' | 'material' | 'mat_general' | 'procedimiento';
   cantidad: number;
   unidad: string;
   costo_unitario: number;
@@ -111,7 +111,7 @@ export class ConsultaRecepcion implements OnInit {
 
   // Búsqueda de insumos
   busquedaInsumo: string = '';
-  tipoInsumoBusqueda: 'medicamento' | 'material' | 'procedimiento' = 'medicamento';
+  tipoInsumoBusqueda: 'medicamento' | 'material' | 'mat_general' | 'procedimiento' = 'medicamento';
   insumosDisponibles: InsumoDisponible[] = [];
 
   // Datos para agregar insumo
@@ -562,8 +562,14 @@ export class ConsultaRecepcion implements OnInit {
       case 'material':
         observable = this.consultaService.buscarMateriales(this.busquedaInsumo);
         break;
+      case 'mat_general':
+        observable = this.consultaService.buscarMatGeneral(this.busquedaInsumo);
+        break;
       case 'procedimiento':
         observable = this.consultaService.buscarProcedimientos(this.busquedaInsumo);
+        break;
+      default:
+        observable = this.consultaService.buscarMedicamentos(this.busquedaInsumo);
         break;
     }
 
@@ -614,7 +620,7 @@ export class ConsultaRecepcion implements OnInit {
     ).subscribe({
       next: (response) => {
         this.insumosConsulta.push(response.insumo);
-        this.totalConsulta = response.totalConsulta;
+        this.calcularTotal();
         this.cargando = false;
         this.mensajeExito = 'Insumo agregado correctamente';
 
@@ -656,7 +662,7 @@ export class ConsultaRecepcion implements OnInit {
       next: (response) => {
         // Usar idLimpio para la comparación
         this.insumosConsulta = this.insumosConsulta.filter(i => parseInt(String(i.id), 10) !== idLimpio);
-        this.totalConsulta = response.totalConsulta;
+        this.calcularTotal();
         this.mensajeExito = 'Insumo eliminado correctamente';
         setTimeout(() => this.mensajeExito = '', 3000);
       },
@@ -705,7 +711,10 @@ export class ConsultaRecepcion implements OnInit {
       return;
     }
 
-    this.consultaService.agregarExtra(this.consultaActual.id_consulta, concepto, costo, observaciones)
+    // Formatear concepto con capitalize
+    const conceptoFormateado = this.capitalize(concepto);
+
+    this.consultaService.agregarExtra(this.consultaActual.id_consulta, conceptoFormateado, costo, observaciones)
       .subscribe({
         next: (res: any) => {
           this.extras.push(res.extra);
@@ -776,6 +785,7 @@ export class ConsultaRecepcion implements OnInit {
         switch (item.tipo) {
           case 'medicamento': categoria = 'Medicamentos'; break;
           case 'material': categoria = 'Material'; break;
+          case 'mat_general': categoria = 'Material General'; break;
           case 'procedimiento': categoria = 'Procedimientos'; break;
           default: categoria = 'Otros';
         }
@@ -878,7 +888,9 @@ export class ConsultaRecepcion implements OnInit {
   getMedicoNombre(id_medico: number | null): string {
     if (!id_medico || !this.medicos) return 'No asignado';
 
-    const medico = this.medicos.find(m => m.id_medico === id_medico);
+    const medico = this.medicos.find(m =>
+      m.id_medico === id_medico
+    );
     return medico ? `${medico.nombre} ${medico.apellidos} - ${medico.especialidad}` : 'No encontrado';
   }
 
@@ -898,6 +910,19 @@ export class ConsultaRecepcion implements OnInit {
       style: 'currency',
       currency: 'MXN'
     }).format(cantidad);
+  }
+
+  capitalize(text: string): string {
+    if (!text) return '';
+    return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  formatearTelefonosOCorreos(data: string | string[]): string {
+    if (!data) return '';
+    if (Array.isArray(data)) {
+      return data.join(', ');
+    }
+    return data;
   }
 
   obtenerConsultasActivas() {

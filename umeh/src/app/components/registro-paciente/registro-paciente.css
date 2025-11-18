@@ -114,7 +114,7 @@
   z-index: 1000;
 }
 
-.form-actions .btn-secondary-1 {
+.form-actions .btn-fix-1 {
   position: fixed;
   top: 40px;
   right: 393px;
@@ -123,7 +123,7 @@
   z-index: 1000;
 }
 
-.form-actions .btn-secondary-2 {
+.form-actions .btn-fix-2 {
   position: fixed;
   top: 40px;
   right: 210px;

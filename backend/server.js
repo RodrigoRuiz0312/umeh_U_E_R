@@ -27,6 +27,7 @@ const pacientesRouter = require('./routes/pacientes');
 const doctoresRouter = require('./routes/doctores');
 const citasRouter = require('./routes/citas');
 const consultaRouter = require('./routes/consultaRoutes');
+const mat_generalRouter = require('./routes/mat_general');
 
 
 // Rutas API INSUMOS
@@ -37,6 +38,7 @@ app.use('/api/reportes', reportesRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/configuracion', configuracionRouter);
 app.use('/api/pacientes', pacientesRouter);
+app.use('/api/mat_general', mat_generalRouter);
 
 // Rutas API PACIENTES
 app.use('/api/pacientes', pacientesRouter);

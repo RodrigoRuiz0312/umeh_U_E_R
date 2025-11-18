@@ -225,6 +225,15 @@ class ConsultaController {
           inventarioDisponible = true;
           costoUnitario = parseFloat(mat.rows[0].costo_unitario); // ✅ Convertir aquí
         }
+      } else if (tipo === 'mat_general') {
+        const matGen = await client.query(
+          'SELECT cantidad, costo_unitario FROM mat_general WHERE id = $1',
+          [id_insumo]
+        );
+        if (matGen.rows.length > 0 && matGen.rows[0].cantidad >= cantidad) {
+          inventarioDisponible = true;
+          costoUnitario = parseFloat(matGen.rows[0].costo_unitario || 0); // ✅ Convertir aquí
+        }
         // En el método agregarInsumo, dentro del if (tipo === 'procedimiento'):
       } else if (tipo === 'procedimiento') {
         // Para procedimientos, verificar que todos sus insumos estén disponibles
@@ -235,6 +244,7 @@ class ConsultaController {
           CASE 
             WHEN pi.tipo = 'medicamento' THEN m.cantidad >= (pi.cantidad * $2)
             WHEN pi.tipo = 'material' THEN mt.cantidad >= (pi.cantidad * $2)
+            WHEN pi.tipo = 'mat_general' THEN mg.cantidad >= (pi.cantidad * $2)
             ELSE true
           END
         ), 
@@ -243,6 +253,7 @@ class ConsultaController {
     FROM procedimiento_insumos pi
     LEFT JOIN medicamentos m ON pi.tipo = 'medicamento' AND pi.id_insumo = m.id
     LEFT JOIN mat_triage mt ON pi.tipo = 'material' AND pi.id_insumo = mt.id
+    LEFT JOIN mat_general mg ON pi.tipo = 'mat_general' AND pi.id_insumo = mg.id
     WHERE pi.id_procedimiento = $1`,
           [id_insumo, cantidad]
         );
@@ -292,16 +303,19 @@ class ConsultaController {
     CASE 
       WHEN ci.tipo = 'medicamento' THEN m.nombre
       WHEN ci.tipo = 'material' THEN mt.nombre
+      WHEN ci.tipo = 'mat_general' THEN mg.nombre
       WHEN ci.tipo = 'procedimiento' THEN p.descripcion
     END as nombre_insumo,
     CASE 
       WHEN ci.tipo = 'medicamento' THEN m.unidad
       WHEN ci.tipo = 'material' THEN mt.unidad
+      WHEN ci.tipo = 'mat_general' THEN mg.unidad
       ELSE 'procedimiento'
     END as unidad
          FROM consulta_insumos ci
          LEFT JOIN medicamentos m ON ci.tipo = 'medicamento' AND ci.id_insumo = m.id
          LEFT JOIN mat_triage mt ON ci.tipo = 'material' AND ci.id_insumo = mt.id
+         LEFT JOIN mat_general mg ON ci.tipo = 'mat_general' AND ci.id_insumo = mg.id
          LEFT JOIN procedimientos p ON ci.tipo = 'procedimiento' AND ci.id_insumo = p.id_procedimiento
          WHERE ci.id = $1`,
         [insert.rows[0].id]
@@ -377,6 +391,11 @@ class ConsultaController {
           'UPDATE mat_triage SET cantidad = cantidad + $1 WHERE id = $2',
           [cantidad, id_insumo]
         );
+      } else if (tipo === 'mat_general') {
+        await client.query(
+          'UPDATE mat_general SET cantidad = cantidad + $1 WHERE id = $2',
+          [cantidad, id_insumo]
+        );
       } else if (tipo === 'procedimiento') {
         await client.query(
           `UPDATE medicamentos m
@@ -395,6 +414,16 @@ class ConsultaController {
          WHERE pi.id_procedimiento = $2
          AND pi.tipo = 'material'
          AND pi.id_insumo = mt.id`,
+          [cantidad, id_insumo]
+        );
+
+        await client.query(
+          `UPDATE mat_general mg
+         SET cantidad = mg.cantidad + (pi.cantidad * $1)
+         FROM procedimiento_insumos pi
+         WHERE pi.id_procedimiento = $2
+         AND pi.tipo = 'mat_general'
+         AND pi.id_insumo = mg.id`,
           [cantidad, id_insumo]
         );
       }
@@ -442,16 +471,19 @@ class ConsultaController {
           CASE 
             WHEN ci.tipo = 'medicamento' THEN m.nombre
             WHEN ci.tipo = 'material' THEN mt.nombre
+            WHEN ci.tipo = 'mat_general' THEN mg.nombre
             WHEN ci.tipo = 'procedimiento' THEN p.descripcion
           END as nombre_insumo,
           CASE 
             WHEN ci.tipo = 'medicamento' THEN m.unidad
             WHEN ci.tipo = 'material' THEN mt.unidad
+            WHEN ci.tipo = 'mat_general' THEN mg.unidad
             ELSE 'procedimiento'
           END as unidad
         FROM consulta_insumos ci
         LEFT JOIN medicamentos m ON ci.tipo = 'medicamento' AND ci.id_insumo = m.id
         LEFT JOIN mat_triage mt ON ci.tipo = 'material' AND ci.id_insumo = mt.id
+        LEFT JOIN mat_general mg ON ci.tipo = 'mat_general' AND ci.id_insumo = mg.id
         LEFT JOIN procedimientos p ON ci.tipo = 'procedimiento' AND ci.id_insumo = p.id_procedimiento
         WHERE ci.id_consulta = $1
         ORDER BY ci.id`,
@@ -509,12 +541,14 @@ class ConsultaController {
             'nombre', CASE 
                 WHEN ci.tipo = 'medicamento' THEN med.nombre
                 WHEN ci.tipo = 'material' THEN mat.nombre
+                WHEN ci.tipo = 'mat_general' THEN mg.nombre
                 WHEN ci.tipo = 'procedimiento' THEN proc.descripcion
               END,
             'cantidad', ci.cantidad,
             'unidad', CASE 
                 WHEN ci.tipo = 'medicamento' THEN med.unidad
                 WHEN ci.tipo = 'material' THEN mat.unidad
+                WHEN ci.tipo = 'mat_general' THEN mg.unidad
                 ELSE 'procedimiento'
               END,
             'costo_unitario', ci.costo_unitario,
@@ -527,6 +561,7 @@ class ConsultaController {
         LEFT JOIN consulta_insumos ci ON c.id_consulta = ci.id_consulta
         LEFT JOIN medicamentos med ON ci.tipo = 'medicamento' AND ci.id_insumo = med.id
         LEFT JOIN mat_triage mat ON ci.tipo = 'material' AND ci.id_insumo = mat.id
+        LEFT JOIN mat_general mg ON ci.tipo = 'mat_general' AND ci.id_insumo = mg.id
         LEFT JOIN procedimientos proc ON ci.tipo = 'procedimiento' AND ci.id_insumo = proc.id_procedimiento
         WHERE c.id_consulta = $1
         GROUP BY c.id_consulta, c.fecha, c.total, c.observaciones,
@@ -592,6 +627,29 @@ class ConsultaController {
     } catch (error) {
       console.error('Error buscando materiales:', error);
       res.status(500).json({ error: 'Error al buscar materiales' });
+    }
+  }
+
+  // Buscar materiales generales disponibles
+  async buscarMatGeneral(req, res) {
+    try {
+      const { busqueda } = req.query;
+
+      const result = await pool.query(
+        `SELECT id, nombre, cantidad, unidad, 
+                COALESCE(costo_unitario, 0) as costo_unitario
+         FROM mat_general
+         WHERE LOWER(nombre) LIKE LOWER($1)
+         AND cantidad > 0
+         ORDER BY nombre
+         LIMIT 20`,
+        [`%${busqueda}%`]
+      );
+
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error buscando materiales generales:', error);
+      res.status(500).json({ error: 'Error al buscar materiales generales' });
     }
   }
 
@@ -670,6 +728,11 @@ class ConsultaController {
         } else if (tipo === 'material') {
           await client.query(
             'UPDATE mat_triage SET cantidad = cantidad + $1 WHERE id = $2',
+            [cantidad, id_insumo]
+          );
+        } else if (tipo === 'mat_general') {
+          await client.query(
+            'UPDATE mat_general SET cantidad = cantidad + $1 WHERE id = $2',
             [cantidad, id_insumo]
           );
         } else if (tipo === 'procedimiento') {
