@@ -94,7 +94,7 @@
       <div class="card-header d-flex align-items-center justify-content-between">
         <h3 class="mb-0">Nueva Consulta - Búsqueda de Paciente</h3>
         <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-primary" (click)="abrirModalNotas()">
+          <button class="btn-reg btn-outline-primary" (click)="abrirModalNotas()">
             Generar Nota Histórica
           </button>
           <button class="btn-reg btn-outline-primary" (click)="irARegistroPaciente()">
@@ -264,14 +264,14 @@
             <div>
               <p><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos }}</p>
               <p><strong>Teléfono(s):</strong>
-                <span *ngIf="pacienteSeleccionado?.telefonos?.length > 0; else noTelefonos">
-                  {{ pacienteSeleccionado.telefonos.join(', ') }}
+                <span *ngIf="pacienteSeleccionado?.telefonos; else noTelefonos">
+                  {{ formatearTelefonosOCorreos(pacienteSeleccionado.telefonos) }}
                 </span>
                 <ng-template #noTelefonos> No registrados</ng-template>
               </p>
               <p><strong>Correo(s):</strong>
-                <span *ngIf="pacienteSeleccionado?.correos?.length > 0; else noCorreos">
-                  {{ pacienteSeleccionado.correos.join(', ') }}
+                <span *ngIf="pacienteSeleccionado?.correos; else noCorreos">
+                  {{ formatearTelefonosOCorreos(pacienteSeleccionado.correos) }}
                 </span>
                 <ng-template #noCorreos> No registrados</ng-template>
               </p>
@@ -356,6 +356,7 @@
                     (change)="insumosDisponibles = []; busquedaInsumo = ''">
                     <option value="medicamento">Medicamento</option>
                     <option value="material">Material</option>
+                    <option value="mat_general">Material General</option>
                     <option value="procedimiento">Procedimiento</option>
                   </select>
                 </div>
@@ -494,7 +495,7 @@
                 <thead class="table-light">
                   <tr>
                     <th>Tipo</th>
-                    <th>Nombre / Concepto</th>
+                    <th>Nombre</th>
                     <th>Cantidad</th>
                     <th>Unidad</th>
                     <th>Costo Unit.</th>
@@ -508,10 +509,11 @@
                     <td class="celda-tipo" [ngClass]="{
                 'bg-primary': item.tipo === 'medicamento',
                 'bg-info': item.tipo === 'material',
+                'bg-success': item.tipo === 'mat_general',
                 'bg-warning': item.tipo === 'procedimiento',
                 'bg-danger': item.tipo === 'extra'
               }">
-                      {{ item.tipo }}
+                      {{ item.tipo === 'mat_general' ? 'Material General' : item.tipo }}
                     </td>
                     <td>{{ item.nombre }}</td>
                     <td>{{ item.cantidad }}</td>
@@ -520,13 +522,13 @@
                     <td class="fw-bold">{{ formatearMoneda(item.subtotal) }}</td>
                     <td>{{ item.observaciones || '-' }}</td>
                     <td>
-                      <button *ngIf="!item.esExtra && item.id" class="btn btn-sm btn-danger"
+                      <button *ngIf="!item.esExtra && item.id" class="btn btn-sm"
                         (click)="eliminarInsumo(+item.id!)">
-                        <i class="bi bi-trash-fill"></i>
+                        <img src="assets/img/delet.png" class="btn-iconP">
                       </button>
-                      <button *ngIf="item.esExtra && item.id" class="btn btn-sm btn-danger"
+                      <button *ngIf="item.esExtra && item.id" class="btn btn-sm"
                         (click)="eliminarExtra(item.id!)">
-                        <i class="bi bi-trash-fill"></i>
+                        <img src="assets/img/delet.png" class="btn-iconP">
                       </button>
                     </td>
                   </tr>
@@ -633,7 +635,7 @@
           <h6>PACIENTE</h6>
           <p class="mb-1"><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos
             }}</p>
-          <p class="mb-1"><strong>Teléfono:</strong> {{ pacienteSeleccionado?.telefonos?.join(', ') || 'N/A' }}</p>
+          <p class="mb-1"><strong>Teléfono:</strong> {{ formatearTelefonosOCorreos(pacienteSeleccionado?.telefonos) || 'N/A' }}</p>
         </div>
 
         <div class="seccion mb-3">
@@ -641,11 +643,42 @@
           <div *ngIf="listaCostosCombinada.length === 0" class="text-muted">
             No hay insumos registrados
           </div>
-          <div *ngIf="listaCostosCombinada.length > 0">
+          
+          <!-- Vista Resumida (por categorías) -->
+          <div *ngIf="listaCostosCombinada.length > 0 && !modoDetallado">
             <div *ngFor="let grupo of getInsumosAgrupados()" class="mb-2">
               <strong>{{ grupo.categoria }}:</strong>
               {{ grupo.total | currency:'MXN':'symbol':'1.2-2' }}
             </div>
+            <div><strong>Costo de Consulta:</strong> {{ costoConsulta | currency:'MXN':'symbol':'1.2-2' }}</div>
+            <hr>
+            <div><strong>TOTAL:</strong> {{ totalConsulta | currency:'MXN':'symbol':'1.2-2' }}</div>
+          </div>
+          
+          <!-- Vista Detallada (ítem por ítem) -->
+          <div *ngIf="listaCostosCombinada.length > 0 && modoDetallado">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Nombre</th>
+                  <th>Cant.</th>
+                  <th>Unidad</th>
+                  <th>Costo Unit.</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of listaCostosCombinada">
+                  <td>{{ item.tipo }}</td>
+                  <td>{{ item.nombre }}</td>
+                  <td>{{ item.cantidad || '-' }}</td>
+                  <td>{{ item.unidad || '-' }}</td>
+                  <td>{{ item.costo_unitario ? (item.costo_unitario | currency:'MXN':'symbol':'1.2-2') : '-' }}</td>
+                  <td>{{ item.subtotal | currency:'MXN':'symbol':'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
             <div><strong>Costo de Consulta:</strong> {{ costoConsulta | currency:'MXN':'symbol':'1.2-2' }}</div>
             <hr>
             <div><strong>TOTAL:</strong> {{ totalConsulta | currency:'MXN':'symbol':'1.2-2' }}</div>

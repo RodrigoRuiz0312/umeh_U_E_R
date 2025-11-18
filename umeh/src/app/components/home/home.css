@@ -443,6 +443,10 @@ body.dark .action-card:hover {
   border-color: #059669;
 }
 
+.inventory-option.warning-border:hover {
+  border-color: #960505;
+}
+
 .option-icon {
   width: 56px;
   height: 56px;
@@ -461,6 +465,10 @@ body.dark .action-card:hover {
 
 .success-bg {
   background-color: var(--success-color);
+}
+
+.warning-bg {
+  background-color: var(--danger-color);
 }
 
 .option-content {

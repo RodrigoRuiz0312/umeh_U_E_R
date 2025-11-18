@@ -83,6 +83,12 @@ export class ConsultaService {
     return this.http.get<any[]>(`${this.apiUrl}/consultas/materiales/buscar`, { params });
   }
 
+  // Buscar materiales generales
+  buscarMatGeneral(busqueda: string): Observable<any[]> {
+    const params = new HttpParams().set('busqueda', busqueda);
+    return this.http.get<any[]>(`${this.apiUrl}/consultas/mat-general/buscar`, { params });
+  }
+
   // Buscar procedimientos
   buscarProcedimientos(busqueda: string): Observable<any[]> {
     const params = new HttpParams().set('busqueda', busqueda);

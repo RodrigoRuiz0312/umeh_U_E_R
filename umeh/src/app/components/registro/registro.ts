@@ -25,6 +25,7 @@ export class Registro implements OnInit {
   selectAllMetodos = false;
   medicamentos: Array<{ id: number; nombre: string; cantidad: number }> = [];
   materiales: Array<{ id: number; nombre: string; cantidad: number }> = [];
+  matGenerales: Array<{ id: number; nombre: string; cantidad: number }> = [];
   mostrarModalCamposObligatorios = false;
   camposFaltantes: string[] = [];
   insumosOptions: any[] = [];
@@ -139,7 +140,7 @@ export class Registro implements OnInit {
         error: (err) => console.error('Error cargando métodos:', err)
       });
 
-    // Limpiar selección de métodos si el tipo cambia a 'material' o 'procedimiento'
+    // Limpiar selección de métodos si el tipo cambia a 'material', 'mat_general' o 'procedimiento'
     this.form.get('tipo')?.valueChanges.subscribe((tipo) => {
       if (tipo !== 'medicamento') {
         this.selectedMetodos.clear();
@@ -189,6 +190,9 @@ export class Registro implements OnInit {
     });
     this.insumoService.getMaterial_Triage().subscribe({
       next: (tri: any[]) => this.materiales = tri || []
+    });
+    this.insumoService.getMatGeneral().subscribe({
+      next: (mg: any[]) => this.matGenerales = mg || []
     });
   }
 
@@ -267,7 +271,11 @@ export class Registro implements OnInit {
 
     const [tipoPrefix, idStr] = encoded.split('-');
     const idNum = Number(idStr);
-    const tipo = tipoPrefix === 'med' ? 'medicamento' : tipoPrefix === 'mat' ? 'material' : null;
+    let tipo: string | null = null;
+    
+    if (tipoPrefix === 'med') tipo = 'medicamento';
+    else if (tipoPrefix === 'mat') tipo = 'material';
+    else if (tipoPrefix === 'mg') tipo = 'mat_general';
 
     if (!tipo || !Number.isFinite(idNum)) {
       ctrl.patchValue({ id: null, tipo: null, nombre: '' });
@@ -277,9 +285,12 @@ export class Registro implements OnInit {
     if (tipo === 'medicamento') {
       const med = this.medicamentos.find(m => m.id === idNum);
       ctrl.patchValue({ id: idNum, tipo, nombre: med?.nombre || '' });
-    } else {
+    } else if (tipo === 'material') {
       const mat = this.materiales.find(t => t.id === idNum);
       ctrl.patchValue({ id: idNum, tipo, nombre: mat?.nombre || '' });
+    } else if (tipo === 'mat_general') {
+      const mg = this.matGenerales.find(t => t.id === idNum);
+      ctrl.patchValue({ id: idNum, tipo, nombre: mg?.nombre || '' });
     }
 
     // Validar disponibilidad después de seleccionar
@@ -299,13 +310,16 @@ export class Registro implements OnInit {
 
     const med = this.medicamentos.find(m => m.nombre.toLowerCase() === query);
     const mat = this.materiales.find(t => t.nombre.toLowerCase() === query);
+    const mg = this.matGenerales.find(g => g.nombre.toLowerCase() === query);
 
-    if (med && mat) {
+    const coincidencias = [med, mat, mg].filter(Boolean).length;
+    
+    if (coincidencias > 1) {
       // Ambiguo: no decidir automáticamente
       this.messageService.add({
         severity: 'warn',
         summary: 'Nombre ambiguo',
-        detail: 'Existe un medicamento y un material con el mismo nombre. Selecciona desde el listado.',
+        detail: 'Existe más de un insumo con el mismo nombre. Selecciona desde el listado.',
         life: 3000
       });
       return;
@@ -319,6 +333,12 @@ export class Registro implements OnInit {
 
     if (mat) {
       ctrl.patchValue({ id: mat.id, encoded: `mat-${mat.id}`, tipo: 'material', nombre: mat.nombre });
+      this.validarDisponibilidadInsumo(index);
+      return;
+    }
+
+    if (mg) {
+      ctrl.patchValue({ id: mg.id, encoded: `mg-${mg.id}`, tipo: 'mat_general', nombre: mg.nombre });
       this.validarDisponibilidadInsumo(index);
       return;
     }
@@ -377,6 +397,11 @@ export class Registro implements OnInit {
       .reduce((a, b) => a + b, 0);
   }
 
+  capitalize(text: string): string {
+    if (!text) return '';
+    return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
   async onSubmit() {
     if (!this.isFormValid() || this.loading) {
       // Mostrar modal de campos faltantes cuando el formulario no es válido
@@ -410,9 +435,15 @@ export class Registro implements OnInit {
     if (tipo === 'procedimiento') {
       const proc = this.procGroup.value;
 
+      // Formatear descripción con capitalize
+      const procFormateado = {
+        ...proc,
+        descripcion: this.capitalize(proc.descripcion)
+      };
+
       try {
         // Registrar el procedimiento (sin descontar inventario)
-        await firstValueFrom(this.insumoService.crearProcedimiento(proc));
+        await firstValueFrom(this.insumoService.crearProcedimiento(procFormateado));
 
         // Limpiar formulario
         this.procGroup.reset({ descripcion: '', observaciones: '' });
@@ -436,9 +467,9 @@ export class Registro implements OnInit {
       return;
     }
 
-    // Construir payload para insumo simple (medicamento/material)
+    // Construir payload para insumo simple (medicamento/material/mat_general)
     const payload: any = {
-      nombre: this.nombre!.value.toUpperCase(),
+      nombre: this.capitalize(this.nombre!.value),
       cantidad: Number(this.cantidad!.value),
       unidad: this.unidad!.value || null,
       costo_unitario: this.costo_unitario!.value != null && this.costo_unitario!.value !== ''
@@ -448,6 +479,11 @@ export class Registro implements OnInit {
 
     if (tipo === 'medicamento') {
       payload.metodo_aplicacion = metodoIds;
+      payload.tipo = 'medicamento';
+    } else if (tipo === 'mat_general') {
+      payload.tipo = 'mat_general';
+    } else {
+      payload.tipo = 'material';
     }
 
     this.insumoService.addInsumo(payload).subscribe({
@@ -457,10 +493,16 @@ export class Registro implements OnInit {
         this.selectedMetodos.clear();
         this.selectAllMetodos = false;
         this.metodosTouched = false;
+        
+        let tipoNombre = 'Insumo';
+        if (tipo === 'medicamento') tipoNombre = 'Medicamento';
+        else if (tipo === 'material') tipoNombre = 'Material de Triage';
+        else if (tipo === 'mat_general') tipoNombre = 'Material General';
+        
         this.messageService.add({
           severity: 'success',
           summary: 'Registro exitoso',
-          detail: `${tipo === 'medicamento' ? 'Medicamento' : 'Material'} "${nuevo.nombre}" agregado.`,
+          detail: `${tipoNombre} "${nuevo.nombre}" agregado.`,
           life: 3000
         });
       },

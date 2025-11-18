@@ -4,6 +4,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Medicamento } from '../modelos/medicamento';
 import { Triage } from '../modelos/triage';
+import { MatGeneral } from '../modelos/mat-general';
 import { Procedimiento } from '../modelos/procedimiento';
 import { environment } from '../../environments/environment';
 
@@ -24,7 +25,15 @@ export interface NuevoMaterial {
   costo_unitario?: number | null;
 }
 
-export type NuevoInsumo = NuevoMedicamento | NuevoMaterial;
+export interface NuevoMatGeneral {
+  tipo: 'mat_general';
+  nombre: string;
+  cantidad: number;
+  unidad?: string | null;
+  costo_unitario?: number | null;
+}
+
+export type NuevoInsumo = NuevoMedicamento | NuevoMaterial | NuevoMatGeneral;
 
 @Injectable({
   providedIn: 'root'
@@ -33,11 +42,13 @@ export class InsumoService {
   private baseUrl = environment.apiUrl;
   private medicamentosURL = `${this.baseUrl}/medicamentos`;
   private triageURL = `${this.baseUrl}/triage`;
+  private matGeneralURL = `${this.baseUrl}/mat_general`;
   private procedimientoURL = `${this.baseUrl}/procedimientos`;
   private resumenURL = `${this.baseUrl}/dashboard/resumen`;
 
   private medicamentosCache: Medicamento[] | null = null;
   private triageCache: Triage[] | null = null;
+  private matGeneralCache: MatGeneral[] | null = null;
   private procedimientoCache: Procedimiento[] | null = null;
 
   constructor(private http: HttpClient) { }
@@ -86,6 +97,21 @@ export class InsumoService {
     );
   }
 
+  // Obtener el material general
+  getMatGeneral(): Observable<MatGeneral[]> {
+    if (this.matGeneralCache) {
+      return of(this.matGeneralCache);
+    }
+
+    return this.http.get<MatGeneral[]>(this.matGeneralURL).pipe(
+      tap(data => this.matGeneralCache = data),
+      catchError((error) => {
+        console.error("❌ Error en la llamada HTTP:", error.message || error);
+        return throwError(() => new Error('No se pudo obtener la lista de material general'));
+      })
+    );
+  }
+
   // Actualizar cantidad de un material de triage por ID
   updateTriage(id: number, payload: Partial<Pick<Triage, 'cantidad'>>): Observable<Triage> {
     if (!id) {
@@ -110,19 +136,54 @@ export class InsumoService {
     );
   }
 
+  // Actualizar cantidad de material general por ID
+  updateMatGeneral(id: number, payload: Partial<Pick<MatGeneral, 'cantidad'>>): Observable<MatGeneral> {
+    if (!id) {
+      return throwError(() => new Error('ID es requerido'));
+    }
+    if (payload.cantidad === undefined) {
+      return throwError(() => new Error('Debe proporcionar cantidad a actualizar'));
+    }
+
+    return this.http.put<MatGeneral>(`${this.matGeneralURL}/${id}`, payload).pipe(
+      tap((updated) => {
+        if (this.matGeneralCache) {
+          const idx = this.matGeneralCache.findIndex(mg => mg.id === updated.id);
+          if (idx !== -1) {
+            this.matGeneralCache[idx] = { ...this.matGeneralCache[idx], ...updated };
+          }
+        }
+      }),
+      catchError((error) => {
+        return throwError(() => new Error('Error al actualizar material general: ' + (error.error?.message || error.message)));
+      })
+    );
+  }
+
   // Agregar un nuevo insumo con tipado estricto por discriminante
   addInsumo(insumo: NuevoMedicamento): Observable<Medicamento>;
   addInsumo(insumo: NuevoMaterial): Observable<Triage>;
-  addInsumo(insumo: NuevoInsumo): Observable<Medicamento | Triage> {
-    // Soporta payloads sin 'tipo' explícito (fallback por presencia de metodo_aplicacion)
-    const isMedicamento = (insumo as any)?.tipo === 'medicamento' || Array.isArray((insumo as any)?.metodo_aplicacion);
-    const url = isMedicamento ? this.medicamentosURL : this.triageURL;
+  addInsumo(insumo: NuevoMatGeneral): Observable<MatGeneral>;
+  addInsumo(insumo: NuevoInsumo): Observable<Medicamento | Triage | MatGeneral> {
+    const tipo = (insumo as any)?.tipo;
+    let url: string;
+    
+    if (tipo === 'medicamento' || Array.isArray((insumo as any)?.metodo_aplicacion)) {
+      url = this.medicamentosURL;
+    } else if (tipo === 'mat_general') {
+      url = this.matGeneralURL;
+    } else {
+      url = this.triageURL;
+    }
 
-    return this.http.post<Medicamento | Triage>(url, insumo).pipe(
+    return this.http.post<Medicamento | Triage | MatGeneral>(url, insumo).pipe(
       tap((nuevo) => {
-        // Sólo actualizamos la cache de medicamentos cuando se agrega un medicamento
-        if (isMedicamento && this.medicamentosCache) {
+        if (tipo === 'medicamento' && this.medicamentosCache) {
           this.medicamentosCache.push(nuevo as Medicamento);
+        } else if (tipo === 'material' && this.triageCache) {
+          this.triageCache.push(nuevo as Triage);
+        } else if (tipo === 'mat_general' && this.matGeneralCache) {
+          this.matGeneralCache.push(nuevo as MatGeneral);
         }
       }),
       catchError((error: HttpErrorResponse) => {
@@ -211,6 +272,8 @@ export class InsumoService {
   // Método opcional para invalidar la cache
   clearCache() {
     this.medicamentosCache = null;
-    this.triageCache = null; // 🔥 Agregar esta línea
+    this.triageCache = null;
+    this.matGeneralCache = null;
+    this.procedimientoCache = null;
   }
 }

@@ -83,8 +83,16 @@ export class Doctores implements OnInit {
       return;
     }
 
+    // Preparar datos con capitalización
+    const datosAEnviar = {
+      ...this.doctorData,
+      nombre: this.capitalize(this.doctorData.nombre),
+      apellidos: this.capitalize(this.doctorData.apellidos),
+      especialidad: this.doctorData.especialidad ? this.capitalize(this.doctorData.especialidad) : ''
+    };
+
     // Si no hay faltantes, procede con el registro
-    this.api.crearDoctor(this.doctorData).subscribe({
+    this.api.crearDoctor(datosAEnviar).subscribe({
       next: () => {
         this.toastr.success('¡Médico registrado con éxito!');
         this.doctorData = {

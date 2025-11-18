@@ -37,7 +37,8 @@
       <label for="tipo">¿Qué desea registrar?</label>
       <p-select [options]="[
           {label: 'Medicamento', value: 'medicamento'},
-          {label: 'Material', value: 'material'},
+          {label: 'Material de Triage', value: 'material'},
+          {label: 'Material General', value: 'mat_general'},
           {label: 'Procedimiento', value: 'procedimiento'}
         ]" formControlName="tipo" id="tipo" class="p-select-custom" />
     </div>
@@ -151,6 +152,7 @@
                 <datalist id="listaInsumos">
                   <option *ngFor="let m of medicamentos" [value]="m.nombre"></option>
                   <option *ngFor="let t of materiales" [value]="t.nombre"></option>
+                  <option *ngFor="let g of matGenerales" [value]="g.nombre"></option>
                 </datalist>
                 <!-- Select opcional para selección directa -->
                 <select formControlName="encoded" (change)="onSelectInsumo(i)">
@@ -161,6 +163,10 @@
                   </optgroup>
                   <optgroup label="Material TRIAGE">
                     <option *ngFor="let t of materiales" [value]="'mat-'+t.id">{{ t.nombre }} (Disp: {{ t.cantidad }})
+                    </option>
+                  </optgroup>
+                  <optgroup label="Material General">
+                    <option *ngFor="let g of matGenerales" [value]="'mg-'+g.id">{{ g.nombre }} (Disp: {{ g.cantidad }})
                     </option>
                   </optgroup>
                 </select>
@@ -187,7 +193,7 @@
       </div>
     </ng-container>
 
-    <button type="submit" [disabled]="loading">
+    <button type="submit" class="btn-reg btn-outline-primary" [disabled]="loading">
       {{ loading ? 'Guardando...' : 'Registrar' }}
     </button>
   </form>

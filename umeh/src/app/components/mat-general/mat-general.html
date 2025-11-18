@@ -1,0 +1,99 @@
+<div class="tabla-container">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom: 12px;">
+    <h2 style="margin:0; flex: 0 0 auto;">Material General</h2>
+    <div style="flex: 1 1 auto;"></div>
+    <div class="input-with-icon" style="flex:0 0 320px; max-width: 50%;">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+        placeholder="Buscar por material, cantidad o unidad..."
+        style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
+    </div>
+    <div style="flex:0 0 220px;">
+      <select #orderSel (change)="onSortOptionChange(orderSel.value)"
+        style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--input-border);">
+        <option value="" disabled selected>Ordenar por...</option>
+        <option value="nombre:asc">Nombre (A→Z)</option>
+        <option value="nombre:desc">Nombre (Z→A)</option>
+        <option value="cantidad:asc">Cantidad (0→9)</option>
+        <option value="cantidad:desc">Cantidad (9→0)</option>
+        <option value="unidad:asc">Unidad (A→Z)</option>
+        <option value="unidad:desc">Unidad (Z→A)</option>
+        <option value="costo_unitario:asc">Costo (menor→mayor)</option>
+        <option value="costo_unitario:desc">Costo (mayor→menor)</option>
+      </select>
+    </div>
+  </div>
+
+  <p-toast [showTransitionOptions]="'250ms'" [showTransformOptions]="'translateX(100%)'"
+    [hideTransitionOptions]="'150ms'" [hideTransformOptions]="'translateX(100%)'" />
+
+  <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Cantidad</th>
+          <th>Unidad</th>
+          <th>Costo Unitario</th>
+          <th class="actions">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="loading; else dataRows">
+          <tr *ngFor="let _ of loadingRows">
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
+            <td class="actions"><p-skeleton></p-skeleton></td>
+          </tr>
+        </ng-container>
+
+        <ng-template #dataRows>
+          <tr *ngIf="matGeneral && matGeneral.length === 0">
+            <td colspan="5" style="text-align:center; opacity:0.8; padding:12px;">No hay material general registrado.
+            </td>
+          </tr>
+          <tr *ngFor="let material of matGeneralView">
+            <td>{{ material.nombre }}</td>
+            <td>{{ material.cantidad }}</td>
+            <td>{{ material.unidad }}</td>
+            <td>{{ (material.costo_unitario || 0) | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
+            <td class="actions">
+              <button class="action-btnP" (click)="openEdit(material)" title="Editar cantidad">
+                <img src="assets/img/edit.png" class="btn-iconP" alt="Editar">
+              </button>
+              <button class="action-btnP" title="Eliminar" disabled>
+                <img src="assets/img/delet.png" class="btn-iconP" alt="Eliminar">
+              </button>
+            </td>
+          </tr>
+        </ng-template>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal edición cantidad -->
+  <div *ngIf="modalOpen" class="modal-backdrop" (click)="closeEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="margin:0">Editar Stock - {{ selectedMatGeneral?.nombre }}</h3>
+        <button class="modal-close" (click)="closeEdit()" aria-label="Cerrar">×</button>
+      </div>
+      <div class="modal-body">
+        <label for="cantidad-edit">Cantidad</label>
+        <input 
+          id="cantidad-edit"
+          type="number" 
+          [(ngModel)]="editedCantidad"
+          min="0"
+          style="width:100%; padding:8px; border:1px solid var(--input-border, #d1d5db); border-radius:8px;" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn" (click)="closeEdit()">Cancelar</button>
+        <button class="btn btn-edit" (click)="saveEdit()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -295,16 +295,6 @@
   transition: all 0.2s ease;
 }
 
-.btn-reg {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: var(--fs-md);
-}
-
 /* --- Layout de formularios --- */
 .form-row {
   display: grid;
@@ -527,18 +517,6 @@
 .btn-lg {
   padding: 12px 24px;
   font-size: var(--fs-lg);
-}
-
-.btn-outline-primary {
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  transition: all 0.3s ease;
-}
-
-.btn-outline-primary:hover {
-  background-color: #0d6efd;
-  color: #fff;
-  transform: scale(1.05);
 }
 
 .btn-outline-info {
@@ -794,6 +772,11 @@
 
 .bg-info {
   background: #17a2b8 !important;
+  color: white !important;
+}
+
+.bg-success {
+  background: #28a745 !important;
   color: white !important;
 }
 
@@ -1371,4 +1354,9 @@
 
 .modal-container .btn-info {
   color: #fff;
+}
+
+.btn-iconP {
+  width: 20px;
+  height: 20px;
 }
