@@ -16,8 +16,11 @@ export class ApiService {
     );
   }
 
-  buscarPacientes(nombre: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.base}/pacientes/buscar`, { params: { nombre } });
+  buscarPacientes(nombre?: string, apellidos?: string): Observable<any[]> {
+    let params: any = {};
+    if (nombre) params.nombre = nombre;
+    if (apellidos) params.apellidos = apellidos;
+    return this.http.get<any[]>(`${this.base}/pacientes/buscar`, { params });
   }
 
   crearPaciente(data: any): Observable<any> {
@@ -79,5 +82,77 @@ export class ApiService {
 
   actualizarEstadoCita(id: number, estado:string): Observable<any>{
     return this.http.patch(`${this.base}/citas/${id}/estado`, { estado });
+  }
+
+  // Medicamentos
+  getMedicamentos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/medicamentos`);
+  }
+
+  crearMedicamento(data: any): Observable<any> {
+    return this.http.post(`${this.base}/medicamentos`, data);
+  }
+
+  actualizarMedicamento(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.base}/medicamentos/${id}`, data);
+  }
+
+  deleteMedicamento(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/medicamentos/${id}`);
+  }
+
+  getMetodosAplicacion(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/medicamentos/metodos-aplicacion`);
+  }
+
+  // Material de Triage
+  getMaterialTriage(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/mat_triage`);
+  }
+
+  crearMaterialTriage(data: any): Observable<any> {
+    return this.http.post(`${this.base}/mat_triage`, data);
+  }
+
+  actualizarMaterialTriage(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.base}/mat_triage/${id}`, data);
+  }
+
+  deleteMaterialTriage(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/mat_triage/${id}`);
+  }
+
+  // Material General
+  getMaterialGeneral(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/mat_general`);
+  }
+
+  crearMaterialGeneral(data: any): Observable<any> {
+    return this.http.post(`${this.base}/mat_general`, data);
+  }
+
+  actualizarMaterialGeneral(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.base}/mat_general/${id}`, data);
+  }
+
+  deleteMaterialGeneral(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/mat_general/${id}`);
+  }
+
+  // Procedimientos
+  getProcedimientos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/procedimientos`);
+  }
+
+  crearProcedimiento(data: any): Observable<any> {
+    return this.http.post(`${this.base}/procedimientos`, data);
+  }
+
+  actualizarProcedimiento(id: number, data: any): Observable<any> {
+    return this.http.put(`${this.base}/procedimientos/${id}`, data);
+  }
+
+  deleteProcedimiento(id: number): Observable<any> {
+    return this.http.delete(`${this.base}/procedimientos/${id}`);
   }
 }

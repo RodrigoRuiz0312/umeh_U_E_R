@@ -31,6 +31,7 @@
         <tr>
           <th>Nombre</th>
           <th>Cantidad</th>
+          <th>Unidad</th>
           <th>Costo Unitario</th>
           <th>Método de Aplicación</th>
           <th class="actions">Acciones</th>
@@ -43,17 +44,19 @@
             <td><p-skeleton></p-skeleton></td>
             <td><p-skeleton></p-skeleton></td>
             <td><p-skeleton></p-skeleton></td>
+            <td><p-skeleton></p-skeleton></td>
             <td class="actions"><p-skeleton></p-skeleton></td>
           </tr>
         </ng-container>
 
         <ng-template #dataRows>
           <tr *ngIf="medicamentos && medicamentos.length === 0">
-            <td colspan="4" style="text-align:center; opacity:0.8; padding:12px;">No hay medicamentos registrados.</td>
+            <td colspan="6" style="text-align:center; opacity:0.8; padding:12px;">No hay medicamentos registrados.</td>
           </tr>
           <tr *ngFor="let medicamento of medicamentosView">
             <td>{{ medicamento.nombre }}</td>
             <td>{{ medicamento.cantidad }}</td>
+            <td>{{ medicamento.unidad || 'N/A' }}</td>
             <td>{{ (medicamento.costo || 0) | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
             <td>
               <ng-container *ngIf="medicamento.metodo_aplicacion.length > 0; else sinMetodo">
@@ -64,7 +67,7 @@
               </ng-template>
             </td>
 
-          
+
             <td class="actions">
               <button class="action-btnP" (click)="openEdit(medicamento)">
                 <img src="assets/img/edit.png" class="btn-iconP">
@@ -80,25 +83,66 @@
     </table>
   </div>
 
-  <!-- Modal edición cantidad -->
-  <div *ngIf="modalOpen" class="modal-backdrop" (click)="closeEdit()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 style="margin:0">Editar stock</h3>
-        <button class="modal-close" (click)="closeEdit()">&times;</button>
+  <div *ngIf="modalOpen" class="modal-overlay" (click)="closeEdit()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+      <h3>Editar Medicamento</h3>
+
+      <div class="form-group">
+        <label>Nombre del Insumo</label>
+        <input type="text" class="form-control" [(ngModel)]="nombreNuevo" placeholder="Nombre del medicamento">
       </div>
-      <div class="modal-body">
-        <label style="margin-top:12px;">Nombre</label>
-        <input type="text" [(ngModel)]="nombreNuevo"
-          style="width:100%; padding:8px; border:1px solid var(--input-border); border-radius:8px;" />
-        <label>Cantidad</label>
-        <input type="number" [(ngModel)]="editedCantidad"
-          style="width:100%; padding:8px; border:1px solid var(--input-border); border-radius:8px;" />
+
+      <div class="form-row-3">
+
+        <div class="form-group">
+          <label>Cantidad</label>
+          <input type="number" class="form-control" [(ngModel)]="editedCantidad" placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label>Unidad</label>
+          <input type="text" class="form-control" [(ngModel)]="unidadNueva" placeholder="Ej. pza, ml">
+        </div>
+
+        <div class="form-group">
+          <label>Costo Unitario</label>
+          <div class="input-prefix-wrapper">
+            <span class="prefix-symbol">$</span>
+            <input type="number" class="form-control input-with-prefix" [(ngModel)]="costoNuevo" step="0.01"
+              placeholder="0.00">
+          </div>
+        </div>
+
       </div>
-      <div class="modal-footer">
-        <button class="btn" (click)="closeEdit()">Cancelar</button>
-        <button class="btn btn-edit" (click)="saveEdit()">Guardar</button>
+
+      <div class="form-group">
+        <label>Métodos de Aplicación</label>
+
+        <div *ngIf="metodosDisponibles.length === 0" class="text-muted">
+          <small>Cargando métodos...</small>
+        </div>
+
+        <div class="chips-container">
+          <div *ngFor="let metodo of metodosDisponibles" class="chip-item"
+            [class.selected]="isMetodoSelected(metodo.id)" (click)="toggleMetodo(metodo.id)">
+
+            <i class="fa-solid fa-check" *ngIf="isMetodoSelected(metodo.id)" style="font-size: 0.8em;"></i>
+
+            {{ metodo.nombre }}
+          </div>
+        </div>
+
+        <small style="color: #999; margin-top: 5px; display: block;">
+          {{ metodosSeleccionados.size }} método(s) seleccionado(s)
+        </small>
       </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeEdit()">Cancelar</button>
+        <button class="btn-save" (click)="saveEdit()">Guardar Cambios</button>
+      </div>
+
     </div>
   </div>
 </div>

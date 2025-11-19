@@ -64,23 +64,39 @@
       <input type="text" id="correo" name="correo" [(ngModel)]="doctorData.correo" placeholder="Ej. doctor@mail.com" />
     </div>
 
-    <div class="form-group">
-  <label>Asignar a Agenda:</label>
-  <div class="radio-group">
-    <div class="radio-option">
-      <input type="radio" id="agenda-general" name="nombre_agenda" value="General" [(ngModel)]="doctorData.nombre_agenda" required>
-      <label for="agenda-general">General</label>
+    <div>
+      <label class="label-titulo">Asignar a Agenda:</label>
+
+      <div class="radio-group-container">
+
+        <label class="radio-card">
+          <input type="radio" name="nombre_agenda" value="General" [(ngModel)]="doctorData.nombre_agenda" required>
+          <div class="card-content">
+            <span class="radio-icon">🏥</span>
+            <span class="radio-text">General</span>
+          </div>
+        </label>
+
+        <label class="radio-card">
+          <input type="radio" name="nombre_agenda" value="Cirujano" [(ngModel)]="doctorData.nombre_agenda" required>
+          <div class="card-content">
+            <span class="radio-icon">✂️</span>
+            <span class="radio-text">Cirujano</span>
+          </div>
+        </label>
+
+        <label class="radio-card">
+          <input type="radio" name="nombre_agenda" value="Neuropediatra" [(ngModel)]="doctorData.nombre_agenda"
+            required>
+          <div class="card-content">
+            <span class="radio-icon">🧠</span>
+            <span class="radio-text">Neuropediatra</span>
+          </div>
+        </label>
+
+      </div>
+
     </div>
-    <div class="radio-option">
-      <input type="radio" id="agenda-cirujano" name="nombre_agenda" value="Cirujano" [(ngModel)]="doctorData.nombre_agenda" required>
-      <label for="agenda-cirujano">Cirujano</label>
-    </div>
-    <div class="radio-option">
-      <input type="radio" id="agenda-neuro" name="nombre_agenda" value="Neuropediatra" [(ngModel)]="doctorData.nombre_agenda" required>
-      <label for="agenda-neuro">Neuropediatra</label>
-    </div>
-  </div>
-</div>
 
     <button type="submit" class="btn-reg btn-outline-primary" [disabled]="loading">
       {{ loading ? 'Guardando...' : 'Registrar Doctor' }}

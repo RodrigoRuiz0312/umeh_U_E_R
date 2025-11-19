@@ -5,11 +5,14 @@ import { AgendarCitaModal } from '../../utils//agendar-cita-modal/agendar-cita-m
 import { ApiService } from '../../services/api';
 import { DetallesCitaModal } from '../../utils/detalles-cita-modal/detalles-cita-modal';
 import { Router } from '@angular/router';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-citas',
   standalone: true,
-  imports: [CommonModule, FormsModule, AgendarCitaModal, DetallesCitaModal],
+  imports: [CommonModule, FormsModule, AgendarCitaModal, DetallesCitaModal, ToastModule],
+  providers: [MessageService],
   templateUrl: './citas.html',
   styleUrl: './citas.css'
 })
@@ -46,17 +49,28 @@ export class Citas implements OnInit {
 
   isDetailsModalVisible = false;
   citaSeleccionada: any;
+  haRealizadoBusqueda: boolean = false;
+  doctorSeleccionado: any | null = null;
 
-  constructor(private api: ApiService, private router: Router) { }
+  constructor(private api: ApiService, private router: Router, private messageService: MessageService) { }
 
   ngOnInit() { }
 
   seleccionarAgenda(nombreAgenda: string) {
     this.agendaSeleccionada = nombreAgenda;
+    this.doctorSeleccionado = null;
     this.cargarAgenda();
 
     this.resultadoBusqueda = [];
     this.terminoBusquedaCita = '';
+  }
+
+  elegirDoctorDeLista(doctor: any) {
+    this.doctorSeleccionado = doctor;
+  }
+
+  volverAListaDoctores() {
+    this.doctorSeleccionado = null;
   }
 
   cargarAgenda() {
@@ -70,10 +84,13 @@ export class Citas implements OnInit {
   buscarCitas() {
     if (this.terminoBusquedaCita.length < 3) {
       this.resultadoBusqueda = [];
+      this.haRealizadoBusqueda = false;
       return;
     }
+
     this.api.buscarCitasPorPacientes(this.terminoBusquedaCita).subscribe(data => {
       this.resultadoBusqueda = data;
+      this.haRealizadoBusqueda = true;
     });
   }
 
@@ -100,10 +117,11 @@ export class Citas implements OnInit {
 
   volverASeleccion() {
     this.agendaSeleccionada = null;
+    this.doctorSeleccionado = null;
     this.agenda = [];
-
     this.resultadoBusqueda = [];
     this.terminoBusquedaCita = '';
+    this.haRealizadoBusqueda = false;
   }
 
   isHourBooked(doctor: any, horario: string): boolean {

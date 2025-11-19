@@ -56,36 +56,6 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-/* Ancho completo */
-.p-select-custom {
-  width: 100%;
-}
-
-/* Estilo base del select */
-::ng-deep .p-select-custom .p-select {
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  transition: border-color 0.3s ease;
-}
-
-::ng-deep .p-select-custom .p-select:hover {
-  border-color: #5a9;
-}
-
-/* Fondo y color de texto al pasar el mouse sobre una opción */
-::ng-deep .p-select-option:hover {
-  background-color: #e0f7fa !important;
-  color: #00695c !important;
-}
-
-/* Opción seleccionada (cuando ya está elegida) */
-::ng-deep .p-select-option.p-select-option-selected {
-  background-color: #b2ebf2 !important;
-  color: #000000 !important;
-  font-weight: 600;
-}
-
 .form-field textarea {
   width: 100%;
   min-height: 44px;
@@ -125,12 +95,12 @@ p-toast {
   margin-bottom: 8px;
 }
 
-.registro-container form > button[type="submit"] {
+.registro-container form>button[type="submit"] {
   position: fixed;
   top: 40px;
   right: 50px;
   font-size: 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
 
@@ -152,6 +122,7 @@ p-toast {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -173,6 +144,7 @@ p-toast {
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -305,75 +277,71 @@ p-toast {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
 }
-  
-/* Estilos para el asterisco de campos obligatorios */
+
 .requerido {
   color: var(--danger-color);
   font-weight: bold;
   margin-left: 2px;
 }
 
-/* Contenedor principal de las opciones de radio */
-.form-field .radio-group {
-  display: flex; 
-  gap: 20px; 
-  padding: 20px 0; 
+.label-titulo {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #333;
 }
 
-/* Contenedor de cada par (botón + etiqueta) */
-.radio-option {
+.radio-group-container {
   display: flex;
-  align-items: center; 
-  cursor: pointer; 
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
-/* Estilo para la etiqueta de cada opción (ej. "General") */
-.radio-option label {
-  margin-left: 8px; 
-  font-weight: normal; 
-  color: var(--label-text);
-}
-
-.radio-option input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 18px; 
-  height: 18px;
-  border: 2px solid var(--input-border);
-  border-radius: 50%; 
-  outline: none;
+.radio-card {
+  flex: 1;
+  min-width: 140px;
   cursor: pointer;
   position: relative;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
-
-.radio-option input[type="radio"]::before {
-  content: '';
-  display: block;
-  width: 10px; 
-  height: 10px;
-  background-color: transparent;
-  border-radius: 50%;
+.radio-card input[type="radio"] {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: background-color 0.2s ease;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-/* Estilo del botón de radio CUANDO ESTÁ SELECCIONADO */
-.radio-option input[type="radio"]:checked {
-  border-color: var(--primary-color); 
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  color: #666;
 }
 
-/* Estilo del círculo interior CUANDO ESTÁ SELECCIONADO */
-.radio-option input[type="radio"]:checked::before {
-  background-color: var(--primary-color); 
+.radio-icon {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
 }
 
-/* Efecto al pasar el mouse por encima */
-.radio-option input[type="radio"]:hover {
-  border-color: var(--primary-color);
+.radio-text {
+  font-weight: 500;
+}
+
+.radio-card:hover .card-content {
+  border-color: #b0b0b0;
+  background-color: #f9f9f9;
+}
+
+.radio-card input[type="radio"]:checked+.card-content {
+  border-color: #0d6efd;
+  background-color: #e7f5ff;
+  color: #0d6efd;
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.15);
+  transform: translateY(-2px);
 }

@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-lista-pacientes',
@@ -13,7 +13,7 @@ import { ConfirmationService, MessageService } from 'primeng/api';
   imports: [CommonModule, EditPacienteModal, FormsModule, ToastModule, ConfirmDialogModule],
   templateUrl: './lista-pacientes.html',
   styleUrl: './lista-pacientes.css',
-  providers: [MessageService, ConfirmationService]
+  providers: [MessageService]
 })
 export class ListaPacientes implements OnInit {
   isModalVisible = false;
@@ -23,8 +23,10 @@ export class ListaPacientes implements OnInit {
   searchTerm: string = '';
   sortColumn: 'nombre' | 'apellidos' | 'telefonos' | 'correos' | 'sexo' = 'nombre';
   sortDirection: 'asc' | 'desc' = 'asc';
+  modalEliminarVisible: boolean = false;
+  pacienteAEliminar: { id: number, nombre: string } | null = null;
 
-  constructor(private api: ApiService, private messageService: MessageService, private confirmationService: ConfirmationService) { }
+  constructor(private api: ApiService, private messageService: MessageService) { }
 
   ngOnInit() {
     this.cargarPacientes();
@@ -53,39 +55,45 @@ export class ListaPacientes implements OnInit {
     this.cargarPacientes();
   }
 
-  confirmarEliminacion(id: number, nombrePaciente: string) {
-    this.confirmationService.confirm({
-      message: `¿Estás seguro de que deseas eliminar a <strong>${nombrePaciente}</strong>? Esta acción no se puede deshacer.`,
-      header: 'Confirmar eliminación',
-      icon: 'pi pi-exclamation-triangle', // Ícono de advertencia
-      acceptLabel: 'Sí, eliminar',
-      rejectLabel: 'No, cancelar',
-      accept: () => {
-        // Si el usuario hace clic en "Sí", llamamos a la función que realmente borra
-        this.eliminarPaciente(id);
-      }
-      // No necesitamos un 'reject', por defecto simplemente cierra el modal.
-    });
+  // REEMPLAZA TU FUNCIÓN 'confirmarEliminacion' POR ESTA:
+  confirmarEliminacion(id: number, nombre: string) {
+    // En lugar de llamar al servicio de PrimeNG, guardamos datos y mostramos NUESTRO modal
+    this.pacienteAEliminar = { id, nombre };
+    this.modalEliminarVisible = true;
   }
 
-  private eliminarPaciente(id: number) {
-    this.api.deletePaciente(id).subscribe({
-      next: (response) => {
+  // Función para cerrar el modal sin hacer nada
+  cancelarEliminacion() {
+    this.modalEliminarVisible = false;
+    this.pacienteAEliminar = null;
+  }
+
+  // Función que REALMENTE elimina (se llama al dar clic en "Sí, eliminar")
+  ejecutarEliminacion() {
+    if (!this.pacienteAEliminar) return;
+
+    this.api.deletePaciente(this.pacienteAEliminar.id).subscribe({
+      next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Eliminado',
-          detail: 'El paciente ha sido eliminado correctamente.'
+          detail: 'Paciente eliminado correctamente'
         });
-        // Aquí deberías recargar tu lista de pacientes
-        // this.cargarPacientes(); 
+
+        // Recargar la tabla
+        this.cargarPacientes();
+
+        // Cerrar modal
+        this.cancelarEliminacion();
       },
-      error: (error) => {
+      error: (e) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo eliminar al paciente.'
+          detail: 'No se pudo eliminar el paciente'
         });
-        console.error(error);
+        console.error(e);
+        this.cancelarEliminacion();
       }
     });
   }

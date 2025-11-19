@@ -126,6 +126,13 @@ body {
   font-weight: 600;
   cursor: pointer;
   font-size: var(--fs-md);
+  transition: all 0.3s ease;
+}
+
+.btn-reg:hover {
+  background-color: #0d6efd;
+  color: #fff;
+  transform: scale(1.05);
 }
 
 .btn-outline-primary {

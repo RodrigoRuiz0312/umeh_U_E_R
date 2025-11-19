@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-tabla',
@@ -29,13 +30,28 @@ export class Tabla implements OnInit {
   selectedMedicamento: Medicamento | null = null;
   editedCantidad: number | null = null;
   nombreNuevo: string = '';
+  unidadNueva: string = '';
+  costoNuevo: number | null = null;
+  metodosDisponibles: { id: number; nombre: string }[] = [];
+  metodosSeleccionados = new Set<number>();
   loadingRows = Array.from({ length: 14 });
 
   constructor(private insumosService: InsumoService,
-    private messageService: MessageService) { }
+    private messageService: MessageService,
+    private http: HttpClient) { }
 
   ngOnInit(): void {
     console.log(" Cargando insumos desde la base de datos...");
+    
+    // Cargar métodos de aplicación disponibles
+    this.http.get<{ id: number; nombre: string }[]>('http://localhost:4000/api/medicamentos/metodos-aplicacion')
+      .subscribe({
+        next: (data) => {
+          this.metodosDisponibles = data;
+        },
+        error: (err) => console.error('Error cargando métodos:', err)
+      });
+    
     this.insumosService.getInsumos().subscribe({
       next: (data) => {
         console.log("✅ Datos recibidos:", data);
@@ -135,6 +151,20 @@ export class Tabla implements OnInit {
     this.selectedMedicamento = medicamento;
     this.nombreNuevo = medicamento.nombre;
     this.editedCantidad = medicamento.cantidad;
+    this.unidadNueva = medicamento.unidad || '';
+    this.costoNuevo = medicamento.costo || 0;
+    
+    // Cargar métodos seleccionados (convertir nombres a IDs)
+    this.metodosSeleccionados.clear();
+    if (Array.isArray(medicamento.metodo_aplicacion)) {
+      medicamento.metodo_aplicacion.forEach((nombreMetodo: any) => {
+        const metodo = this.metodosDisponibles.find(m => m.nombre === nombreMetodo);
+        if (metodo) {
+          this.metodosSeleccionados.add(metodo.id);
+        }
+      });
+    }
+    
     this.modalOpen = true;
   }
 
@@ -143,38 +173,115 @@ export class Tabla implements OnInit {
     this.nombreNuevo = '';
     this.selectedMedicamento = null;
     this.editedCantidad = null;
+    this.unidadNueva = '';
+    this.costoNuevo = null;
+    this.metodosSeleccionados.clear();
   }
 
   saveEdit() {
     if (!this.selectedMedicamento) return;
+    
     const cantidad = Number(this.editedCantidad);
-    const nombre = String(this.nombreNuevo);
+    const nombre = String(this.nombreNuevo).trim();
+    const unidad = String(this.unidadNueva).trim();
+    const costo_unitario = Number(this.costoNuevo);
+
+    // Validaciones
     if (!nombre) {
       this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'El nombre no puede estar vacío.' });
       return;
     }
-    if (Number.isNaN(cantidad)) {
-      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'La cantidad debe ser numérica.' });
+    if (Number.isNaN(cantidad) || cantidad < 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'La cantidad debe ser un número válido.' });
       return;
     }
-    if (cantidad === this.selectedMedicamento.cantidad) {
+    if (Number.isNaN(costo_unitario) || costo_unitario < 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'El costo debe ser un número válido.' });
+      return;
+    }
+
+    // Verificar si hubo cambios (incluyendo métodos de aplicación)
+    const metodosActualesIds = new Set<number>();
+    if (Array.isArray(this.selectedMedicamento.metodo_aplicacion)) {
+      this.selectedMedicamento.metodo_aplicacion.forEach((nombreMetodo: any) => {
+        const metodo = this.metodosDisponibles.find(m => m.nombre === nombreMetodo);
+        if (metodo) {
+          metodosActualesIds.add(metodo.id);
+        }
+      });
+    }
+    
+    const metodosIguales = 
+      metodosActualesIds.size === this.metodosSeleccionados.size &&
+      Array.from(metodosActualesIds).every(id => this.metodosSeleccionados.has(id));
+
+    const sinCambios = (
+      nombre === this.selectedMedicamento.nombre &&
+      cantidad === this.selectedMedicamento.cantidad &&
+      unidad === (this.selectedMedicamento.unidad || '') &&
+      costo_unitario === (this.selectedMedicamento.costo || 0) &&
+      metodosIguales
+    );
+
+    if (sinCambios) {
       this.messageService.add({ severity: 'info', summary: 'Sin cambios', detail: 'No se realizaron modificaciones.' });
       this.closeEdit();
       return;
     }
 
-    this.insumosService.updateInsumo(this.selectedMedicamento.id, { cantidad, nombre }).subscribe({
-      next: (actualizado) => {
+    // Preparar datos para actualizar
+    const datosActualizados: any = {
+      nombre,
+      cantidad,
+      costo_unitario,
+      metodo_aplicacion: Array.from(this.metodosSeleccionados)
+    };
+
+    // Solo incluir unidad si no está vacía
+    if (unidad) {
+      datosActualizados.unidad = unidad;
+    }
+
+    this.insumosService.updateInsumo(this.selectedMedicamento.id, datosActualizados).subscribe({
+      next: (actualizado: any) => {
+        // Mapear costo_unitario del backend a costo del frontend si existe
+        const medicamentoActualizado = {
+          ...actualizado,
+          costo: actualizado.costo_unitario !== undefined ? actualizado.costo_unitario : actualizado.costo
+        };
+        
         const idx = this.medicamentos.findIndex(i => i.id === actualizado.id);
-        if (idx !== -1) this.medicamentos[idx] = { ...this.medicamentos[idx], ...actualizado };
+        if (idx !== -1) {
+          this.medicamentos[idx] = { ...this.medicamentos[idx], ...medicamentoActualizado };
+        }
         this.applyFilters();
-        this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Stock actualizado.` });
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Actualizado', 
+          detail: 'Medicamento actualizado correctamente.' 
+        });
         this.closeEdit();
       },
       error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error al actualizar', detail: err.message || 'Ocurrió un error.' });
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error al actualizar', 
+          detail: err.message || 'Ocurrió un error.' 
+        });
       }
     });
+  }
+
+  toggleMetodo(metodoId: number) {
+    if (this.metodosSeleccionados.has(metodoId)) {
+      this.metodosSeleccionados.delete(metodoId);
+    } else {
+      this.metodosSeleccionados.add(metodoId);
+    }
+  }
+
+  isMetodoSelected(metodoId: number): boolean {
+    return this.metodosSeleccionados.has(metodoId);
   }
 
   eliminar(medicamento: Medicamento) {

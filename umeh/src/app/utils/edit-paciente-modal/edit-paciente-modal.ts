@@ -2,7 +2,6 @@ import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api';
-
 import { MessageService } from 'primeng/api';
 
 @Component({
@@ -24,7 +23,7 @@ export class EditPacienteModal implements OnInit {
     private api: ApiService,
     private messageService: MessageService,
     private fb: FormBuilder
-  ) { 
+  ) {
     this.editForm = this.fb.group({});
   }
 
@@ -37,40 +36,80 @@ export class EditPacienteModal implements OnInit {
     this.editForm = this.fb.group({
       nombre: [this.paciente.nombre || ''],
       apellidos: [this.paciente.apellidos || ''],
-      sexo: [this.paciente.sexo || ''],
+      sexo: [this.paciente.sexo || ''], // Campo controlado por los chips
       fecha_nacimiento: [this.formatDateForInput(this.paciente.fecha_nacimiento)],
-      codigo_postal: [this.paciente.codigo_postal || ''],
+
+      telefonos: this.fb.array([]),
+      correos: this.fb.array([]),
+
+      // Domicilio
       calle: [this.paciente.calle || ''],
       num: [this.paciente.num || ''],
       colonia: [this.paciente.colonia || ''],
       municipio: [this.paciente.municipio || ''],
       estado: [this.paciente.estado || ''],
-      telefonos: this.fb.array(
-        this.paciente.telefonos ?
-          this.paciente.telefonos.map((tel: string) => this.fb.control(tel)) : []
-      ),
-      correos: this.fb.array(
-        this.paciente.correos ?
-          this.paciente.correos.map((correo: string) => this.fb.control(correo)) : []
-      )
+      codigo_postal: [this.paciente.codigo_postal || '']
     });
+
+    // Llenar FormArrays
+    this.setTelefonos(this.paciente.telefonos);
+    this.setCorreos(this.paciente.correos);
   }
 
-  // --- Helpers para Teléfonos ---
-  get telefonos() { return this.editForm.get('telefonos') as FormArray; }
-  addTelefono() { this.telefonos.push(this.fb.control('')); }
-  removeTelefono(index: number) { this.telefonos.removeAt(index); }
+  // --- GETTERS PARA EL HTML ---
+  get telefonos() {
+    return this.editForm.get('telefonos') as FormArray;
+  }
 
-  // --- Helpers para Correos ---
-  get correos() { return this.editForm.get('correos') as FormArray; }
-  addCorreo() { this.correos.push(this.fb.control('')); }
-  removeCorreo(index: number) { this.correos.removeAt(index); }
+  get correos() {
+    return this.editForm.get('correos') as FormArray;
+  }
 
-  // --- Otros helpers ---
+  // --- LÓGICA PARA CHIPS (NUEVO) ---
+  setSexo(valor: string) {
+    this.editForm.get('sexo')?.setValue(valor);
+    this.editForm.markAsDirty(); // Marcar como editado
+  }
+
+  // --- LÓGICA DE ARRAYS ---
+  setTelefonos(telefonos: string[]) {
+    const telArray = this.telefonos;
+    telArray.clear();
+    if (telefonos && telefonos.length > 0) {
+      telefonos.forEach(tel => telArray.push(this.fb.control(tel)));
+    }
+  }
+
+  addTelefono() {
+    this.telefonos.push(this.fb.control(''));
+  }
+
+  removeTelefono(index: number) {
+    this.telefonos.removeAt(index);
+  }
+
+  setCorreos(correos: string[]) {
+    const correoArray = this.correos;
+    correoArray.clear();
+    if (correos && correos.length > 0) {
+      correos.forEach(c => correoArray.push(this.fb.control(c)));
+    }
+  }
+
+  addCorreo() {
+    this.correos.push(this.fb.control(''));
+  }
+
+  removeCorreo(index: number) {
+    this.correos.removeAt(index);
+  }
+
+  // --- Helpers ---
   private formatDateForInput(dateStr: string): string {
     if (!dateStr) return '';
     try {
       const date = new Date(dateStr);
+      // Ajuste de zona horaria básico
       date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
       return date.toISOString().split('T')[0];
     } catch (e) {
@@ -82,11 +121,8 @@ export class EditPacienteModal implements OnInit {
     this.close.emit();
   }
 
-
-  // --- ACTUALIZAR guardarCambios() para usar p-toast ---
   guardarCambios() {
     if (this.editForm.invalid) {
-      // REEMPLAZAR toastr.warning
       this.messageService.add({
         severity: 'warn',
         summary: 'Campos incompletos',
@@ -100,7 +136,6 @@ export class EditPacienteModal implements OnInit {
 
     this.api.actualizarPaciente(this.paciente.id_paciente, updatedData).subscribe({
       next: (response) => {
-        // REEMPLAZAR toastr.success
         this.messageService.add({
           severity: 'success',
           summary: 'Actualizado',
@@ -109,14 +144,13 @@ export class EditPacienteModal implements OnInit {
         this.pacienteActualizado.emit();
         this.onClose();
       },
-      error: (error) => {
-        // REEMPLAZAR toastr.error
+      error: (err) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Error al actualizar el paciente.'
+          detail: 'No se pudo actualizar el paciente'
         });
-        console.error(error);
+        console.error(err);
       }
     });
   }

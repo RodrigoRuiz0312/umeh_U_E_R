@@ -1,11 +1,11 @@
 <div class="modal-overlay" (click)="onClose()">
   <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="datosCita">
-    
+
     <div class="modal-header">
       <h2>Agendar Nueva Cita</h2>
       <button class="modal-close" (click)="onClose()">&times;</button>
     </div>
-    
+
     <div class="modal-body">
       <div class="cita-info">
         <p><strong>Médico:</strong> {{ datosCita.doctor.nombre }} {{ datosCita.doctor.apellidos }}</p>
@@ -16,22 +16,30 @@
       <hr>
 
       <div class="form-group">
-        <label for="buscar-paciente">Buscar Paciente:</label>
+        <label>Buscar Paciente:</label>
+
         <div class="search-container">
-          <input 
-            type="text" 
-            id="buscar-paciente" 
-            placeholder="Escriba al menos 3 letras del nombre..."
-            [(ngModel)]="terminoBusqueda"
-            (keyup)="buscarPaciente()">
+
+          <div class="search-row">
+            <div class="input-wrapper">
+              <input type="text" placeholder="Nombre(s)" [(ngModel)]="terminoNombre" (keyup)="buscarPaciente()">
+            </div>
+            <div class="input-wrapper">
+              <input type="text" placeholder="Apellidos" [(ngModel)]="terminoApellido" (keyup)="buscarPaciente()">
+            </div>
+          </div>
+
           <ul class="search-results" *ngIf="pacientes.length > 0">
             <li *ngFor="let paciente of pacientes" (click)="seleccionarPaciente(paciente)">
-              {{ paciente.nombre }} {{ paciente.apellidos }}
+              <strong>{{ paciente.nombre }} {{ paciente.apellidos }}</strong>
+              <br>
+              <small style="color: #666;">Dom: {{ paciente.calle || 'S/N' }}</small>
             </li>
           </ul>
+
         </div>
       </div>
-      
+
       <div class="form-group">
         <label for="consultorio">Consultorio Disponible:</label>
         <select id="consultorio" name="consultorio" [(ngModel)]="consultorioSeleccionado">

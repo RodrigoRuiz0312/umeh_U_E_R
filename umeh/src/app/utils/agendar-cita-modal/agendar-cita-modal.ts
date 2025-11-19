@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
+import { MessageService } from 'primeng/api';
 import { ApiService } from '../../services/api';
 
 @Component({
@@ -20,13 +20,15 @@ export class AgendarCitaModal implements OnInit {
 
   //variables internas
   pacientes: any[] = [];
-  terminoBusqueda: string = '';
+
+  terminoNombre: string = '';
+  terminoApellido: string = '';
   pacienteSeleccionado: any = null;
 
   consultoriosDisponibles: string[] = [];
   consultorioSeleccionado: string = '';
 
-  constructor(private api: ApiService, private toastr: ToastrService) { }
+  constructor(private api: ApiService, private messageService: MessageService) { }
 
   //inicializacion logica
   ngOnInit() {
@@ -42,25 +44,40 @@ export class AgendarCitaModal implements OnInit {
 
   //logica de busqueda y seleccion
   buscarPaciente() {
-    if (this.terminoBusqueda.length < 3) {
+    // Validamos que al menos uno de los dos tenga 3 letras para no saturar
+    if (this.terminoNombre.length < 3 && this.terminoApellido.length < 3) {
       this.pacientes = [];
       return;
     }
-    this.api.buscarPacientes(this.terminoBusqueda).subscribe(data => {
+
+    // Enviamos nombre y apellidos como parámetros separados
+    const nombre = this.terminoNombre.trim() || undefined;
+    const apellidos = this.terminoApellido.trim() || undefined;
+
+    this.api.buscarPacientes(nombre, apellidos).subscribe(data => {
       this.pacientes = data;
     });
   }
 
   seleccionarPaciente(paciente: any) {
     this.pacienteSeleccionado = paciente;
-    this.terminoBusqueda = `${paciente.nombre} ${paciente.apellidos}`;
+    
+    // Llenamos los inputs con la selección para que se vea bonito
+    this.terminoNombre = paciente.nombre;
+    this.terminoApellido = paciente.apellidos;
+    
+    // Limpiamos la lista
     this.pacientes = [];
   }
 
   //acciones finales
   confirmarCita() {
     if (!this.pacienteSeleccionado || !this.consultorioSeleccionado) {
-      this.toastr.warning('Por favor, seleccione un paciente y un consultorio');
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Advertencia',
+        detail: 'Por favor, seleccione un paciente y un consultorio'
+      });
       return;
     }
 
@@ -74,11 +91,19 @@ export class AgendarCitaModal implements OnInit {
 
     this.api.crearCita(nuevaCita).subscribe({
       next: () => {
-        this.toastr.success('Cita agendada con exito');
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Éxito',
+          detail: 'Cita agendada con éxito'
+        });
         this.citaCreada.emit();
       },
       error: (err) => {
-        this.toastr.error('Error al agendar la cita');
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Error al agendar la cita'
+        });
         console.log(err);
       }
     });

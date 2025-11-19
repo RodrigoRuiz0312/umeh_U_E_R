@@ -102,7 +102,7 @@ export class RegistroPaciente {
       codigo_postal: ['', Validators.required],
       calle: ['', Validators.required],
       colonia: ['', Validators.required],
-      num: ['', Validators.required], // 'num' es requerido en tu HTML, lo añado aquí
+      num: [''],
       municipio: ['', Validators.required],
       estado: ['', Validators.required],
     })
