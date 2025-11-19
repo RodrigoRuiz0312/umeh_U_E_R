@@ -104,33 +104,86 @@ router.post('/', async (req, res) => {
 // ✅ PUT actualizar un medicamento (update)
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { nombre, cantidad, unidad, costo_unitario } = req.body;
+  const { nombre, cantidad, unidad, costo_unitario, metodo_aplicacion } = req.body;
 
   if (!id) return res.status(400).json({ error: 'ID es requerido' });
-  if (nombre === undefined && cantidad === undefined && unidad === undefined && costo_unitario === undefined) {
+  if (nombre === undefined && cantidad === undefined && unidad === undefined && costo_unitario === undefined && metodo_aplicacion === undefined) {
     return res.status(400).json({ error: 'Debe proporcionar al menos un campo a actualizar' });
   }
 
+  const client = await pool.connect();
   try {
-    const fields = [];
-    const values = [];
-    let idx = 1;
+    await client.query('BEGIN');
 
-    if (nombre !== undefined) { fields.push(`nombre = $${idx++}`); values.push(nombre); }
-    if (cantidad !== undefined) { fields.push(`cantidad = $${idx++}`); values.push(cantidad); }
-    if (unidad !== undefined) { fields.push(`unidad = $${idx++}`); values.push(unidad); }
-    if (costo_unitario !== undefined) { fields.push(`costo_unitario = $${idx++}`); values.push(costo_unitario); }
+    // Actualizar campos básicos del medicamento
+    if (nombre !== undefined || cantidad !== undefined || unidad !== undefined || costo_unitario !== undefined) {
+      const fields = [];
+      const values = [];
+      let idx = 1;
 
-    values.push(id);
+      if (nombre !== undefined) { fields.push(`nombre = $${idx++}`); values.push(nombre); }
+      if (cantidad !== undefined) { fields.push(`cantidad = $${idx++}`); values.push(cantidad); }
+      if (unidad !== undefined) { fields.push(`unidad = $${idx++}`); values.push(unidad); }
+      if (costo_unitario !== undefined) { fields.push(`costo_unitario = $${idx++}`); values.push(costo_unitario); }
 
-    const query = `UPDATE medicamentos SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
-    const result = await pool.query(query, values);
+      values.push(id);
 
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Medicamento no encontrado' });
-    res.json(result.rows[0]);
+      const query = `UPDATE medicamentos SET ${fields.join(', ')} WHERE id = $${idx}`;
+      const result = await client.query(query, values);
+
+      if (result.rowCount === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Medicamento no encontrado' });
+      }
+    }
+
+    // Actualizar métodos de aplicación si se proporcionan
+    if (Array.isArray(metodo_aplicacion)) {
+      // Eliminar métodos existentes
+      await client.query('DELETE FROM medicamento_metodo WHERE medicamento_id = $1', [id]);
+      
+      // Insertar nuevos métodos
+      if (metodo_aplicacion.length > 0) {
+        const insertPromises = metodo_aplicacion.map((metodoId) =>
+          client.query(
+            `INSERT INTO medicamento_metodo (medicamento_id, metodo_id) VALUES ($1, $2)`,
+            [id, metodoId]
+          )
+        );
+        await Promise.all(insertPromises);
+      }
+    }
+
+    // Recuperar el registro completo con métodos
+    const fullQuery = `
+      SELECT 
+        m.id,
+        m.nombre,
+        m.cantidad,
+        m.unidad,
+        COALESCE(m.costo_unitario, 0) AS costo,
+        COALESCE(
+          (
+            SELECT json_agg(ma2.nombre)
+            FROM medicamento_metodo mm2
+            LEFT JOIN metodos_aplicacion ma2 ON ma2.id = mm2.metodo_id
+            WHERE mm2.medicamento_id = m.id
+          ), 
+          '[]'::json
+        ) AS metodo_aplicacion
+      FROM medicamentos m
+      WHERE m.id = $1`;
+
+    const fullResult = await client.query(fullQuery, [id]);
+
+    await client.query('COMMIT');
+    res.json(fullResult.rows[0]);
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('❌ Error al actualizar medicamento:', err);
     res.status(500).json({ error: 'Error al actualizar medicamento' });
+  } finally {
+    client.release();
   }
 });
 

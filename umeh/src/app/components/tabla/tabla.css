@@ -128,76 +128,6 @@
   /* ajusta el padding para evitar que el texto se superponga con el icono */
 }
 
-/* Modal básico */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: var(--card);
-  color: var(--foreground);
-  width: min(480px, 92vw);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.modal-header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  background: linear-gradient(135deg, #2563eb 0%, #ffffff 100%);
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-
-.modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  background-color: var(--table-bg);
-  border-radius: 0 0 12px 12px;
-}
-
-.modal-body {
-  padding: 24px;
-  background: var(--table-bg);
-}
-
-.modal-close {
-  background: transparent;
-  border: none;
-  color: rgba(0, 0, 0, 0.731);
-  font-size: 2rem;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-}
-
-.modal-close:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 .deleteButton {
   width: 40px;
   height: 40px;
@@ -215,21 +145,8 @@
   overflow: hidden;
 }
 
-.deleteButton:hover {
-  background-color: rgb(237, 56, 56);
-  overflow: visible;
-}
 .bin path {
   transition: all 0.2s;
-}
-.deleteButton:hover .bin path {
-  fill: #fff;
-}
-.deleteButton:active {
-  transform: scale(0.98);
-}
-.deleteButton:hover .tooltip {
-  opacity: 1;
 }
 
 /* From Uiverse.io by vinodjangid07 */ 
@@ -250,49 +167,6 @@
   overflow: hidden;
 }
 
-.pencil path {
-  transition: all 0.2s;
-}
-.editButton:hover .pencil path {
-  fill: #fff;
-}
-.editButton:active {
-  transform: scale(0.98);
-}
-
-.tooltip {
-  --tooltip-color: rgb(41, 41, 41);
-  position: absolute;
-  top: -40px;
-  background-color: var(--tooltip-color);
-  color: white;
-  border-radius: 5px;
-  font-size: 12px;
-  padding: 8px 12px;
-  font-weight: 600;
-  box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.105);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: all 0.5s;
-  z-index: 1;
-}
-
-.tooltip::before {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  transform: rotate(45deg);
-  content: "";
-  background-color: var(--tooltip-color);
-  bottom: -10%;
-}
-
-.editButton:hover .tooltip {
-  opacity: 1;
-}
-
 .btn-iconP {
   width: 20px;
   height: 20px;
@@ -304,4 +178,185 @@
 
 .action-btnP:last-child {
   margin-right: 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px); /* Efecto borroso sutil detrás */
+}
+
+/* Contenedor del Modal */
+.modal-content {
+  background: var(--card-bg, #fff);
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px; /* Un poco más ancho para que quepa el grid */
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  border: 1px solid var(--border, #e9ecef);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Títulos y Labels */
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--heading-text, #333);
+  font-size: 1.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: var(--card-text, #444);
+  font-size: 0.9rem;
+}
+
+/* Inputs Generales */
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border, #ccc);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--input-bg, #fff);
+  color: var(--input-text, #333);
+  transition: border-color 0.2s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+/* --- GRID DE 3 COLUMNAS (Cantidad, Unidad, Costo) --- */
+.form-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
+}
+
+/* Input con prefijo ($) */
+.input-prefix-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.prefix-symbol {
+  position: absolute;
+  left: 12px;
+  color: #888;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.input-with-prefix {
+  padding-left: 28px !important; /* Espacio para el signo $ */
+}
+
+/* --- CHIPS DE SELECCIÓN (La magia para los métodos) --- */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.chip-item {
+  padding: 8px 16px;
+  background-color: #f1f3f5;
+  border: 1px solid #dee2e6;
+  border-radius: 50px; /* Redondeado total */
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #495057;
+  transition: all 0.2s ease;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-item:hover {
+  background-color: #e9ecef;
+  transform: translateY(-1px);
+}
+
+/* Estado Activo (Seleccionado) */
+.chip-item.selected {
+  background-color: #e7f5ff; /* Azul claro fondo */
+  border-color: #0d6efd;     /* Borde azul */
+  color: #0d6efd;            /* Texto azul */
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(13, 110, 253, 0.15);
+}
+
+/* --- BOTONES --- */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid #ced4da;
+  color: #6c757d;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.btn-save {
+  background: #0d6efd; /* Azul primario */
+  border: none;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-save:hover {
+  background: #0b5ed7;
+  transform: translateY(-1px);
+}
+
+/* Responsive para móviles */
+@media (max-width: 500px) {
+  .form-row-3 {
+    grid-template-columns: 1fr; /* Una sola columna en celular */
+  }
 }

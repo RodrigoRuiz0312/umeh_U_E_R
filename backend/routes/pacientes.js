@@ -97,18 +97,40 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Buscar pacientes por nombre
+// Buscar pacientes por nombre y/o apellidos
 router.get('/buscar', async (req, res) => {
   try {
-    const { nombre } = req.query;
-    if (!nombre) return res.status(400).json({ error: 'Se requiere un término de búsqueda' });
-    const searchTerm = `%${nombre}%`;
+    const { nombre, apellidos } = req.query;
+    
+    // Validar que al menos uno de los parámetros esté presente
+    if (!nombre && !apellidos) {
+      return res.status(400).json({ error: 'Se requiere al menos nombre o apellidos para la búsqueda' });
+    }
+
+    // Construir condiciones dinámicas
+    const conditions = [];
+    const params = [];
+    let paramCount = 1;
+
+    if (nombre) {
+      conditions.push(`nombre ILIKE $${paramCount}`);
+      params.push(`%${nombre}%`);
+      paramCount++;
+    }
+
+    if (apellidos) {
+      conditions.push(`apellidos ILIKE $${paramCount}`);
+      params.push(`%${apellidos}%`);
+      paramCount++;
+    }
+
     const query = `
-      SELECT id_paciente, nombre, apellidos 
+      SELECT id_paciente, nombre, apellidos, calle
       FROM paciente 
-      WHERE nombre ILIKE $1 OR apellidos ILIKE $1 
+      WHERE ${conditions.join(' AND ')}
       LIMIT 10`;
-    const result = await pool.query(query, [searchTerm]);
+    
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (err) {
     console.error('Error al buscar pacientes:', err);

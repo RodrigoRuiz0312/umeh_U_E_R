@@ -11,67 +11,6 @@
   height: 95%;
 }
 
-.card-header h2 {
-  margin: 0 0 16px 0;
-  font-size: 1.9rem;
-  color: var(--heading-text);
-}
-
-.agendas-wrapper {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-top: 50px;
-}
-
-/* Tarjeta principal */
-.agenda-cover {
-  width: 400px;
-  height: 450px;
-  border-radius: 15px;
-  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-/* Efecto hover */
-.agenda-cover:hover {
-  transform: translateY(-10px);
-  box-shadow: 8px 12px 20px rgba(0, 0, 0, 0.25);
-}
-
-/* Rectángulo blanco interno */
-.agenda-title {
-  position: absolute;
-  top: 30px;
-  background-color: white;
-  padding: 15px 30px;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 30px;
-  font-style: italic;
-  font-weight: bold;
-  color: #333;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-
-/* Colores de fondo para cada tipo de agenda */
-.agenda-cover.general {
-  background: #AEC6CF;
-}
-
-.agenda-cover.neuropediatra {
-  background: #C1E1C1;
-}
-
-.agenda-cover.cirujano {
-  background: #FFDAB9;
-}
 
 .tablero-container {
   background: var(--card-bg);
@@ -262,4 +201,306 @@
 .time-pill.ocupado:hover {
   transform: none;
   box-shadow: none;
+}
+
+/* --- Header --- */
+.dashboard-container {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.header-section {
+  margin-bottom: 30px;
+}
+
+.subtitle {
+  color: #6c757d;
+  margin-top: -10px;
+}
+
+.search-section {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  flex: 1;
+  min-width: 300px;
+  position: relative;
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding: 14px 14px 14px 45px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+  background: #f8f9fa;
+}
+
+.search-input-wrapper input:focus {
+  border-color: #0d6efd;
+  background: #fff;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #adb5bd;
+}
+
+.search-results-container,
+.no-results {
+  flex: 1.5;
+  min-width: 300px;
+  margin-top: 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.results-header {
+  background: #f8f9fa;
+  padding: 10px 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6c757d;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.result-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #f1f3f5;
+  transition: background 0.2s;
+}
+
+.result-card:last-child {
+  border-bottom: none;
+}
+
+.result-card:hover {
+  background: #f8f9fa;
+}
+
+.patient-name {
+  font-weight: bold;
+  color: #343a40;
+  margin-bottom: 4px;
+}
+
+.meta-info {
+  font-size: 0.85rem;
+  color: #6c757d;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.consultorio-badge {
+  background: #e7f5ff;
+  color: #1c7ed6;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.no-results {
+  margin-top: 0;
+  align-self: flex-start;
+  padding: 15px;
+  background: #fff0f3;
+  color: #c92a2a;
+  border-radius: 8px;
+  border: 1px solid #ffc9c9;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #b8b8b8ac;
+  margin: 40px 0;
+}
+
+.agendas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+}
+
+.agenda-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  padding: 80px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.agenda-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  border-color: #0d6efd;
+}
+
+.icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #e7f5ff;
+  color: #0d6efd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+}
+
+.icon-circle svg {
+  width: 30px;
+  height: 30px;
+}
+
+.agenda-card.neuro .icon-circle {
+  background: #e6fcf5;
+  color: #0ca678;
+}
+
+.agenda-card.cirujano .icon-circle {
+  background: #fff4e6;
+  color: #fd7e14;
+}
+
+.agenda-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
+  color: #343a40;
+}
+
+.link-text {
+  font-weight: 600;
+  color: #0d6efd;
+  font-size: 0.9rem;
+}
+
+/* --- Header del Tablero --- */
+.tablero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.subtitle-doc {
+  color: #0d6efd;
+  margin: 0;
+  font-weight: 500;
+}
+
+.divider-light {
+  border: 0;
+  border-top: 1px solid #b8b8b8ac;
+  margin: 20px 0;
+}
+
+/* --- Grid de Selección de Doctores --- */
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  /* Responsive automático */
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.doctor-card-mini {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.doctor-card-mini:hover {
+  border-color: #0d6efd;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(13, 110, 253, 0.1);
+}
+
+/* Avatar con iniciales */
+.avatar-placeholder {
+  width: 60px;
+  height: 60px;
+  background-color: #e7f5ff;
+  color: #0d6efd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+.doc-info h4 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  color: #343a40;
+}
+
+.doc-info p {
+  margin: 0 0 15px 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.btn-select {
+  font-size: 0.85rem;
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.actions-footer {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #0d6efd;
+  color: #0d6efd;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+}
+
+.marg {
+  margin-top: 25px;
 }

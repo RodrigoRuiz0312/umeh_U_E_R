@@ -193,13 +193,13 @@ export class InsumoService {
     );
   }
 
-  // Actualizar un medicamento parcialmente por ID (nombre y/o cantidad)
-  updateInsumo(id: number, payload: Partial<Pick<Medicamento, 'nombre' | 'cantidad'>>): Observable<Medicamento> {
+  // Actualizar un medicamento parcialmente por ID (nombre, cantidad, unidad, costo)
+  updateInsumo(id: number, payload: Partial<Medicamento>): Observable<Medicamento> {
     if (!id) {
       return throwError(() => new Error('ID es requerido'));
     }
-    if (payload.nombre === undefined && payload.cantidad === undefined) {
-      return throwError(() => new Error('Debe proporcionar al menos un campo a actualizar (nombre o cantidad)'));
+    if (payload.nombre === undefined && payload.cantidad === undefined && payload.unidad === undefined && (payload as any).costo_unitario === undefined) {
+      return throwError(() => new Error('Debe proporcionar al menos un campo a actualizar'));
     }
 
     return this.http.put<Medicamento>(`${this.medicamentosURL}/${id}`, payload).pipe(

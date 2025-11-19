@@ -119,4 +119,122 @@ router.post('/', async (req, res) => {
   }
 })
 
+// PUT actualizar un procedimiento
+router.put('/:id', async (req, res) => {
+  const { id } = req.params;
+  const { descripcion, observaciones, responsables, insumos } = req.body;
+  
+  if (!id) return res.status(400).json({ error: 'ID es requerido' });
+  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // 1. Actualizar datos básicos del procedimiento
+    if (descripcion !== undefined || observaciones !== undefined) {
+      const fields = [];
+      const values = [];
+      let idx = 1;
+
+      if (descripcion !== undefined) { 
+        fields.push(`descripcion = $${idx++}`); 
+        values.push(descripcion); 
+      }
+      if (observaciones !== undefined) { 
+        fields.push(`observaciones = $${idx++}`); 
+        values.push(observaciones); 
+      }
+
+      values.push(id);
+      const updateQuery = `UPDATE procedimientos SET ${fields.join(', ')} WHERE id_procedimiento = $${idx}`;
+      await client.query(updateQuery, values);
+    }
+
+    // 2. Actualizar responsables si se proporcionan
+    if (Array.isArray(responsables)) {
+      // Eliminar responsables existentes
+      await client.query('DELETE FROM procedimiento_responsables WHERE id_procedimiento = $1', [id]);
+      
+      // Insertar nuevos responsables
+      for (const r of responsables) {
+        const resId = await client.query(
+          `SELECT id_responsable FROM responsables WHERE nombre ILIKE $1`,
+          [r.nombre]
+        );
+
+        if (resId.rows.length > 0) {
+          await client.query(
+            `INSERT INTO procedimiento_responsables (id_procedimiento, id_responsable, costo)
+             VALUES ($1, $2, $3)`,
+            [id, resId.rows[0].id_responsable, r.costo]
+          );
+        }
+      }
+    }
+
+    // 3. Actualizar insumos si se proporcionan
+    if (Array.isArray(insumos)) {
+      // Eliminar insumos existentes
+      await client.query('DELETE FROM procedimiento_insumos WHERE id_procedimiento = $1', [id]);
+      
+      // Insertar nuevos insumos
+      for (const i of insumos) {
+        if (!i || typeof i.id !== 'number' || !i.tipo || i.cantidad == null) {
+          continue;
+        }
+
+        await client.query(
+          `INSERT INTO procedimiento_insumos (id_procedimiento, tipo, id_insumo, cantidad)
+           VALUES ($1, $2, $3, $4)`,
+          [id, i.tipo, i.id, i.cantidad]
+        );
+      }
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Procedimiento actualizado correctamente', id });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al actualizar procedimiento:', error);
+    res.status(500).json({ error: 'Error al actualizar el procedimiento' });
+  } finally {
+    client.release();
+  }
+});
+
+// DELETE eliminar un procedimiento
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: 'ID es requerido' });
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Eliminar relaciones primero (por las foreign keys)
+    await client.query('DELETE FROM procedimiento_responsables WHERE id_procedimiento = $1', [id]);
+    await client.query('DELETE FROM procedimiento_insumos WHERE id_procedimiento = $1', [id]);
+
+    // Eliminar el procedimiento
+    const result = await client.query(
+      'DELETE FROM procedimientos WHERE id_procedimiento = $1 RETURNING *',
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Procedimiento no encontrado' });
+    }
+
+    await client.query('COMMIT');
+    res.json({ message: 'Procedimiento eliminado', procedimiento: result.rows[0] });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error al eliminar procedimiento:', error);
+    res.status(500).json({ error: 'Error al eliminar el procedimiento' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router

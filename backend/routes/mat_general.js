@@ -18,15 +18,28 @@ router.get('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { cantidad } = req.body;
+  const { nombre, cantidad, unidad, costo_unitario } = req.body;
+
   if (!id) return res.status(400).json({ error: 'ID es requerido' });
-  if (cantidad === undefined) return res.status(400).json({ error: 'cantidad es requerida' });
+  if (nombre === undefined && cantidad === undefined && unidad === undefined && costo_unitario === undefined) {
+    return res.status(400).json({ error: 'Debe proporcionar al menos un campo a actualizar' });
+  }
 
   try {
-    const result = await pool.query(
-      'UPDATE mat_general SET cantidad = $1 WHERE id = $2 RETURNING *',
-      [cantidad, id]
-    );
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (nombre !== undefined) { fields.push(`nombre = $${idx++}`); values.push(nombre); }
+    if (cantidad !== undefined) { fields.push(`cantidad = $${idx++}`); values.push(cantidad); }
+    if (unidad !== undefined) { fields.push(`unidad = $${idx++}`); values.push(unidad); }
+    if (costo_unitario !== undefined) { fields.push(`costo_unitario = $${idx++}`); values.push(costo_unitario); }
+
+    values.push(id);
+
+    const query = `UPDATE mat_general SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`;
+    const result = await pool.query(query, values);
+
     if (result.rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json(result.rows[0]);
   } catch (err) {
@@ -52,6 +65,20 @@ router.post('/', async (req, res) => {
   } catch (err) {
     console.error('Error al insertar material general:', err);
     res.status(500).json({ error: 'Error al insertar material general' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  const { id } = req.params;
+  if (!id) return res.status(400).json({ error: 'ID es requerido' });
+
+  try {
+    const result = await pool.query('DELETE FROM mat_general WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Material no encontrado' });
+    res.json({ message: 'Material eliminado', material: result.rows[0] });
+  } catch (err) {
+    console.error('Error al eliminar material general:', err);
+    res.status(500).json({ error: 'Error al eliminar material general' });
   }
 });
 
