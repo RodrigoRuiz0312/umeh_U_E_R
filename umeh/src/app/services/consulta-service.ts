@@ -171,4 +171,10 @@ export class ConsultaService {
   cancelarConsulta(id_consulta: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/consultas/${id_consulta}/cancelar`, {});
   }
+
+ //Por mientras vale
+  getCitaById(id_cita: number): Observable<any> {
+  return this.http.get(`${this.apiUrl}/citas/${id_cita}`);
+}
+
 }

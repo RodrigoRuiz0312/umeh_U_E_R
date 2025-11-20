@@ -1,8 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ApiService } from '../../services/api';
+import { SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-agendar-cita-modal',
@@ -11,7 +12,7 @@ import { ApiService } from '../../services/api';
   templateUrl: './agendar-cita-modal.html',
   styleUrl: './agendar-cita-modal.css'
 })
-export class AgendarCitaModal implements OnInit {
+export class AgendarCitaModal implements OnInit, OnChanges {
 
   //Comunicacion con la clase padre
   @Input() datosCita: any;
@@ -32,7 +33,12 @@ export class AgendarCitaModal implements OnInit {
 
   //inicializacion logica
   ngOnInit() {
-    this.buscarConsultoriosDisponibles();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['datosCita'] && this.datosCita) {
+      this.buscarConsultoriosDisponibles(); // 🔥 Se actualiza cada vez
+    }
   }
 
   buscarConsultoriosDisponibles() {
@@ -96,7 +102,9 @@ export class AgendarCitaModal implements OnInit {
           summary: 'Éxito',
           detail: 'Cita agendada con éxito'
         });
+
         this.citaCreada.emit();
+        this.close.emit();
       },
       error: (err) => {
         this.messageService.add({

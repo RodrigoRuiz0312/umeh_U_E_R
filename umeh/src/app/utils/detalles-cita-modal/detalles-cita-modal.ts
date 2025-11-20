@@ -38,7 +38,7 @@ export class DetallesCitaModal {
     .subscribe({
       next: () => {
         this.citaActualizada.emit(); 
-        this.close.emit();           
+        this.close.emit();        
       },
       error: (err) => console.error("Error cancelando cita:", err)
     });

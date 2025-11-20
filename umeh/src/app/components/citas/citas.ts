@@ -76,8 +76,14 @@ export class Citas implements OnInit {
   cargarAgenda() {
     if (!this.agendaSeleccionada) return;
     this.api.getAgenda(this.fechaSeleccionada, this.agendaSeleccionada).subscribe((data) => {
-      this.agenda = data;
+      this.agenda = [...data];
       console.log('Agenda recibida para la fecha', this.fechaSeleccionada, ':', this.agenda);
+      if (this.doctorSeleccionado) {
+        const actualizado = this.agenda.find(
+          d => d.id_medico === this.doctorSeleccionado.id_medico
+        );
+        this.doctorSeleccionado = actualizado ?? null;
+      }
     });
   }
 
