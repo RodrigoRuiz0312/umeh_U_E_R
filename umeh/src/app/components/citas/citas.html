@@ -27,7 +27,7 @@
             <div class="meta-info">
               <span><strong>Fecha:</strong> {{ cita.fecha | date:'dd/MM/yyyy' }}</span>
               <span><strong>Hora:</strong> {{ cita.hora.substring(0, 5) }} hrs</span>
-              <span><strong>Médico(a):</strong> {{ cita.nombre_medico }}</span>
+              <span><strong>Médico(a):</strong> {{ cita.nombre_medico }} {{cita.apellidos_medico}}</span>
             </div>
           </div>
           <div class="result-action">
@@ -157,7 +157,8 @@
       </div>
 
       <div class="actions-footer">
-        <button *ngIf="agendaSeleccionada === 'General'" class='btn btn-reg btn-outline-primary' (click)="volverAListaDoctores()">
+        <button *ngIf="agendaSeleccionada === 'General'" class='btn btn-reg btn-outline-primary'
+          (click)="volverAListaDoctores()">
           &lt; Elegir otro médico
         </button>
 
