@@ -8,7 +8,7 @@ app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.use(cors({
-  origin: 'http://localhost:4200',
+  origin: ['http://localhost:4200', 'http://192.168.37.222:4200', 'http://192.168.37.222:4000'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -28,6 +28,7 @@ const doctoresRouter = require('./routes/doctores');
 const citasRouter = require('./routes/citas');
 const consultaRouter = require('./routes/consultaRoutes');
 const mat_generalRouter = require('./routes/mat_general');
+const codigoPostalRouter = require('./routes/codigoPostal');
 
 
 // Rutas API INSUMOS
@@ -46,6 +47,7 @@ app.use('/api/doctores', doctoresRouter);
 app.use('/api/citas', citasRouter);
 //app.use('/api', testConexionRouter);
 app.use('/api/consultas', consultaRouter);
+app.use('/api/codigo-postal', codigoPostalRouter);
 
 const consultaExtrasRoutes = require('./routes/consultaExtrasRoutes');
 app.use('/api/consultas/extras', consultaExtrasRoutes);

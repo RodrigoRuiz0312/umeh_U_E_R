@@ -1,0 +1,140 @@
+{
+  "20000": {
+    "zip_code": "20000",
+    "locality": "Aguascalientes",
+    "federal_entity": {
+      "key": 1,
+      "name": "Aguascalientes",
+      "code": null
+    },
+    "settlements": [
+      {
+        "key": 1,
+        "name": "Zona Centro",
+        "zone_type": "Urbano",
+        "settlement_type": {
+          "name": "Colonia"
+        }
+      }
+    ],
+    "municipality": {
+      "key": 1,
+      "name": "Aguascalientes"
+    }
+  },
+  "44100": {
+    "zip_code": "44100",
+    "locality": "Guadalajara",
+    "federal_entity": {
+      "key": 14,
+      "name": "Jalisco",
+      "code": null
+    },
+    "settlements": [
+      {
+        "key": 1,
+        "name": "Centro",
+        "zone_type": "Urbano",
+        "settlement_type": {
+          "name": "Colonia"
+        }
+      }
+    ],
+    "municipality": {
+      "key": 39,
+      "name": "Guadalajara"
+    }
+  },
+  "50000": {
+    "zip_code": "50000",
+    "locality": "Toluca de Lerdo",
+    "federal_entity": {
+      "key": 15,
+      "name": "Estado de México",
+      "code": null
+    },
+    "settlements": [
+      {
+        "key": 1,
+        "name": "Centro",
+        "zone_type": "Urbano",
+        "settlement_type": {
+          "name": "Colonia"
+        }
+      }
+    ],
+    "municipality": {
+      "key": 106,
+      "name": "Toluca"
+    }
+  },
+  "64000": {
+    "zip_code": "64000",
+    "locality": "Monterrey",
+    "federal_entity": {
+      "key": 19,
+      "name": "Nuevo León",
+      "code": null
+    },
+    "settlements": [
+      {
+        "key": 1,
+        "name": "Monterrey Centro",
+        "zone_type": "Urbano",
+        "settlement_type": {
+          "name": "Colonia"
+        }
+      }
+    ],
+    "municipality": {
+      "key": 39,
+      "name": "Monterrey"
+    }
+  },
+  "01000": {
+    "zip_code": "01000",
+    "locality": "Ciudad de México",
+    "federal_entity": {
+      "key": 9,
+      "name": "Ciudad de México",
+      "code": null
+    },
+    "settlements": [
+      {
+        "key": 1,
+        "name": "San Ángel",
+        "zone_type": "Urbano",
+        "settlement_type": {
+          "name": "Colonia"
+        }
+      }
+    ],
+    "municipality": {
+      "key": 10,
+      "name": "Álvaro Obregón"
+    }
+  },
+  "01010": {
+    "zip_code": "01010",
+    "locality": "Ciudad de México",
+    "federal_entity": {
+      "key": 9,
+      "name": "Ciudad de México",
+      "code": null
+    },
+    "settlements": [
+      {
+        "key": 2,
+        "name": "Santa Fe",
+        "zone_type": "Urbano",
+        "settlement_type": {
+          "name": "Pueblo"
+        }
+      }
+    ],
+    "municipality": {
+      "key": 10,
+      "name": "Álvaro Obregón"
+    }
+  }
+}
