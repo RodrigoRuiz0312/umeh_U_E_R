@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { InsumoService } from '../../services/insumos';
+import { InsumoService } from '../../services/insumos.service';
 import { Procedimiento } from '../../modelos/procedimiento';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';

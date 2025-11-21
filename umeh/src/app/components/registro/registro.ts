@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { InsumoService } from '../../services/insumos';
+import { InsumoService } from '../../services/insumos.service';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { SelectModule } from 'primeng/select';
@@ -89,7 +89,9 @@ export class Registro implements OnInit {
       }
 
       const costoVal = this.costo_unitario?.value;
-      if (costoVal !== null && costoVal !== undefined && costoVal !== '') {
+      if (costoVal === null || costoVal === undefined || costoVal === '') {
+        faltantes.push('Costo unitario');
+      } else {
         const costo = Number(costoVal);
         if (costo < 0) {
           faltantes.push('Costo unitario: no puede ser negativo');
@@ -166,7 +168,7 @@ export class Registro implements OnInit {
       } else {
         nombreCtrl?.setValidators([Validators.required, Validators.maxLength(100)]);
         cantidadCtrl?.setValidators([Validators.required, Validators.min(0)]);
-        costoCtrl?.setValidators([Validators.min(0)]);
+        costoCtrl?.setValidators([Validators.required, Validators.min(0)]);
 
         procGroup.get('descripcion')?.clearValidators();
         procGroup.get('responsables')?.clearValidators();
@@ -272,7 +274,7 @@ export class Registro implements OnInit {
     const [tipoPrefix, idStr] = encoded.split('-');
     const idNum = Number(idStr);
     let tipo: string | null = null;
-    
+
     if (tipoPrefix === 'med') tipo = 'medicamento';
     else if (tipoPrefix === 'mat') tipo = 'material';
     else if (tipoPrefix === 'mg') tipo = 'mat_general';
@@ -313,7 +315,7 @@ export class Registro implements OnInit {
     const mg = this.matGenerales.find(g => g.nombre.toLowerCase() === query);
 
     const coincidencias = [med, mat, mg].filter(Boolean).length;
-    
+
     if (coincidencias > 1) {
       // Ambiguo: no decidir automáticamente
       this.messageService.add({
@@ -493,12 +495,12 @@ export class Registro implements OnInit {
         this.selectedMetodos.clear();
         this.selectAllMetodos = false;
         this.metodosTouched = false;
-        
+
         let tipoNombre = 'Insumo';
         if (tipo === 'medicamento') tipoNombre = 'Medicamento';
         else if (tipo === 'material') tipoNombre = 'Material de Triage';
         else if (tipo === 'mat_general') tipoNombre = 'Material General';
-        
+
         this.messageService.add({
           severity: 'success',
           summary: 'Registro exitoso',

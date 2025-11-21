@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AgendarCitaModal } from '../../utils//agendar-cita-modal/agendar-cita-modal';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { DetallesCitaModal } from '../../utils/detalles-cita-modal/detalles-cita-modal';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';

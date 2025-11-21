@@ -6,7 +6,6 @@
   overflow: hidden;
 }
 
-/* Ajuste general para secciones */
 .header-section,
 .stats-section,
 .actions-section {
@@ -14,7 +13,6 @@
   padding: 0.3rem 1.5rem;
 }
 
-/* Header */
 .header-section {
   padding: 1.5rem 0;
 }
@@ -67,7 +65,6 @@
   margin-top: 0.25rem;
 }
 
-/* Stats Section */
 .stats-section {
   flex: 0 0 auto;
 }
@@ -94,20 +91,12 @@
   box-shadow: var(--shadow-lg);
 }
 
-.stat-card.primary {
-  border-left-color: var(--primary-color);
-}
-
 .stat-card.warning {
   border-left-color: var(--warning-color);
 }
 
 .stat-card.success {
   border-left-color: var(--success-color);
-}
-
-.stat-card.danger {
-  border-left-color: var(--danger-color);
 }
 
 .stat-icon {
@@ -131,18 +120,17 @@
   margin: 0.25rem 0 0 0;
 }
 
-/* Actions Section */
 .actions-section {
-  flex: 1; /* ocupa el espacio restante */
+  flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr; /* dos columnas: izquierda médica, derecha insumos */
+  grid-template-columns: 1fr 1fr;
   gap: 2rem;
   align-items: start;
 }
 
 .actions-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columnas dentro de cada grupo */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .action-card {
@@ -161,20 +149,11 @@
   background-color: var(--home-card-bg);
 }
 
-/* Limitar el tamaño de los iconos para que no expandan el card */
-.action-icon {
-  width: 48px;
-  height: 48px;
-  font-size: var(--fs-xl);
-} 
-
 .action-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-
 }
 
-/* 👇 Ajuste para modo oscuro usando las mismas variables */
 body.dark .action-card {
   background-color: var(--card-bg);
   color: var(--card-text);
@@ -182,16 +161,6 @@ body.dark .action-card {
 
 body.dark .action-card:hover {
   background-color: var(--muted);
-}
-
-.action-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--border-radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--fs-2xl);
 }
 
 .action-content h3 {
@@ -204,19 +173,6 @@ body.dark .action-card:hover {
   margin: 0;
 }
 
-/* Footer */
-.footer-section {
-  text-align: center;
-  padding: 2rem 0;
-  margin-top: auto;
-}
-
-.footer-content p {
-  margin: 0.5rem 0;
-  opacity: 0.9;
-}
-
-/* Iconos - Puedes reemplazar con Font Awesome o tu librería de iconos preferida */
 .icon-box::before {
   content: '📦';
 }
@@ -229,35 +185,6 @@ body.dark .action-card:hover {
   content: '⚕️';
 }
 
-.icon-plus::before {
-  content: '+';
-}
-
-.icon-list::before {
-  content: '📋';
-}
-
-.icon-users::before {
-  content: '👥';
-}
-
-.icon-chart::before {
-  content: '📊';
-}
-
-.icon-warning::before {
-  content: '⚠️';
-}
-
-.icon-alert-circle::before {
-  content: '🚨';
-}
-
-.icon-alert-triangle::before {
-  content: '⚠️';
-}
-
-/* Responsive Design */
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;
@@ -275,22 +202,12 @@ body.dark .action-card:hover {
   }
 
   .actions-section {
-    grid-template-columns: 1fr; /* columnas apiladas en pantallas pequeñas */
+    grid-template-columns: 1fr;
   }
 
   .stat-card,
   .action-card {
     padding: 1rem;
-  }
-
-  .alerts-container {
-    gap: 0.75rem;
-  }
-
-  .alert-card {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.75rem;
   }
 }
 
@@ -300,8 +217,7 @@ body.dark .action-card:hover {
   }
 
   .stats-section,
-  .actions-section,
-  .alerts-section {
+  .actions-section {
     padding: 0 1rem;
   }
 
@@ -496,7 +412,6 @@ body.dark .action-card:hover {
   transform: translateX(4px);
 }
 
-/* Responsive */
 @media (max-width: 640px) {
   .modal-container {
     max-width: 100%;
@@ -561,7 +476,6 @@ body.dark .action-card:hover {
   color: white;
 }
 
-/* 🎨 Colores por tipo de acción */
 .bg-primary {
   background-color: var(--primary-color);
 }

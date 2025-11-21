@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { pool } = require('../db');
 const PDFDocument = require('pdfkit');
+const reportesController = require('../controllers/reportesController');
 
 // ✅ GET reporte PDF de medicamentos
 router.get('/ver', async (req, res) => {
@@ -133,5 +134,15 @@ router.get('/ver', async (req, res) => {
         res.status(500).json({ error: 'Error generando reporte PDF' });
     }
 });
+
+// ✅ Nuevas rutas para reportes de insumos
+// GET reporte de insumos diarios
+router.get('/insumos-diarios', reportesController.obtenerReporteInsumosDiarios);
+
+// GET reporte de insumos por rango de fechas
+router.get('/insumos-rango', reportesController.obtenerReporteInsumosRango);
+
+// GET resumen de consultas del día
+router.get('/resumen-consultas', reportesController.obtenerResumenConsultasDia);
 
 module.exports = router;

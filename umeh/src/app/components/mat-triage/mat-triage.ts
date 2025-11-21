@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Triage } from '../../modelos/triage';
-import { InsumoService } from '../../services/insumos';
+import { InsumoService } from '../../services/insumos.service';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -28,6 +28,9 @@ export class MatTriage implements OnInit {
   modalOpen = false;
   selectedTriage: Triage | null = null;
   editedCantidad: number | null = null;
+  nombreNuevo: string = '';
+  unidadNueva: string = '';
+  costoNuevo: number | null = null;
   loadingRows = Array.from({ length: 14 });
 
   constructor(private insumosService: InsumoService,
@@ -135,39 +138,123 @@ export class MatTriage implements OnInit {
 
   openEdit(item: Triage) {
     this.selectedTriage = item;
+    this.nombreNuevo = item.nombre;
     this.editedCantidad = item.cantidad;
+    this.unidadNueva = item.unidad;
+    this.costoNuevo = item.costo || 0;
     this.modalOpen = true;
   }
 
   closeEdit() {
     this.modalOpen = false;
     this.selectedTriage = null;
+    this.nombreNuevo = '';
     this.editedCantidad = null;
+    this.unidadNueva = '';
+    this.costoNuevo = null;
   }
 
   saveEdit() {
     if (!this.selectedTriage) return;
+
+    const nombre = this.nombreNuevo.trim();
     const cantidad = Number(this.editedCantidad);
-    if (Number.isNaN(cantidad)) {
-      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'La cantidad debe ser numérica.' });
+    const unidad = this.unidadNueva.trim();
+    const costo_unitario = Number(this.costoNuevo);
+
+    if (!nombre) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'El nombre no puede estar vacío.' });
       return;
     }
-    if (cantidad === this.selectedTriage.cantidad) {
+    if (Number.isNaN(cantidad) || cantidad < 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'La cantidad debe ser numérica y positiva.' });
+      return;
+    }
+    if (!unidad) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'La unidad no puede estar vacía.' });
+      return;
+    }
+    if (Number.isNaN(costo_unitario) || costo_unitario < 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'El costo debe ser numérico y positivo.' });
+      return;
+    }
+
+    const sinCambios = (
+      nombre === this.selectedTriage.nombre &&
+      cantidad === this.selectedTriage.cantidad &&
+      unidad === this.selectedTriage.unidad &&
+      costo_unitario === (this.selectedTriage.costo || 0)
+    );
+
+    if (sinCambios) {
       this.messageService.add({ severity: 'info', summary: 'Sin cambios', detail: 'No se realizaron modificaciones.' });
       this.closeEdit();
       return;
     }
 
-    this.insumosService.updateTriage(this.selectedTriage.id, { cantidad }).subscribe({
-      next: (actualizado) => {
+    const datosActualizados = {
+      nombre,
+      cantidad,
+      unidad,
+      costo_unitario
+    };
+
+    this.insumosService.updateTriage(this.selectedTriage.id, datosActualizados).subscribe({
+      next: (actualizado: any) => {
+        // Mapear respuesta del backend (costo_unitario -> costo)
+        const triageActualizado = {
+          ...actualizado,
+          costo: actualizado.costo_unitario !== undefined ? Number(actualizado.costo_unitario) : Number(actualizado.costo || 0)
+        };
+
         const idx = this.triage.findIndex(t => t.id === actualizado.id);
-        if (idx !== -1) this.triage[idx] = { ...this.triage[idx], ...actualizado };
+        if (idx !== -1) this.triage[idx] = { ...this.triage[idx], ...triageActualizado };
+
         this.applyFilters();
-        this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Stock actualizado.` });
+        this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Material actualizado correctamente.` });
         this.closeEdit();
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error al actualizar', detail: err.message || 'Ocurrió un error.' });
+      }
+    });
+  }
+
+  // Lógica para el modal de eliminación
+  modalEliminarVisible: boolean = false;
+  triageAEliminar: Triage | null = null;
+
+  confirmarEliminacion(triage: Triage) {
+    this.triageAEliminar = triage;
+    this.modalEliminarVisible = true;
+  }
+
+  cancelarEliminacion() {
+    this.modalEliminarVisible = false;
+    this.triageAEliminar = null;
+  }
+
+  ejecutarEliminacion() {
+    if (!this.triageAEliminar) return;
+
+    this.insumosService.deleteTriage(this.triageAEliminar.id).subscribe({
+      next: () => {
+        this.triage = this.triage.filter(t => t.id !== this.triageAEliminar!.id);
+        this.applyFilters();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminado',
+          detail: `Material "${this.triageAEliminar!.nombre}" eliminado.`
+        });
+        this.cancelarEliminacion();
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al eliminar',
+          detail: err.message || 'Ocurrió un error.'
+        });
+        this.cancelarEliminacion();
       }
     });
   }

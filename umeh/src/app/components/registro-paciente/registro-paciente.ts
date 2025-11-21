@@ -1,13 +1,10 @@
-// EN: registro-paciente.ts
-
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-// ¡Importar FormArray!
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 
@@ -28,17 +25,13 @@ export class RegistroPaciente {
   mostrarModalCamposObligatorios = false;
   camposFaltantes: string[] = [];
 
-  // Cierra el modal de campos obligatorios
   cerrarModalCamposObligatorios() {
     this.mostrarModalCamposObligatorios = false;
   }
-
-  // Recolecta los campos faltantes para mostrarlos en el modal
   private recolectarCamposFaltantes(): string[] {
     const faltantes: string[] = [];
     const controls = this.pacienteForm.controls;
 
-    // Validar campos de datos personales
     if (controls['nombre'].invalid) {
       faltantes.push('Nombre');
     }
@@ -52,15 +45,13 @@ export class RegistroPaciente {
       faltantes.push('Fecha de nacimiento');
     }
 
-    // Validar FormArrays
     if (this.telefonos.invalid) {
-       faltantes.push('Teléfono (Se requiere al menos uno, formato 10-15 dígitos)');
+      faltantes.push('Teléfono (Se requiere al menos uno)');
     }
     if (this.correos.invalid) {
-       faltantes.push('Correo (Uno o más correos tienen formato inválido)');
+      faltantes.push('Correo (Uno o más correos tienen formato inválido)');
     }
-    
-    // Validar campos de domicilio
+
     if (controls['codigo_postal'].invalid) {
       faltantes.push('Código postal');
     }
@@ -86,18 +77,13 @@ export class RegistroPaciente {
       apellidos: ['', Validators.required],
       sexo: ['', Validators.required],
       fecha_nacimiento: ['', Validators.required],
-      
-      // --- CAMBIO AQUÍ ---
-      // Convertidos a FormArray
+
       telefonos: this.fb.array([
-        // Iniciar con un campo de teléfono requerido
         this.fb.control('', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)])
       ]),
       correos: this.fb.array([
-        // Iniciar con un campo de correo opcional, pero con validación de email
         this.fb.control('', [Validators.email])
       ]),
-      // --- FIN DEL CAMBIO ---
 
       codigo_postal: ['', Validators.required],
       calle: ['', Validators.required],
@@ -108,8 +94,6 @@ export class RegistroPaciente {
     })
   }
 
-  // --- MÉTODOS NUEVOS ---
-  // Getters para acceder fácilmente a los FormArrays desde el HTML
   get telefonos(): FormArray {
     return this.pacienteForm.get('telefonos') as FormArray;
   }
@@ -118,31 +102,25 @@ export class RegistroPaciente {
     return this.pacienteForm.get('correos') as FormArray;
   }
 
-  // Añadir un nuevo control de teléfono al FormArray
   addTelefono(): void {
     this.telefonos.push(this.fb.control('', [Validators.required, Validators.pattern(/^[0-9]{10,15}$/)]));
   }
 
-  // Remover un teléfono (no permitir remover el último)
   removeTelefono(index: number): void {
     if (this.telefonos.length > 1) {
       this.telefonos.removeAt(index);
     }
   }
 
-  // Añadir un nuevo control de correo al FormArray
   addCorreo(): void {
     this.correos.push(this.fb.control('', [Validators.email]));
   }
 
-  // Remover un correo (permitir remover todos si se desea)
   removeCorreo(index: number): void {
     this.correos.removeAt(index);
   }
-  // --- FIN MÉTODOS NUEVOS ---
 
   buscarCP(): void {
-    // ... (Tu función buscarCP no necesita cambios) ...
     const cp = this.pacienteForm.get('codigo_postal')?.value;
     if (!cp || cp.length !== 5) {
       this.errorMsg = 'El código postal debe tener 5 dígitos.';
@@ -188,8 +166,8 @@ export class RegistroPaciente {
 
   onSubmit() {
     // Marcar todo como "tocado" para mostrar errores de validación
-    this.pacienteForm.markAllAsTouched(); 
-    
+    this.pacienteForm.markAllAsTouched();
+
     this.camposFaltantes = this.recolectarCamposFaltantes();
 
     if (this.camposFaltantes.length > 0 || this.pacienteForm.invalid) {

@@ -1,8 +1,280 @@
-<div class="card">
-  <div class="card-header">
-    <h2>Reportes</h2>
+<div class="reportes-container">
+  <!-- Encabezado -->
+  <div class="card">
+    <div class="card-header">
+      <h2><i class="fa-solid fa-chart-line"></i> Reporte de Insumos Diarios</h2>
+    </div>
+
+    <!-- Controles -->
+    <div class="card-body">
+      <div class="controles-reporte">
+        <div class="control-group">
+          <label for="fechaReporte">
+            <i class="fa-solid fa-calendar"></i> Fecha del Reporte
+          </label>
+          <input 
+            type="date" 
+            id="fechaReporte"
+            [(ngModel)]="fechaSeleccionada"
+            class="input-fecha"
+          />
+        </div>
+
+        <button 
+          class="btn-generar" 
+          (click)="generarReporte()"
+          [disabled]="cargando"
+        >
+          <i class="fa-solid fa-rotate" [class.fa-spin]="cargando"></i>
+          {{ cargando ? 'Generando...' : 'Generar Reporte' }}
+        </button>
+      </div>
+
+      <!-- Mensajes -->
+      <div class="mensaje-exito" *ngIf="mensajeExito">
+        <i class="fa-solid fa-circle-check"></i> {{ mensajeExito }}
+      </div>
+      <div class="mensaje-error" *ngIf="mensajeError">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ mensajeError }}
+      </div>
+    </div>
   </div>
-  <div class="card-body">
-    <p style="opacity:0.8">Próximamente podrás generar reportes desde esta sección.</p>
+
+  <!-- Resumen de Consultas -->
+  <div class="card" *ngIf="resumenConsultas">
+    <div class="card-header">
+      <h3><i class="fa-solid fa-chart-simple"></i> Resumen y Costos del Día</h3>
+    </div>
+    <div class="card-body">
+      <div class="resumen-grid">
+        <div class="resumen-item">
+          <div class="resumen-icono" style="background-color: #2196F3;">
+            <i class="fa-solid fa-clipboard-list"></i>
+          </div>
+          <div class="resumen-info">
+            <span class="resumen-label">Total Consultas</span>
+            <span class="resumen-valor">{{ resumenConsultas.total_consultas ?? 0 }}</span>
+          </div>
+        </div>
+
+        <div class="resumen-item">
+          <div class="resumen-icono" style="background-color: #4CAF50;">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="resumen-info">
+            <span class="resumen-label">Completadas</span>
+            <span class="resumen-valor">{{ resumenConsultas.completadas ?? 0 }}</span>
+          </div>
+        </div>
+
+        <div class="resumen-item">
+          <div class="resumen-icono" style="background-color: #f44336;">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </div>
+          <div class="resumen-info">
+            <span class="resumen-label">Canceladas</span>
+            <span class="resumen-valor">{{ resumenConsultas.canceladas ?? 0 }}</span>
+          </div>
+        </div>
+
+        <div class="resumen-item">
+          <div class="resumen-icono" style="background-color: #FF9800;">
+            <i class="fa-solid fa-dollar-sign"></i>
+          </div>
+          <div class="resumen-info">
+            <span class="resumen-label">Total Ingresos</span>
+            <span class="resumen-valor">${{ resumenConsultas.total_ingresos?.toFixed(2) ?? '0.00' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Separador -->
+      <hr class="separator" *ngIf="reporte">
+
+      <!-- Tarjetas de costos principales -->
+      <div class="costos-principales-grid" *ngIf="reporte">
+        <div class="costo-principal-card">
+          <div class="costo-principal-icono" style="background-color: #E91E63;">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <div class="costo-principal-info">
+            <span class="costo-principal-label">Costos de Consultas</span>
+            <span class="costo-principal-monto">${{ (reporte.costoConsultas || 0).toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="costo-principal-card" *ngIf="reporte.costoExtras > 0">
+          <div class="costo-principal-icono" style="background-color: #9C27B0;">
+            <i class="fa-solid fa-circle-plus"></i>
+          </div>
+          <div class="costo-principal-info">
+            <span class="costo-principal-label">Procedimientos Extras</span>
+            <span class="costo-principal-monto">${{ (reporte.costoExtras || 0).toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="costo-principal-card">
+          <div class="costo-principal-icono" style="background-color: #00BCD4;">
+            <i class="fa-solid fa-boxes-stacked"></i>
+          </div>
+          <div class="costo-principal-info">
+            <span class="costo-principal-label">Costos de Insumos</span>
+            <span class="costo-principal-monto">${{ (reporte.totalInsumos || 0).toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reporte de Insumos -->
+  <div class="card" *ngIf="reporte">
+    <div class="card-header">
+      <h3><i class="fa-solid fa-boxes-stacked"></i> Insumos Utilizados</h3>
+      <div class="header-actions">
+        <button class="btn-action" (click)="exportarCSV()" title="Exportar a CSV">
+          <i class="fa-solid fa-file-csv"></i> Exportar CSV
+        </button>
+        <button class="btn-action" (click)="imprimirReporte()" title="Imprimir">
+          <i class="fa-solid fa-print"></i> Imprimir
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Filtros -->
+      <div class="filtros-container">
+        <div class="filtro-group">
+          <label><i class="fa-solid fa-filter"></i> Filtrar por tipo:</label>
+          <select [(ngModel)]="tipoFiltro" class="select-filtro">
+            <option value="todos">Todos</option>
+            <option value="medicamento">Medicamentos</option>
+            <option value="material">Material Triage</option>
+            <option value="mat_general">Material General</option>
+            <option value="procedimiento">Procedimientos</option>
+          </select>
+        </div>
+
+        <div class="filtro-group">
+          <label><i class="fa-solid fa-magnifying-glass"></i> Buscar:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="busqueda" 
+            placeholder="Buscar por nombre..."
+            class="input-busqueda"
+          />
+        </div>
+
+        <button class="btn-limpiar" (click)="limpiarFiltros()">
+          <i class="fa-solid fa-xmark"></i> Limpiar
+        </button>
+      </div>
+
+      <!-- Desglose de insumos por tipo -->
+      <h4 class="seccion-titulo" *ngIf="reporte.totalesPorTipo">
+        <i class="fa-solid fa-chart-pie"></i> Desglose de Insumos por Tipo
+      </h4>
+      <div class="totales-grid" *ngIf="reporte.totalesPorTipo">
+        <div class="total-card" *ngIf="reporte.totalesPorTipo.medicamento > 0">
+          <div class="total-icono" style="background-color: #4CAF50;">
+            <i class="fa-solid fa-pills"></i>
+          </div>
+          <div class="total-info">
+            <span class="total-label">Medicamentos</span>
+            <span class="total-monto">${{ reporte.totalesPorTipo.medicamento.toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="total-card" *ngIf="reporte.totalesPorTipo.material > 0">
+          <div class="total-icono" style="background-color: #2196F3;">
+            <i class="fa-solid fa-syringe"></i>
+          </div>
+          <div class="total-info">
+            <span class="total-label">Material Triage</span>
+            <span class="total-monto">${{ reporte.totalesPorTipo.material.toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="total-card" *ngIf="reporte.totalesPorTipo.mat_general > 0">
+          <div class="total-icono" style="background-color: #FF9800;">
+            <i class="fa-solid fa-box"></i>
+          </div>
+          <div class="total-info">
+            <span class="total-label">Material General</span>
+            <span class="total-monto">${{ reporte.totalesPorTipo.mat_general.toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="total-card" *ngIf="reporte.totalesPorTipo.procedimiento > 0">
+          <div class="total-icono" style="background-color: #9C27B0;">
+            <i class="fa-solid fa-stethoscope"></i>
+          </div>
+          <div class="total-info">
+            <span class="total-label">Procedimientos</span>
+            <span class="total-monto">${{ reporte.totalesPorTipo.procedimiento.toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de insumos -->
+      <div class="tabla-container" *ngIf="insumosFiltrados.length > 0">
+        <table class="tabla-insumos">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Nombre</th>
+              <th>Unidad</th>
+              <th>Cantidad Total</th>
+              <th>Costo Unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let insumo of insumosFiltrados">
+              <td>
+                <span class="badge-tipo" [style.background-color]="obtenerColorTipo(insumo.tipo)">
+                  {{ obtenerNombreTipo(insumo.tipo) }}
+                </span>
+              </td>
+              <td class="nombre-insumo">{{ insumo.nombre_insumo || 'N/A' }}</td>
+              <td>{{ insumo.unidad || 'N/A' }}</td>
+              <td>{{ insumo.cantidad_total }}</td>
+              <td>${{ insumo.costo_unitario.toFixed(2) }}</td>
+              <td class="strong">${{ insumo.subtotal_total.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="5" class="text-right"><strong>TOTAL:</strong></td>
+              <td class="total-amount">
+                <strong>${{ totalFiltrado.toFixed(2) }}</strong>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Sin resultados -->
+      <div class="sin-resultados" *ngIf="insumosFiltrados.length === 0 && !cargando">
+        <i class="fa-solid fa-inbox"></i>
+        <p>No se encontraron insumos con los filtros aplicados</p>
+      </div>
+
+      <!-- Total General -->
+      <div class="total-general" *ngIf="reporte.totalGeneral > 0">
+        <div class="total-general-contenido">
+          <div class="total-general-label">TOTAL GENERAL DEL DÍA</div>
+          <div class="total-general-detalle">
+            (Consultas + Extras + Insumos)
+          </div>
+        </div>
+        <div class="total-general-monto">${{ reporte.totalGeneral.toFixed(2) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="cargando">
+    <div class="spinner"></div>
+    <p>Generando reporte...</p>
   </div>
 </div>

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { Toast } from "primeng/toast";
 import { MessageService } from 'primeng/api';
 

@@ -3,30 +3,31 @@
 
   <p-toast></p-toast>
 
-  <!-- Modal de campos obligatorios -->
   <div class="modal-overlay" *ngIf="mostrarModalCamposObligatorios" (click)="cerrarModalCamposObligatorios()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>⚠️ Campos obligatorios faltantes</h3>
-        <button class="modal-close" (click)="cerrarModalCamposObligatorios()">&times;</button>
+
+    <div class="modal-content warning-modal" (click)="$event.stopPropagation()">
+
+      <div class="warning-icon-circle">
+        <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
-      <div class="modal-body">
-        <p class="modal-info">
-          Los campos marcados con <span class="asterisco-demo">*</span> son obligatorios.
-        </p>
-        <p class="modal-subtitle">Por favor completa los siguientes campos:</p>
-        <ul class="campos-faltantes">
-          <li *ngFor="let campo of camposFaltantes">
-            <span class="campo-icono">📋</span>
-            {{ campo }}
-          </li>
-        </ul>
+
+      <h2 class="warning-title">Faltan Datos</h2>
+
+      <p class="warning-message">
+        Para registrar el insumo correctamente, completa la siguiente información obligatoria:
+      </p>
+
+      <div class="missing-fields-container">
+        <div class="missing-field-chip" *ngFor="let campo of camposFaltantes">
+          <i class="fa-solid fa-circle-xmark"></i>
+          {{ campo }}
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-entendido" (click)="cerrarModalCamposObligatorios()">  
-          Entendido
-        </button>
-      </div>
+
+      <button class="btn-understood" (click)="cerrarModalCamposObligatorios()">
+        Entendido
+      </button>
+
     </div>
   </div>
 
@@ -61,7 +62,7 @@
     </div>
     <!-- Costo unitario (solo insumos) -->
     <div class="form-field" *ngIf="form.get('tipo')?.value !== 'procedimiento'">
-      <label for="costo_unitario">Costo unitario</label>
+      <label for="costo_unitario">Costo unitario <span class="requerido">*</span></label>
       <input id="costo_unitario" type="number" step="0.01" min="0" formControlName="costo_unitario"
         placeholder="Ej. 12.50" />
     </div>

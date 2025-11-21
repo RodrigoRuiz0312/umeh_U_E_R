@@ -1,7 +1,7 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { InsumoService } from '../../services/insumos';
+import { InsumoService } from '../../services/insumos.service';
 import { SkeletonModule } from 'primeng/skeleton';
 
 interface InventoryOption {

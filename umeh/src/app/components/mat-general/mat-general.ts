@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatGeneral } from '../../modelos/mat-general';
-import { InsumoService } from '../../services/insumos';
+import { InsumoService } from '../../services/insumos.service';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -28,6 +28,9 @@ export class MatGeneralComponent implements OnInit {
   modalOpen = false;
   selectedMatGeneral: MatGeneral | null = null;
   editedCantidad: number | null = null;
+  nombreNuevo: string = '';
+  unidadNueva: string = '';
+  costoNuevo: number | null = null;
   loadingRows = Array.from({ length: 14 });
 
   constructor(
@@ -137,57 +140,126 @@ export class MatGeneralComponent implements OnInit {
 
   openEdit(item: MatGeneral) {
     this.selectedMatGeneral = item;
+    this.nombreNuevo = item.nombre;
     this.editedCantidad = item.cantidad;
+    this.unidadNueva = item.unidad;
+    this.costoNuevo = item.costo_unitario || 0;
     this.modalOpen = true;
   }
 
   closeEdit() {
     this.modalOpen = false;
     this.selectedMatGeneral = null;
+    this.nombreNuevo = '';
     this.editedCantidad = null;
+    this.unidadNueva = '';
+    this.costoNuevo = null;
   }
 
   saveEdit() {
     if (!this.selectedMatGeneral) return;
+
+    const nombre = this.nombreNuevo.trim();
     const cantidad = Number(this.editedCantidad);
-    if (Number.isNaN(cantidad)) {
-      this.messageService.add({ 
-        severity: 'warn', 
-        summary: 'Dato inválido', 
-        detail: 'La cantidad debe ser numérica.' 
-      });
+    const unidad = this.unidadNueva.trim();
+    const costo_unitario = Number(this.costoNuevo);
+
+    if (!nombre) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'El nombre no puede estar vacío.' });
       return;
     }
-    if (cantidad === this.selectedMatGeneral.cantidad) {
-      this.messageService.add({ 
-        severity: 'info', 
-        summary: 'Sin cambios', 
-        detail: 'No se realizaron modificaciones.' 
-      });
+    if (Number.isNaN(cantidad) || cantidad < 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'La cantidad debe ser numérica y positiva.' });
+      return;
+    }
+    if (!unidad) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'La unidad no puede estar vacía.' });
+      return;
+    }
+    if (Number.isNaN(costo_unitario) || costo_unitario < 0) {
+      this.messageService.add({ severity: 'warn', summary: 'Dato inválido', detail: 'El costo debe ser numérico y positivo.' });
+      return;
+    }
+
+    const sinCambios = (
+      nombre === this.selectedMatGeneral.nombre &&
+      cantidad === this.selectedMatGeneral.cantidad &&
+      unidad === this.selectedMatGeneral.unidad &&
+      costo_unitario === (this.selectedMatGeneral.costo_unitario || 0)
+    );
+
+    if (sinCambios) {
+      this.messageService.add({ severity: 'info', summary: 'Sin cambios', detail: 'No se realizaron modificaciones.' });
       this.closeEdit();
       return;
     }
 
-    this.insumosService.updateMatGeneral(this.selectedMatGeneral.id, { cantidad }).subscribe({
-      next: (actualizado) => {
+    const datosActualizados = {
+      nombre,
+      cantidad,
+      unidad,
+      costo_unitario
+    };
+
+    this.insumosService.updateMatGeneral(this.selectedMatGeneral.id, datosActualizados).subscribe({
+      next: (actualizado: any) => {
         const idx = this.matGeneral.findIndex(mg => mg.id === actualizado.id);
         if (idx !== -1) {
           this.matGeneral[idx] = { ...this.matGeneral[idx], ...actualizado };
         }
         this.applyFilters();
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Actualizado', 
-          detail: `Stock de "${actualizado.nombre}" actualizado.` 
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Actualizado',
+          detail: `Material general actualizado.`
         });
         this.closeEdit();
       },
       error: (err) => {
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error al actualizar', 
-          detail: err.message || 'Ocurrió un error.' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al actualizar',
+          detail: err.message || 'Ocurrió un error.'
         });
+      }
+    });
+  }
+
+  // Lógica para el modal de eliminación
+  modalEliminarVisible: boolean = false;
+  materialAEliminar: MatGeneral | null = null;
+
+  confirmarEliminacion(material: MatGeneral) {
+    this.materialAEliminar = material;
+    this.modalEliminarVisible = true;
+  }
+
+  cancelarEliminacion() {
+    this.modalEliminarVisible = false;
+    this.materialAEliminar = null;
+  }
+
+  ejecutarEliminacion() {
+    if (!this.materialAEliminar) return;
+
+    this.insumosService.deleteMatGeneral(this.materialAEliminar.id).subscribe({
+      next: () => {
+        this.matGeneral = this.matGeneral.filter(mg => mg.id !== this.materialAEliminar!.id);
+        this.applyFilters();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminado',
+          detail: `Material "${this.materialAEliminar!.nombre}" eliminado.`
+        });
+        this.cancelarEliminacion();
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al eliminar',
+          detail: err.message || 'Ocurrió un error.'
+        });
+        this.cancelarEliminacion();
       }
     });
   }

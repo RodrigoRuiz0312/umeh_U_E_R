@@ -1,36 +1,55 @@
 <div class="modal-overlay" (click)="onClose()">
-  
   <div class="modal-content" (click)="$event.stopPropagation()">
-    
+
     <div class="modal-header">
-      <h2>Editar informacion de doctor</h2>
+      <h2>Editar Información de Doctor</h2>
       <button class="close-btnP" (click)="onClose()">&times;</button>
     </div>
-    
-    <div class="modal-body">
-      <form class="doctor-form">
-        <div class="form-group">
-          <label for="nombre">Nombre:</label>
-          <input type="text" id="nombre" name="nombre" [(ngModel)]="doctor.nombre">
-        </div>
-        <div class="form-group">
-          <label for="apellidos">Apellidos:</label>
-          <input type="text" id="apellidos" name="apellidos" [(ngModel)]="doctor.apellidos">
-        </div>
-        <div class="form-group">
-          <label for="especialidad">Especialidad:</label>
-          <input type="text" id="especialidad" name="especialidad" [(ngModel)]="doctor.especialidad">
-        </div>
-        <div class="form-group">
-          <label for="telefono">Telefono:</label>
-          <input type="tel" id="telefono" name="telefono" [(ngModel)]="doctor.telefono">
-        </div>
-      </form>
-    </div>
 
-    <div class="modal-footer">
-      <button class="save-btn" (click)="guardarCambios()">Guardar Cambios</button>
-    </div>
+    <form [formGroup]="editForm" (ngSubmit)="guardarCambios()">
 
+      <div class="section-label">Información Personal</div>
+
+      <div class="form-row-2">
+        <div class="form-groupP">
+          <label>Nombre(s)</label>
+          <input type="text" class="form-control" formControlName="nombre">
+        </div>
+        <div class="form-groupP">
+          <label>Apellidos</label>
+          <input type="text" class="form-control" formControlName="apellidos">
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-groupP">
+          <label>Cédula Profesional</label>
+          <input type="text" class="form-control" formControlName="cedula_prof">
+        </div>
+        <div class="form-groupP">
+          <label>Especialidad</label>
+          <input type="text" class="form-control" formControlName="especialidad">
+        </div>
+      </div>
+
+      <div class="section-label">Contacto</div>
+
+      <div class="form-row-2">
+        <div class="form-groupP">
+          <label>Teléfono</label>
+          <input type="tel" class="form-control" formControlName="telefono">
+        </div>
+        <div class="form-groupP">
+          <label>Correo Electrónico</label>
+          <input type="email" class="form-control" formControlName="correo">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" (click)="onClose()">Cancelar</button>
+        <button type="submit" class="btn-save">Guardar Cambios</button>
+      </div>
+
+    </form>
   </div>
 </div>

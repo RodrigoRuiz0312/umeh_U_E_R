@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { ConsultaService } from '../../services/consulta-service';
+import { ConsultaService } from '../../services/consulta.service';
 import { CommonModule } from '@angular/common';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { ActivatedRoute } from '@angular/router';
 import { Input } from '@angular/core';
 

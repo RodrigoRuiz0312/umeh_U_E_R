@@ -1,7 +1,7 @@
 import { Component, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Tema } from '../../services/tema';
+import { Tema } from '../../services/tema.service';
 
 @Component({
   selector: 'app-sidebar',

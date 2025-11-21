@@ -249,12 +249,12 @@ p-toast {
   grid-row: 1 / span 3;
 }
 
-.registro-container form > button[type="submit"] {
+.registro-container form>button[type="submit"] {
   position: fixed;
   top: 40px;
   right: 50px;
   font-size: 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
 
@@ -298,6 +298,7 @@ p-toast {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -319,6 +320,7 @@ p-toast {
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -331,7 +333,7 @@ p-toast {
   align-items: center;
   padding: 20px 24px;
   border-bottom: 2px solid #f0f0f0;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
   color: white;
   border-radius: 12px 12px 0 0;
 }
@@ -429,7 +431,7 @@ p-toast {
 }
 
 .btn-entendido {
-  background: var(--primary-color);
+  background: #ff9800;
   color: white;
   border: none;
   padding: 12px 32px;
@@ -438,12 +440,12 @@ p-toast {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(76, 134, 175, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 }
 
 .btn-entendido:hover {
-  background: color-mix(in oklab, var(--primary-color) 90%, #000);
-  box-shadow: 0 4px 12px rgba(76, 134, 175, 0.3);
+  background: #f57c00;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
   transform: translateY(-1px);
 }
 
@@ -451,7 +453,7 @@ p-toast {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
 }
-  
+
 /* Estilos para el asterisco de campos obligatorios */
 .requerido {
   color: var(--danger-color);
@@ -534,7 +536,7 @@ p-toast {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  
+
   .form-field.inline input[list],
   .form-field.inline select,
   .form-field.inline input[type="number"],
@@ -542,7 +544,7 @@ p-toast {
     grid-column: 1 / -1;
     margin-right: 0;
   }
-  
+
   .form-field.inline button {
     justify-self: start;
     width: fit-content;
@@ -638,8 +640,10 @@ select {
 .form-field.inline {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* espacio horizontal entre elementos */
-  margin-bottom: 0.5rem; /* separación entre filas */
+  gap: 0.5rem;
+  /* espacio horizontal entre elementos */
+  margin-bottom: 0.5rem;
+  /* separación entre filas */
 }
 
 /* Ajuste visual del input y botón para mantener coherencia */
@@ -677,22 +681,28 @@ select {
   position: relative;
   overflow: hidden;
 }
+
 .deleteButton svg {
   width: 44%;
 }
+
 .deleteButton:hover {
   background-color: rgb(237, 56, 56);
   overflow: visible;
 }
+
 .bin path {
   transition: all 0.2s;
 }
+
 .deleteButton:hover .bin path {
   fill: #fff;
 }
+
 .deleteButton:active {
   transform: scale(0.98);
 }
+
 .deleteButton:hover .tooltip {
   opacity: 1;
 }
@@ -715,6 +725,7 @@ select {
   transition: all 0.5s;
   z-index: 1;
 }
+
 .tooltip::before {
   position: absolute;
   width: 10px;
@@ -723,4 +734,155 @@ select {
   content: "";
   background-color: var(--tooltip-color);
   bottom: -10%;
+}
+
+/* --- MODAL DE ADVERTENCIA (Campos Faltantes - Estilo Unificado) --- */
+
+/* Fondo oscuro del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Contenedor del Modal */
+.modal-content.warning-modal {
+  max-width: 450px;
+  width: 90%;
+  text-align: center;
+  padding: 20px 30px;
+  border-top: 5px solid #f59f00;
+  /* Naranja Advertencia */
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Icono Animado */
+.warning-icon-circle {
+  width: 80px;
+  height: 80px;
+  background-color: #fff3cd;
+  /* Amarillo pálido */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  animation: pulseRed 2s infinite;
+}
+
+.warning-icon-circle i {
+  font-size: 2.5rem;
+  color: #f59f00;
+  /* Icono Naranja */
+}
+
+@keyframes pulseRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 153, 53, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 153, 53, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 153, 53, 0);
+  }
+}
+
+/* Títulos y Textos */
+.warning-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 10px;
+  margin-top: 0;
+}
+
+.warning-message {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+/* Contenedor de Chips (Etiquetas) */
+.missing-fields-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.missing-field-chip {
+  background-color: #fff5f5;
+  color: #e03131;
+  border: 1px solid #ffc9c9;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+
+.missing-field-chip:hover {
+  transform: translateY(-2px);
+}
+
+/* Botón de Acción */
+.btn-understood {
+  background-color: #f59f00;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 4px 15px rgba(245, 159, 0, 0.3);
+}
+
+.btn-understood:hover {
+  background-color: #e67700;
+  transform: translateY(-2px);
 }

@@ -1,6 +1,20 @@
-.card {
+/* Contenedor principal */
+.reportes-container {
   width: 99%;
   margin: 24px auto;
+  padding: 20px;
+  background: var(--card-bg);
+  color: var(--card-text);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: auto;
+  height: 95%;
+}
+
+.card {
+  width: 100%;
+  margin: 20px 0;
   padding: 20px;
   background: var(--card-bg);
   color: var(--card-text);
@@ -9,8 +23,708 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
-.card-header h2 {
-  margin: 0 0 16px 0;
-  font-size: 1.9rem;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--border);
+}
+
+.card-header h2,
+.card-header h3 {
+  margin: 0;
+  font-size: 1.6rem;
   color: var(--heading-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-header h3 {
+  font-size: 1.4rem;
+}
+
+.card-body {
+  padding: 10px 0;
+}
+
+/* Controles del reporte */
+.controles-reporte {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.control-group label {
+  font-weight: 600;
+  color: var(--heading-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-fecha {
+  padding: 10px 15px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--input-bg);
+  color: var(--input-text);
+  transition: all 0.3s ease;
+}
+
+.input-fecha:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.btn-generar {
+  padding: 12px 30px;
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-generar:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.btn-generar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mensajes */
+.mensaje-exito,
+.mensaje-error {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.mensaje-exito {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-left: 4px solid #4CAF50;
+}
+
+.mensaje-error {
+  background: #ffebee;
+  color: #c62828;
+  border-left: 4px solid #f44336;
+}
+
+/* Resumen de consultas */
+.resumen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.resumen-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: var(--input-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.resumen-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.resumen-icono {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.resumen-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.resumen-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.resumen-valor {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--heading-text);
+}
+
+/* Separador */
+.separator {
+  border: 0;
+  height: 1px;
+  background: var(--border);
+  margin: 30px 0;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  padding: 10px 20px;
+  background: var(--input-bg);
+  color: var(--heading-text);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-action:hover {
+  background: #2196F3;
+  color: white;
+  border-color: #2196F3;
+  transform: translateY(-2px);
+}
+
+/* Filtros */
+.filtros-container {
+  display: flex;
+  gap: 15px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin: 20px 0;
+  padding: 20px;
+  background: var(--input-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.filtro-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.filtro-group label {
+  font-weight: 600;
+  color: var(--heading-text);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.select-filtro,
+.input-busqueda {
+  padding: 10px 15px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--card-bg);
+  color: var(--card-text);
+  transition: all 0.3s ease;
+}
+
+.select-filtro:focus,
+.input-busqueda:focus {
+  outline: none;
+  border-color: #2196F3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.btn-limpiar {
+  padding: 10px 20px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-limpiar:hover {
+  background: #d32f2f;
+  transform: translateY(-2px);
+}
+
+/* Costos principales */
+.costos-principales-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 10px 0 30px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  border-radius: 16px;
+  border: 2px solid var(--border);
+}
+
+.costo-principal-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 25px;
+  background: white;
+  border-radius: 14px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.costo-principal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  border-color: var(--border);
+}
+
+.costo-principal-icono {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.costo-principal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.costo-principal-label {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.costo-principal-monto {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--heading-text);
+}
+
+/* Título de sección */
+.seccion-titulo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--heading-text);
+  margin: 30px 0 15px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* Totales por tipo */
+.totales-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin: 15px 0 25px 0;
+}
+
+.total-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: var(--input-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.total-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.total-icono {
+  width: 45px;
+  height: 45px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.total-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.total-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.total-monto {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--heading-text);
+}
+
+/* Tabla de insumos */
+.tabla-container {
+  overflow-x: auto;
+  margin: 20px 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.tabla-insumos {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card-bg);
+}
+
+.tabla-insumos thead {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+  color: white;
+}
+
+.tabla-insumos th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.tabla-insumos th:nth-child(3),
+.tabla-insumos th:nth-child(4),
+.tabla-insumos th:nth-child(5),
+.tabla-insumos th:nth-child(6) {
+  text-align: center;
+}
+
+.tabla-insumos tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s ease;
+}
+
+.tabla-insumos tbody tr:hover {
+  background: var(--input-bg);
+}
+
+.tabla-insumos td {
+  padding: 15px;
+  font-size: 0.95rem;
+  color: var(--card-text);
+}
+
+.tabla-insumos td:nth-child(3),
+.tabla-insumos td:nth-child(4),
+.tabla-insumos td:nth-child(5),
+.tabla-insumos td:nth-child(6) {
+  text-align: center;
+}
+
+.tabla-insumos tfoot {
+  background: var(--input-bg);
+  font-weight: 600;
+}
+
+.tabla-insumos tfoot td {
+  padding: 15px;
+  font-size: 1.1rem;
+}
+
+.badge-tipo {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.nombre-insumo {
+  font-weight: 600;
+  color: var(--heading-text);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.strong {
+  font-weight: 700;
+  color: var(--heading-text);
+}
+
+.total-row {
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+}
+
+.total-amount {
+  font-size: 1.2rem;
+  color: #2196F3;
+}
+
+/* Sin resultados */
+.sin-resultados {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.sin-resultados i {
+  font-size: 4rem;
+  opacity: 0.3;
+  margin-bottom: 20px;
+}
+
+.sin-resultados p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Total General */
+.total-general {
+  margin-top: 30px;
+  padding: 30px;
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.total-general-contenido {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.total-general-label {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.total-general-detalle {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.total-general-monto {
+  font-size: 2.8rem;
+  font-weight: 800;
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border);
+  border-top-color: #2196F3;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .controles-reporte {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-generar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .resumen-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .costos-principales-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .totales-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filtros-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filtro-group {
+    min-width: 100%;
+  }
+
+  .btn-limpiar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tabla-container {
+    font-size: 0.85rem;
+  }
+
+  .tabla-insumos th,
+  .tabla-insumos td {
+    padding: 10px;
+  }
+
+  .total-general {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+}
+
+/* Impresión */
+@media print {
+
+  .controles-reporte,
+  .header-actions,
+  .filtros-container,
+  .btn-generar,
+  .btn-action,
+  .btn-limpiar {
+    display: none !important;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+
+  .tabla-insumos {
+    font-size: 10pt;
+  }
+
+  .total-general {
+    background: #4CAF50 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* Asegurar alineación de texto en tabla */
+.tabla-insumos td:nth-child(4),
+.tabla-insumos td:nth-child(5),
+.tabla-insumos td:nth-child(6) {
+  text-align: center; /* Mantiene los números centrados */
+}
+
+/* Estilo específico para la fila de total */
+.label-total {
+  padding-right: 20px !important; /* Espacio extra antes del número */
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.total-amount {
+  font-size: 1.2rem;
+  color: #2196F3;
+  text-align: center !important;
+}
+
+.total-general {
+  margin-top: 20px;
 }
