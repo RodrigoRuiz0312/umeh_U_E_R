@@ -6,7 +6,6 @@ import { ApiService } from '../../services/api.service';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-registro-paciente',
@@ -71,7 +70,7 @@ export class RegistroPaciente {
     return faltantes;
   }
 
-  constructor(private router: Router, private api: ApiService, private messageService: MessageService, private fb: FormBuilder, private http: HttpClient) {
+  constructor(private router: Router, private api: ApiService, private messageService: MessageService, private fb: FormBuilder) {
     this.pacienteForm = this.fb.group({
       nombre: ['', Validators.required],
       apellidos: ['', Validators.required],
@@ -130,7 +129,7 @@ export class RegistroPaciente {
     this.errorMsg = '';
     this.cargando = true;
 
-    this.http.get<any>(`https://sepomex.icalialabs.com/api/v1/zip_codes?zip_code=${cp}`).subscribe({
+    this.api.buscarCodigoPostal(cp).subscribe({
       next: (res) => {
         this.cargando = false;
 

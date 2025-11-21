@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly base = 'http://localhost:4000/api';
+  private readonly base = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
@@ -154,5 +155,10 @@ export class ApiService {
 
   deleteProcedimiento(id: number): Observable<any> {
     return this.http.delete(`${this.base}/procedimientos/${id}`);
+  }
+
+  // Código Postal (SEPOMEX)
+  buscarCodigoPostal(cp: string): Observable<any> {
+    return this.http.get<any>(`${this.base}/codigo-postal/${cp}`);
   }
 }

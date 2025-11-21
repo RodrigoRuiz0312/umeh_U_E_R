@@ -3,7 +3,6 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray } f
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { MessageService } from 'primeng/api';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-edit-paciente-modal',
@@ -27,8 +26,7 @@ export class EditPacienteModal implements OnInit {
   constructor(
     private api: ApiService,
     private messageService: MessageService,
-    private fb: FormBuilder,
-    private http: HttpClient
+    private fb: FormBuilder
   ) {
     this.editForm = this.fb.group({});
   }
@@ -153,7 +151,7 @@ export class EditPacienteModal implements OnInit {
     this.cargando = true;
     this.lastSearchedCP = cp;
 
-    this.http.get<any>(`https://sepomex.icalialabs.com/api/v1/zip_codes?zip_code=${cp}`).subscribe({
+    this.api.buscarCodigoPostal(cp).subscribe({
       next: (res) => {
         this.cargando = false;
 
