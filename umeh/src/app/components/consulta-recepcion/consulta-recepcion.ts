@@ -83,7 +83,7 @@ export class ConsultaRecepcion implements OnInit {
 
 
   citasDelDia: any[] = [];
-  idCita!: number;
+  idCita: number | null = null;
   @Input() cita: any;
 
   // Control de flujo
@@ -205,7 +205,7 @@ export class ConsultaRecepcion implements OnInit {
     this.obtenerConsultasActivas();
 
     this.route.queryParams.subscribe(params => {
-      this.idCita = params['id_cita'];
+      this.idCita = params['id_cita'] ? Number(params['id_cita']) : null;
     })
 
     if (this.cita) {
@@ -944,9 +944,8 @@ export class ConsultaRecepcion implements OnInit {
       if (c.id_paciente && c.id_paciente === idPaciente) return true;
       if (c.paciente_nombre && paciente.nombre && c.paciente_nombre === `${paciente.nombre}`) return true;
       return false;
-    });
-  }
-
+  });
+}
 
   // Retomar una consulta en espera para continuar con la captura de insumos
   retomarConsultaActiva(consulta: Consulta): void {
@@ -972,6 +971,7 @@ export class ConsultaRecepcion implements OnInit {
 
         // Cargar datos de la consulta
         this.consultaActual = consulta;
+        this.idCita = datos.id_cita || null;
         this.motivoConsulta = consulta.motivo || '';
 
         // Buscar el médico en la lista
@@ -979,6 +979,7 @@ export class ConsultaRecepcion implements OnInit {
           m.nombre === datos.medico_nombre && m.apellidos === datos.medico_apellidos
         );
         this.medicoSeleccionado = medico ? medico.id_medico : null;
+        this.formConsulta.id_medico = this.medicoSeleccionado;
 
         // Cambiar a paso de captura de insumos
         this.paso = 'captura-insumos';

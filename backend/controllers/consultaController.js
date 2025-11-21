@@ -157,7 +157,14 @@ class ConsultaController {
           m.nombre as medico_nombre,
           m.apellidos as medico_apellidos,
           m.especialidad as medico_especialidad,
-          m.cedula_prof as medico_cedula
+          m.especialidad as medico_especialidad,
+          m.cedula_prof as medico_cedula,
+          (SELECT id_cita FROM citas 
+           WHERE id_paciente = c.id_paciente 
+           AND id_medico = c.id_medico 
+           AND fecha = c.fecha_sesion 
+           AND estado = 'En Consulta' 
+           LIMIT 1) as id_cita
         FROM consultas c
         INNER JOIN paciente p ON c.id_paciente = p.id_paciente
         LEFT JOIN medico m ON c.id_medico = m.id_medico

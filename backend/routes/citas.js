@@ -133,7 +133,7 @@ router.get("/consultorios-disponibles", async (req, res) => {
       SELECT
       c.fecha, c.hora, c.consultorio,
       p.nombre AS nombre_paciente, p.apellidos AS apellidos_paciente,
-      m.nombre AS nombre_medico
+      m.nombre AS nombre_medico, m.apellidos AS apellidos_medico
     FROM citas c
     JOIN paciente p ON c.id_paciente = p.id_paciente
     JOIN medico m ON c.id_medico = m.id_medico

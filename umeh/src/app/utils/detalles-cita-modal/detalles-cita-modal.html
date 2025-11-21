@@ -1,20 +1,39 @@
 <div class="modal-overlay" (click)="onClose()">
   <div class="modal-content" (click)="$event.stopPropagation()">
+
     <div class="modal-header">
       <h2>Detalles de la Cita</h2>
       <button class="close-btn" (click)="onClose()">×</button>
     </div>
-    <div class="modal-body" *ngIf="cita"> 
-      <p><strong>Paciente:</strong> {{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</p>
-      <p><strong>Médico:</strong> {{ cita.nombre_medico }} {{ cita.apellidos_medico }}</p>
-      <p><strong>Hora:</strong> {{ cita.hora.substring(0, 5) }} hrs</p>
-      <p><strong>Consultorio:</strong> {{ cita.consultorio }}</p>
-      <p><strong>Estado Actual:</strong> {{ cita.estado }}</p>
+
+    <div class="modal-body" *ngIf="cita">
+      <div class="info-section">
+        <p class="info-row">
+          <strong>Paciente:</strong>
+          <span>{{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</span>
+        </p>
+        <p class="info-row">
+          <strong>Médico:</strong>
+          <span>{{ cita.nombre_medico }} {{ cita.apellidos_medico }}</span>
+        </p>
       </div>
-      
-      <div class="modal-footer">
-        <button class="btn-danger" (click)="cancelarCita()">Cancelar cita</button>
-        </div>
-  
+
+      <hr class="modal-divider">
+
+      <div class="info-section">
+        <p class="info-row"><strong>Hora:</strong> {{ cita.hora.substring(0, 5) }} hrs</p>
+        <p class="info-row"><strong>Consultorio:</strong> {{ cita.consultorio }}</p>
+        <p class="info-row">
+          <strong>Estado Actual:</strong>
+          <span class="estado-badge">{{ cita.estado }}</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="onClose()">Cerrar</button>
+      <button class="btn-danger" (click)="cancelarCita()">Cancelar cita</button>
+    </div>
+
   </div>
 </div>
