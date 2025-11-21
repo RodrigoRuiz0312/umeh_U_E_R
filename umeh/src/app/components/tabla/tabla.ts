@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Medicamento } from '../../modelos/medicamento';
-import { InsumoService } from '../../services/insumos';
+import { InsumoService } from '../../services/insumos.service';
 import { CommonModule } from '@angular/common';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -42,7 +42,7 @@ export class Tabla implements OnInit {
 
   ngOnInit(): void {
     console.log(" Cargando insumos desde la base de datos...");
-    
+
     // Cargar métodos de aplicación disponibles
     this.http.get<{ id: number; nombre: string }[]>('http://localhost:4000/api/medicamentos/metodos-aplicacion')
       .subscribe({
@@ -51,7 +51,7 @@ export class Tabla implements OnInit {
         },
         error: (err) => console.error('Error cargando métodos:', err)
       });
-    
+
     this.insumosService.getInsumos().subscribe({
       next: (data) => {
         console.log("✅ Datos recibidos:", data);
@@ -110,7 +110,7 @@ export class Tabla implements OnInit {
 
   onSortOptionChange(value: string) {
     const [col, dir] = (value || '').split(':');
-    const validCols = ['nombre','cantidad','costo'] as const;
+    const validCols = ['nombre', 'cantidad', 'costo'] as const;
     if (col && (validCols as readonly string[]).includes(col)) {
       this.sortColumn = col as any;
     }
@@ -119,7 +119,7 @@ export class Tabla implements OnInit {
     }
     this.applyFilters();
   }
-  
+
   private applyFilters() {
     const term = this.searchTerm.trim().toLowerCase();
     let data = [...this.medicamentos];
@@ -153,7 +153,7 @@ export class Tabla implements OnInit {
     this.editedCantidad = medicamento.cantidad;
     this.unidadNueva = medicamento.unidad || '';
     this.costoNuevo = medicamento.costo || 0;
-    
+
     // Cargar métodos seleccionados (convertir nombres a IDs)
     this.metodosSeleccionados.clear();
     if (Array.isArray(medicamento.metodo_aplicacion)) {
@@ -164,7 +164,7 @@ export class Tabla implements OnInit {
         }
       });
     }
-    
+
     this.modalOpen = true;
   }
 
@@ -180,7 +180,7 @@ export class Tabla implements OnInit {
 
   saveEdit() {
     if (!this.selectedMedicamento) return;
-    
+
     const cantidad = Number(this.editedCantidad);
     const nombre = String(this.nombreNuevo).trim();
     const unidad = String(this.unidadNueva).trim();
@@ -210,8 +210,8 @@ export class Tabla implements OnInit {
         }
       });
     }
-    
-    const metodosIguales = 
+
+    const metodosIguales =
       metodosActualesIds.size === this.metodosSeleccionados.size &&
       Array.from(metodosActualesIds).every(id => this.metodosSeleccionados.has(id));
 
@@ -249,24 +249,24 @@ export class Tabla implements OnInit {
           ...actualizado,
           costo: actualizado.costo_unitario !== undefined ? actualizado.costo_unitario : actualizado.costo
         };
-        
+
         const idx = this.medicamentos.findIndex(i => i.id === actualizado.id);
         if (idx !== -1) {
           this.medicamentos[idx] = { ...this.medicamentos[idx], ...medicamentoActualizado };
         }
         this.applyFilters();
-        this.messageService.add({ 
-          severity: 'success', 
-          summary: 'Actualizado', 
-          detail: 'Medicamento actualizado correctamente.' 
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Actualizado',
+          detail: 'Medicamento actualizado correctamente.'
         });
         this.closeEdit();
       },
       error: (err) => {
-        this.messageService.add({ 
-          severity: 'error', 
-          summary: 'Error al actualizar', 
-          detail: err.message || 'Ocurrió un error.' 
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al actualizar',
+          detail: err.message || 'Ocurrió un error.'
         });
       }
     });
@@ -284,18 +284,41 @@ export class Tabla implements OnInit {
     return this.metodosSeleccionados.has(metodoId);
   }
 
-  eliminar(medicamento: Medicamento) {
-    const ok = window.confirm(`¿Seguro que deseas eliminar el insumo ${medicamento.nombre} (ID ${medicamento.id})?`);
-    if (!ok) return;
+  // Lógica para el modal de eliminación
+  modalEliminarVisible: boolean = false;
+  medicamentoAEliminar: Medicamento | null = null;
 
-    this.insumosService.deleteInsumo(medicamento.id).subscribe({
+  confirmarEliminacion(medicamento: Medicamento) {
+    this.medicamentoAEliminar = medicamento;
+    this.modalEliminarVisible = true;
+  }
+
+  cancelarEliminacion() {
+    this.modalEliminarVisible = false;
+    this.medicamentoAEliminar = null;
+  }
+
+  ejecutarEliminacion() {
+    if (!this.medicamentoAEliminar) return;
+
+    this.insumosService.deleteInsumo(this.medicamentoAEliminar.id).subscribe({
       next: () => {
-        this.medicamentos = this.medicamentos.filter(i => i.id !== medicamento.id);
+        this.medicamentos = this.medicamentos.filter(i => i.id !== this.medicamentoAEliminar!.id);
         this.applyFilters();
-        this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: `Insumo ${medicamento.id} eliminado.` });
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminado',
+          detail: `Insumo "${this.medicamentoAEliminar!.nombre}" eliminado.`
+        });
+        this.cancelarEliminacion();
       },
       error: (err) => {
-        this.messageService.add({ severity: 'error', summary: 'Error al eliminar', detail: err.message || 'Ocurrió un error.' });
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error al eliminar',
+          detail: err.message || 'Ocurrió un error.'
+        });
+        this.cancelarEliminacion();
       }
     });
   }

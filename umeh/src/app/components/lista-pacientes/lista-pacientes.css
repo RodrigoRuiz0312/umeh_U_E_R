@@ -41,53 +41,10 @@
   z-index: 1;
 }
 
-.error {
-  color: red;
-  margin-top: 10px;
-}
-
 .table td:hover {
   background-color: var(--table-bg-hover);
 }
 
-/* Botones de acción en la tabla */
-.btn {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
-}
-
-.btn-edit:hover {
-  background: color-mix(in oklab, var(--primary-color-hover) 90%, #000);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-  transform: translateY(-1px);
-}
-
-.btn:hover {
-  background: color-mix(in oklab, var(--primary-color-hover) 90%, #000);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-  transform: translateY(-1px);
-}
-
-.btn-edit::before {
-  content: '✏️';
-  margin-right: 6px;
-}
-
-/* Accesibilidad: estado deshabilitado */
-.btn[disabled] {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Columna de acciones ajustada al contenido */
 .table th.actions,
 .table td.actions {
   width: 1%;
@@ -101,15 +58,6 @@
   white-space: nowrap;
 }
 
-/* Botones dentro de la columna de acciones: compactos */
-.table td.actions .btn,
-.table td.actions .deleteButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Input con icono dentro */
 .input-with-icon {
   position: relative;
 }
@@ -122,82 +70,10 @@
   color: var(--muted-foreground, #6b7280);
   font-size: 14px;
   pointer-events: none;
-  /* permite clickear dentro del input sin obstrucción */
 }
 
 .input-with-icon input {
   padding-left: 30px;
-  /* ajusta el padding para evitar que el texto se superponga con el icono */
-}
-
-/* Modal básico */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: var(--card);
-  color: var(--foreground);
-  width: min(480px, 92vw);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 2px solid #f0f0f0;
-  background: linear-gradient(135deg, #2563eb 0%, #ffffff 100%);
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.3rem;
-  font-weight: 600;
-}
-
-.modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: space-between;
-  background-color: #f8f9fa;
-  border-radius: 0 0 12px 12px;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.modal-close {
-  background: transparent;
-  border: none;
-  color: rgba(0, 0, 0, 0.731);
-  font-size: 2rem;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-}
-
-.modal-close:hover {
-  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-iconP {
@@ -213,9 +89,6 @@
   margin-right: 0;
 }
 
-/* --- MODAL DE ELIMINAR (DANGER STYLE) --- */
-
-/* Overlay del modal con z-index muy alto */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -226,44 +99,53 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10000; /* Z-index muy alto para estar por encima de todo */
+  z-index: 10000;
   backdrop-filter: blur(2px);
   animation: fadeIn 0.2s ease-in;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-/* Contenedor del modal base */
 .modal-content {
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   animation: slideUp 0.3s ease-out;
   position: relative;
-  z-index: 10001; /* Aún más alto que el overlay */
+  z-index: 10001;
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-/* Contenedor específico más pequeño y centrado */
 .modal-content.danger-modal {
   max-width: 400px;
   text-align: center;
   padding: 40px 30px;
-  border-top: 5px solid #dc3545; /* Línea roja superior elegante */
+  border-top: 5px solid #dc3545;
 }
 
-/* Círculo rojo suave para el icono */
 .danger-icon-circle {
   width: 80px;
   height: 80px;
-  background-color: #fee2e2; /* Rojo muy pálido */
+  background-color: #fee2e2;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -274,13 +156,21 @@
 
 .danger-icon-circle i {
   font-size: 2.5rem;
-  color: #dc3545; /* Rojo fuerte */
+  color: #dc3545;
 }
 
 @keyframes pulseRed {
-  0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+  }
 }
 
 .danger-title {
@@ -297,7 +187,6 @@
   margin-bottom: 30px;
 }
 
-/* Contenedor de acciones del modal */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -307,13 +196,11 @@
   padding-top: 20px;
 }
 
-/* Botones centrados */
 .modal-actions.centered {
   justify-content: center;
   gap: 15px;
 }
 
-/* Botón Cancelar */
 .btn-cancel {
   background: transparent;
   border: 1px solid #ced4da;
@@ -330,7 +217,6 @@
   color: #333;
 }
 
-/* Botón de Eliminar Específico */
 .btn-delete-confirm {
   background-color: #dc3545;
   color: white;

@@ -68,7 +68,7 @@
   transform: translateY(-1px);
 }
 
-.btn:hover{
+.btn:hover {
   transform: translateY(-1px);
 }
 
@@ -92,7 +92,7 @@
 }
 
 .table td.actions {
-  align-items: center;  
+  align-items: center;
   padding-left: 15px;
   padding-right: 20px;
   white-space: nowrap;
@@ -149,7 +149,7 @@
   transition: all 0.2s;
 }
 
-/* From Uiverse.io by vinodjangid07 */ 
+/* From Uiverse.io by vinodjangid07 */
 .editButton {
   width: 40px;
   height: 40px;
@@ -182,13 +182,17 @@
 
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  backdrop-filter: blur(2px); /* Efecto borroso sutil detrás */
+  backdrop-filter: blur(2px);
+  /* Efecto borroso sutil detrás */
 }
 
 /* Contenedor del Modal */
@@ -197,15 +201,22 @@
   padding: 30px;
   border-radius: 16px;
   width: 90%;
-  max-width: 600px; /* Un poco más ancho para que quepa el grid */
-  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  max-width: 600px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border, #e9ecef);
   animation: slideUp 0.3s ease-out;
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Títulos y Labels */
@@ -271,7 +282,8 @@
 }
 
 .input-with-prefix {
-  padding-left: 28px !important; /* Espacio para el signo $ */
+  padding-left: 28px !important;
+  /* Espacio para el signo $ */
 }
 
 /* --- CHIPS DE SELECCIÓN (La magia para los métodos) --- */
@@ -286,7 +298,8 @@
   padding: 8px 16px;
   background-color: #f1f3f5;
   border: 1px solid #dee2e6;
-  border-radius: 50px; /* Redondeado total */
+  border-radius: 50px;
+  /* Redondeado total */
   cursor: pointer;
   font-size: 0.85rem;
   color: #495057;
@@ -304,9 +317,12 @@
 
 /* Estado Activo (Seleccionado) */
 .chip-item.selected {
-  background-color: #e7f5ff; /* Azul claro fondo */
-  border-color: #0d6efd;     /* Borde azul */
-  color: #0d6efd;            /* Texto azul */
+  background-color: #e7f5ff;
+  /* Azul claro fondo */
+  border-color: #0d6efd;
+  /* Borde azul */
+  color: #0d6efd;
+  /* Texto azul */
   font-weight: 600;
   box-shadow: 0 2px 5px rgba(13, 110, 253, 0.15);
 }
@@ -338,7 +354,7 @@
 }
 
 .btn-save {
-  background: #0d6efd; /* Azul primario */
+  background: #0d6efd;
   border: none;
   color: white;
   padding: 10px 24px;
@@ -357,6 +373,64 @@
 /* Responsive para móviles */
 @media (max-width: 500px) {
   .form-row-3 {
-    grid-template-columns: 1fr; /* Una sola columna en celular */
+    grid-template-columns: 1fr;
+    /* Una sola columna en celular */
   }
+}
+
+/* --- MODAL DE PELIGRO (Eliminación) --- */
+.danger-modal {
+  border-top: 5px solid #ff6b6b;
+  text-align: center;
+  max-width: 400px;
+}
+
+.danger-icon-circle {
+  width: 80px;
+  height: 80px;
+  background-color: #ffe3e3;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+}
+
+.danger-icon-circle i {
+  font-size: 2.5rem;
+  color: #ff6b6b;
+}
+
+.danger-title {
+  color: #c92a2a;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.danger-message {
+  color: #495057;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.modal-actions.centered {
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-delete-confirm {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.btn-delete-confirm:hover {
+  background: #fa5252;
+  transform: translateY(-1px);
 }

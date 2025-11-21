@@ -7,9 +7,9 @@
     </div>
 
     <form [formGroup]="editForm" (ngSubmit)="guardarCambios()">
-      
+
       <div class="section-label">Información Personal</div>
-      
+
       <div class="form-row-2">
         <div class="form-groupP">
           <label>Nombre(s)</label>
@@ -26,19 +26,17 @@
           <label>Fecha de Nacimiento</label>
           <input type="date" class="form-control" formControlName="fecha_nacimiento">
         </div>
-        
+
         <div class="form-groupP">
           <label>Sexo</label>
           <div class="chips-wrapper">
-            <div class="chip-option" 
-                 [class.selected]="editForm.get('sexo')?.value === 'Masculino'"
-                 (click)="setSexo('Masculino')">
-                 Masculino
+            <div class="chip-option" [class.selected]="editForm.get('sexo')?.value === 'Masculino'"
+              (click)="setSexo('Masculino')">
+              Masculino
             </div>
-            <div class="chip-option" 
-                 [class.selected]="editForm.get('sexo')?.value === 'Femenino'"
-                 (click)="setSexo('Femenino')">
-                 Femenino
+            <div class="chip-option" [class.selected]="editForm.get('sexo')?.value === 'Femenino'"
+              (click)="setSexo('Femenino')">
+              Femenino
             </div>
           </div>
           <input type="hidden" formControlName="sexo">
@@ -46,7 +44,7 @@
       </div>
 
       <div class="section-label">Contacto</div>
-      
+
       <div class="form-row-2">
         <div class="form-groupP">
           <label>Teléfonos</label>
@@ -85,13 +83,16 @@
       </div>
 
       <div class="form-row-2">
-         <div class="form-groupP">
+        <div class="form-groupP">
           <label>Código Postal</label>
-          <input type="text" class="form-control" formControlName="codigo_postal">
+          <input type="text" class="form-control" formControlName="codigo_postal" (blur)="buscarCP()">
         </div>
         <div class="form-groupP">
           <label>Colonia</label>
-          <input type="text" class="form-control" formControlName="colonia">
+          <select formControlName="colonia" class="form-control">
+            <option value="">Seleccione una colonia</option>
+            <option *ngFor="let c of colonias" [value]="c">{{ c }}</option>
+          </select>
         </div>
       </div>
 

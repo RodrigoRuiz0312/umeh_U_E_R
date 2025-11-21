@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { Router, RouterModule } from '@angular/router';
 
 

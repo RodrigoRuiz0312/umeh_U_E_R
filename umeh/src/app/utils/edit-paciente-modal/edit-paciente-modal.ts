@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { MessageService } from 'primeng/api';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-edit-paciente-modal',
@@ -18,11 +19,16 @@ export class EditPacienteModal implements OnInit {
   @Output() pacienteActualizado = new EventEmitter<void>();
 
   editForm: FormGroup;
+  colonias: string[] = [];
+  cargando = false;
+  errorMsg = '';
+  lastSearchedCP = '';
 
   constructor(
     private api: ApiService,
     private messageService: MessageService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private http: HttpClient
   ) {
     this.editForm = this.fb.group({});
   }
@@ -54,6 +60,11 @@ export class EditPacienteModal implements OnInit {
     // Llenar FormArrays
     this.setTelefonos(this.paciente.telefonos);
     this.setCorreos(this.paciente.correos);
+
+    // Cargar datos del CP si existe
+    if (this.paciente.codigo_postal) {
+      this.cargarDatosCP(this.paciente.codigo_postal, true);
+    }
   }
 
   // --- GETTERS PARA EL HTML ---
@@ -119,6 +130,61 @@ export class EditPacienteModal implements OnInit {
 
   onClose() {
     this.close.emit();
+  }
+
+  buscarCP(): void {
+    const cp = this.editForm.get('codigo_postal')?.value;
+
+    // Si el CP no ha cambiado, no hacemos nada (evita borrar datos al hacer blur sin cambios)
+    if (cp === this.lastSearchedCP) {
+      return;
+    }
+
+    if (!cp || cp.length !== 5) {
+      this.errorMsg = 'El código postal debe tener 5 dígitos.';
+      return;
+    }
+
+    this.cargarDatosCP(cp, false);
+  }
+
+  cargarDatosCP(cp: string, preservarColonia: boolean) {
+    this.errorMsg = '';
+    this.cargando = true;
+    this.lastSearchedCP = cp;
+
+    this.http.get<any>(`https://sepomex.icalialabs.com/api/v1/zip_codes?zip_code=${cp}`).subscribe({
+      next: (res) => {
+        this.cargando = false;
+
+        const zipData = res.zip_codes?.[0];
+        if (!zipData) {
+          this.errorMsg = 'No se encontraron resultados para este código postal.';
+          this.editForm.patchValue({ estado: '', municipio: '', colonia: '' });
+          this.colonias = [];
+          return;
+        }
+
+        // Llenar formulario
+        this.editForm.patchValue({
+          estado: zipData.d_estado,
+          municipio: zipData.d_mnpio,
+        });
+
+        // Si NO estamos preservando la colonia (es una nueva búsqueda), la reseteamos
+        if (!preservarColonia) {
+          this.editForm.patchValue({ colonia: '' });
+        }
+
+        // Colonias
+        this.colonias = res.zip_codes.map((z: any) => z.d_asenta);
+      },
+      error: (err) => {
+        this.cargando = false;
+        this.errorMsg = 'Error al consultar el código postal.';
+        console.error(err);
+      }
+    });
   }
 
   guardarCambios() {

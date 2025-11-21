@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Tema } from '../../services/tema';
-import { InsumoService } from '../../services/insumos';
+import { Tema } from '../../services/tema.service';
+import { InsumoService } from '../../services/insumos.service';
 import { Router } from '@angular/router';
 
 @Component({

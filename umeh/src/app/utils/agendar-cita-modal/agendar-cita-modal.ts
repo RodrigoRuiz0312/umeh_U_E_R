@@ -2,7 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { SimpleChanges } from '@angular/core';
 
 @Component({

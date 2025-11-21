@@ -4,9 +4,9 @@
   padding: 20px;
   background: var(--card-bg);
   color: var(--card-text);
-  border-radius: 8px; 
+  border-radius: 8px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   overflow: auto;
   height: 95%;
 }
@@ -15,15 +15,14 @@
   margin: 0 0 16px 0;
   font-size: var(--fs-3xl);
   color: var(--heading-text);
-  
+
 }
 
 .card-body {
   padding-top: 16px;
-  
+
 }
 
-/* Título para la sección de 'Domicilio' */
 .section-title {
   font-size: 18px;
   padding-bottom: 8px;
@@ -40,21 +39,18 @@
   font-size: var(--fs-lg);
 }
 
-/* Contenedor para poner campos en dos columnas */
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr; 
-  gap: 24px; 
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
-/* Contenedor para cada par de etiqueta y campo de texto */
 .form-group {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   margin-bottom: 20px;
 }
 
-/* Estilo para las etiquetas */
 .form-group label {
   display: block;
   margin-bottom: 6px;
@@ -62,7 +58,6 @@
   color: var(--label-text);
 }
 
-/* Estilos para los mensajes de estado del código postal */
 .status-message {
   margin-top: 6px;
   min-height: 20px;
@@ -83,7 +78,6 @@
   gap: 6px;
 }
 
-/* Estilo unificado para todos los inputs y selects */
 .form-group input,
 .form-group select {
   width: 100%;
@@ -96,21 +90,19 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-/* Efecto al hacer clic en un campo */
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #0d6efd; 
+  border-color: #0d6efd;
   box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
 }
 
-/* Contenedor para los botones al final */
-.form-actions > button[type="submit"] {
+.form-actions>button[type="submit"] {
   position: fixed;
   top: 40px;
   right: 50px;
   font-size: 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
 
@@ -119,7 +111,7 @@
   top: 40px;
   right: 393px;
   font-size: 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
 
@@ -128,26 +120,24 @@
   top: 40px;
   right: 210px;
   font-size: 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
 
-    /* Contenedor para el grupo de botones de radio */
 .radio-group {
   display: flex;
   align-items: center;
-  gap: 20px; 
-  border: 1px solid #ccc; 
+  gap: 20px;
+  border: 1px solid #ccc;
   border-radius: 6px;
   padding: 10px 12px;
   background: var(--input-bg);
 }
 
-/* Contenedor para cada par de input y label */
 .radio-option {
   display: flex;
   align-items: center;
-  gap: 6px; 
+  gap: 6px;
 }
 
 .radio-option label {
@@ -155,7 +145,6 @@
   font-weight: normal;
 }
 
-/* Estilo base para los botones */
 .btn {
   padding: 10px 20px;
   border: none;
@@ -166,16 +155,15 @@
   transition: background-color 0.2s;
 }
 
-/* Estilo para el botón principal (Guardar) */
 .btn-primary {
   background: var(--primary-color);
   color: #fff;
 }
+
 .btn-primary:hover {
   background-color: var(--primary-color-hover);
 }
 
-/* Estilo para el botón secundario (Ver Registros) */
 .btn-secondary {
   background-color: #e9ecef;
   color: var(--text-light);
@@ -185,7 +173,6 @@
   background-color: #d3d9df;
 }
 
-/* Estilos para el asterisco de campos obligatorios */
 .requerido {
   color: var(--danger-color);
   font-weight: bold;
@@ -210,6 +197,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -231,155 +219,17 @@
     transform: translateY(30px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
   }
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 2px solid #f0f0f0;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #ffffff 100%);
-  color: white;
-  border-radius: 12px 12px 0 0;
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: var(--fs-xl);
-  font-weight: 600;
-}
-
-.modal-close {
-  background: transparent;
-  border: none;
-  color: rgba(0, 0, 0, 0.731);
-  font-size: var(--fs-4xl);
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-}
-
-.modal-close:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.modal-body {
-  padding: 24px;
-  background: var(--table-bg);
-}
-
-.modal-info {
-  background-color: #fff3cd;
-  border-left: 4px solid #ffc107;
-  padding: 12px 16px;
-  margin-bottom: 20px;
-  border-radius: 6px;
-  color: #856404;
-  font-size: 0.95rem;
-}
-
-.asterisco-demo {
-  color: var(--danger-color);
-  font-weight: bold;
-  font-size: var(--fs-lg);
-}
-
-.modal-subtitle {
-  font-weight: 600;
-  margin-bottom: 12px;
-  font-size: var(--fs-md);
-  color: var(--text-dark);
-}
-
-.campos-faltantes {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.campos-faltantes li {
-  padding: 12px 16px;
-  background: var(--li-registro-bg);
-  border-left: 3px solid #ff6b6b;
-  margin-bottom: 8px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: var(--fs-md);
-  color: #495057;
-  transition: background-color 0.2s;
-}
-
-.campos-faltantes li:hover {
-  background-color: #e9ecef;
-}
-
-.campo-icono {
-  font-size: var(--fs-lg);
-  flex-shrink: 0;
-}
-
-.modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #e9ecef;
-  display: flex;
-  justify-content: flex-end;
-  border-radius: 0 0 12px 12px;
-  background: var(--table-bg);
-}
-
-.btn-entendido {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 6px;
-  font-size: var(--fs-md);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(76, 134, 175, 0.3);
-}
-
-.btn-entendido:hover {
-  background: color-mix(in oklab, var(--primary-color) 90%, #000);
-  box-shadow: 0 4px 12px rgba(76, 134, 175, 0.3);
-  transform: translateY(-1px);
-}
-
-.btn-entendido:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
-}
-  
-/* Estilos para el asterisco de campos obligatorios */
-.requerido {
-  color: var(--danger-color);
-  font-weight: bold;
-  margin-left: 2px;
-}
-
-/* Responsive */
 @media (max-width: 600px) {
   .modal-content {
     width: 95%;
     max-width: none;
-  }
-
-  .modal-header h3 {
-    font-size: var(--fs-lg);
   }
 
   .modal-body {
@@ -403,24 +253,19 @@
   margin-bottom: 0.5rem;
 }
 
-/* --- Estilos para campos dinámicos (Teléfono/Correo) --- */
-
-/* 1. Contenedor para la etiqueta y el botón "Agregar" */
 .dynamic-label-row {
   display: flex;
-  justify-content: space-between; /* Empuja la etiqueta a la izq. y el botón a la der. */
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px; /* Espacio antes del primer input */
+  margin-bottom: 8px;
 }
 
-/* Quitar el margen inferior de la etiqueta cuando está en esta fila */
 .dynamic-label-row label {
   margin-bottom: 0;
 }
 
-/* 2. Botón "Agregar" (+ Agregar teléfono / + Agregar correo) */
 .btn-add {
-  background-color: #198754; /* Verde para "agregar" (color agradable) */
+  background-color: #198754;
   color: white;
   border: none;
   border-radius: 6px;
@@ -429,64 +274,154 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  flex-shrink: 0; /* Evita que el botón se encoja si la etiqueta es larga */
+  flex-shrink: 0;
 }
 
 .btn-add:hover {
-  background-color: #157347; /* Verde más oscuro al pasar el mouse */
+  background-color: #157347;
 }
 
-/* 3. Fila para cada input dinámico (el input y su botón "remove") */
 .dynamic-input-row {
-  position: relative; /* Clave para posicionar el botón "remove" dentro */
+  position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: 10px; /* Espacio entre múltiples inputs */
+  margin-bottom: 10px;
 }
 
 .dynamic-input-row:last-child {
-  margin-bottom: 0; /* Sin margen en el último */
+  margin-bottom: 0;
 }
 
-/* 4. Input dentro de la fila dinámica */
-/* Hacemos que ocupe todo el ancho y dejamos espacio a la derecha para el botón */
 .dynamic-input-row input {
   width: 100%;
-  padding-right: 40px !important; /* Espacio para el botón "X" */
+  padding-right: 40px !important;
 }
 
-/* 5. Botón "Eliminar" (X) */
 .btn-remove {
-  position: absolute; /* Posiciona el botón DENTRO del input-row */
-  right: 1px; /* A la derecha */
-  top: 50%; /* Centrado verticalmente */
+  position: absolute;
+  right: 1px;
+  top: 50%;
   transform: translateY(-50%);
-  
-  /* Estilo del botón */
   background: transparent;
   border: none;
-  color: var(--danger-color, #dc3545); /* Rojo para "eliminar" */
+  color: var(--danger-color, #dc3545);
   cursor: pointer;
-  
-  /* Estilo del texto (X) */
-  font-size: 1.75rem; /* Hace la 'X' más grande y fácil de clickear */
+  font-size: 1.75rem;
   font-weight: bold;
   line-height: 1;
-  
-  /* Dimensiones y padding */
-  height: 90%; /* Ocupa casi toda la altura del input */
-  width: 38px; /* Ancho fijo para el área de click */
+  height: 90%;
+  width: 38px;
   padding: 0;
-  
   display: flex;
   align-items: center;
   justify-content: center;
-  
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 .btn-remove:hover {
-  color: #a71d2a; /* Rojo más oscuro */
-  background-color: #f8f9fa; /* Un fondo muy sutil al pasar el mouse */
-  border-radius: 0 6px 6px 0; /* Redondea las esquinas derechas */
+  color: #a71d2a;
+  background-color: #f8f9fa;
+  border-radius: 0 6px 6px 0;
+}
+
+.modal-content.warning-modal {
+  max-width: 450px;
+  text-align: center;
+  padding: 20px 30px;
+  border-top: 5px solid #f59f00;
+  border-radius: 12px;
+}
+
+.warning-icon-circle {
+  width: 80px;
+  height: 80px;
+  background-color: #fff3cd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  animation: pulseRed 2s infinite;
+}
+
+.warning-icon-circle i {
+  font-size: 2.5rem;
+  color: #f59f00;
+}
+
+@keyframes pulseRed {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 153, 53, 0.4);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(220, 153, 53, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 153, 53, 0);
+  }
+}
+
+.warning-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.warning-message {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.missing-fields-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.missing-field-chip {
+  background-color: #fff5f5;
+  color: #e03131;
+  border: 1px solid #ffc9c9;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+
+.missing-field-chip:hover {
+  transform: translateY(-2px);
+}
+
+.missing-field-chip i {
+  font-size: 0.8rem;
+}
+
+.btn-understood {
+  background-color: #f59f00;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 4px 15px rgba(245, 159, 0, 0.3);
+}
+
+.btn-understood:hover {
+  background-color: #e67700;
+  transform: translateY(-2px);
 }

@@ -4,28 +4,30 @@
   <p-toast></p-toast>
 
   <div class="modal-overlay" *ngIf="mostrarModalCamposObligatorios" (click)="cerrarModalCamposObligatorios()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>⚠️ Campos obligatorios faltantes</h3>
-        <button class="modal-close" (click)="cerrarModalCamposObligatorios()">&times;</button>
+
+    <div class="modal-content warning-modal" (click)="$event.stopPropagation()">
+
+      <div class="warning-icon-circle">
+        <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
-      <div class="modal-body">
-        <p class="modal-info">
-          Los campos marcados con <span class="asterisco-demo">*</span> son obligatorios.
-        </p>
-        <p class="modal-subtitle">Por favor completa los siguientes campos:</p>
-        <ul class="campos-faltantes">
-          <li *ngFor="let campo of camposFaltantes">
-            <span class="campo-icono">📋</span>
-            {{ campo }}
-          </li>
-        </ul>
+
+      <h2 class="warning-title">Faltan Datos</h2>
+
+      <p class="warning-message">
+        Para registrar al médico correctamente, completa la siguiente información obligatoria:
+      </p>
+
+      <div class="missing-fields-container">
+        <div class="missing-field-chip" *ngFor="let campo of camposFaltantes">
+          <i class="fa-solid fa-circle-xmark"></i>
+          {{ campo }}
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-entendido" (click)="cerrarModalCamposObligatorios()">
-          Entendido
-        </button>
-      </div>
+
+      <button class="btn-understood" (click)="cerrarModalCamposObligatorios()">
+        Entendido
+      </button>
+
     </div>
   </div>
 
@@ -72,7 +74,7 @@
         <label class="radio-card">
           <input type="radio" name="nombre_agenda" value="General" [(ngModel)]="doctorData.nombre_agenda" required>
           <div class="card-content">
-            <span class="radio-icon">🏥</span>
+            <i class="fa-solid fa-stethoscope radio-icon"></i>
             <span class="radio-text">General</span>
           </div>
         </label>
@@ -80,7 +82,13 @@
         <label class="radio-card">
           <input type="radio" name="nombre_agenda" value="Cirujano" [(ngModel)]="doctorData.nombre_agenda" required>
           <div class="card-content">
-            <span class="radio-icon">✂️</span>
+
+            <svg class="radio-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19.7,4.3c-0.4-0.4-1-0.4-1.4,0L7.1,15.5c-1.1,1.1-1.1,2.9,0,4c0,0,0,0,0,0l1.4,1.4c1.1,1.1,2.9,1.1,4,0L23.7,9.7
+	            c0.4-0.4,0.4-1,0-1.4L19.7,4.3z M8.5,18.1c-0.3-0.3-0.3-0.8,0-1.1L15.9,9.6l2.5,2.5L11,19.5l0,0c-0.3,0.3-0.8,0.3-1.1,0L8.5,18.1z
+	             M5.7,16.9l-4,4c-0.4,0.4-0.4,1,0,1.4s1,0.4,1.4,0l4-4L5.7,16.9z" />
+            </svg>
+
             <span class="radio-text">Cirujano</span>
           </div>
         </label>
@@ -89,7 +97,7 @@
           <input type="radio" name="nombre_agenda" value="Neuropediatra" [(ngModel)]="doctorData.nombre_agenda"
             required>
           <div class="card-content">
-            <span class="radio-icon">🧠</span>
+            <i class="fa-solid fa-brain radio-icon"></i>
             <span class="radio-text">Neuropediatra</span>
           </div>
         </label>

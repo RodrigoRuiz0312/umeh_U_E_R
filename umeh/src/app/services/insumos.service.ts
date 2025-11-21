@@ -112,13 +112,13 @@ export class InsumoService {
     );
   }
 
-  // Actualizar cantidad de un material de triage por ID
-  updateTriage(id: number, payload: Partial<Pick<Triage, 'cantidad'>>): Observable<Triage> {
+  // Actualizar material de triage por ID (todos los campos)
+  updateTriage(id: number, payload: Partial<Triage>): Observable<Triage> {
     if (!id) {
       return throwError(() => new Error('ID es requerido'));
     }
-    if (payload.cantidad === undefined) {
-      return throwError(() => new Error('Debe proporcionar cantidad a actualizar'));
+    if (payload.nombre === undefined && payload.cantidad === undefined && payload.unidad === undefined && (payload as any).costo_unitario === undefined) {
+      return throwError(() => new Error('Debe proporcionar al menos un campo a actualizar'));
     }
 
     return this.http.put<Triage>(`${this.triageURL}/${id}`, payload).pipe(
@@ -136,13 +136,13 @@ export class InsumoService {
     );
   }
 
-  // Actualizar cantidad de material general por ID
-  updateMatGeneral(id: number, payload: Partial<Pick<MatGeneral, 'cantidad'>>): Observable<MatGeneral> {
+  // Actualizar material general por ID (todos los campos)
+  updateMatGeneral(id: number, payload: Partial<MatGeneral>): Observable<MatGeneral> {
     if (!id) {
       return throwError(() => new Error('ID es requerido'));
     }
-    if (payload.cantidad === undefined) {
-      return throwError(() => new Error('Debe proporcionar cantidad a actualizar'));
+    if (payload.nombre === undefined && payload.cantidad === undefined && payload.unidad === undefined && (payload as any).costo_unitario === undefined) {
+      return throwError(() => new Error('Debe proporcionar al menos un campo a actualizar'));
     }
 
     return this.http.put<MatGeneral>(`${this.matGeneralURL}/${id}`, payload).pipe(
@@ -214,6 +214,50 @@ export class InsumoService {
       catchError((error) => {
         console.error(' Error al actualizar insumo:', error);
         return throwError(() => new Error('Error al actualizar insumo: ' + (error.error?.message || error.message)));
+      })
+    );
+  }
+
+  // Eliminar material de triage por ID
+  deleteTriage(id: number): Observable<{ message: string; material: Triage } | Triage> {
+    if (!id) {
+      return throwError(() => new Error('ID es requerido'));
+    }
+
+    return this.http.delete<{ message: string; material: Triage } | Triage>(`${this.triageURL}/${id}`).pipe(
+      tap((res: any) => {
+        const deleted: Triage | undefined = res?.material ?? res;
+        if (this.triageCache && deleted) {
+          this.triageCache = this.triageCache.filter(t => t.id !== (deleted.id ?? id));
+        } else if (this.triageCache) {
+          this.triageCache = this.triageCache.filter(t => t.id !== id);
+        }
+      }),
+      catchError((error) => {
+        console.error('❌ Error al eliminar material de triage:', error);
+        return throwError(() => new Error('Error al eliminar material de triage: ' + (error.error?.message || error.message)));
+      })
+    );
+  }
+
+  // Eliminar material general por ID
+  deleteMatGeneral(id: number): Observable<{ message: string; material: MatGeneral } | MatGeneral> {
+    if (!id) {
+      return throwError(() => new Error('ID es requerido'));
+    }
+
+    return this.http.delete<{ message: string; material: MatGeneral } | MatGeneral>(`${this.matGeneralURL}/${id}`).pipe(
+      tap((res: any) => {
+        const deleted: MatGeneral | undefined = res?.material ?? res;
+        if (this.matGeneralCache && deleted) {
+          this.matGeneralCache = this.matGeneralCache.filter(mg => mg.id !== (deleted.id ?? id));
+        } else if (this.matGeneralCache) {
+          this.matGeneralCache = this.matGeneralCache.filter(mg => mg.id !== id);
+        }
+      }),
+      catchError((error) => {
+        console.error('❌ Error al eliminar material general:', error);
+        return throwError(() => new Error('Error al eliminar material general: ' + (error.error?.message || error.message)));
       })
     );
   }

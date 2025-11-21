@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { EditPacienteModal } from '../../utils/edit-paciente-modal/edit-paciente-modal';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../services/api';
+import { ApiService } from '../../services/api.service';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService } from 'primeng/api';
@@ -110,12 +110,10 @@ export class ListaPacientes implements OnInit {
     if (!term) {
       this.pacientesView = [...this.pacientes];
     } else {
-      this.pacientesView = this.pacientes.filter(p =>
-        String(p?.nombre || '').toLowerCase().includes(term) ||
-        String(p?.apellidos || '').toLowerCase().includes(term)
-        // Nota: El filtro de búsqueda no buscará en teléfonos o correos,
-        // ¡pero eso es un tema para otra mejora!
-      );
+      this.pacientesView = this.pacientes.filter(p => {
+        const nombreCompleto = `${p.nombre || ''} ${p.apellidos || ''}`.toLowerCase();
+        return nombreCompleto.includes(term);
+      });
     }
 
     // --- El Ordenamiento (sort) SÍ necesita cambios ---

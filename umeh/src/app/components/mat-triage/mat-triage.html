@@ -63,7 +63,7 @@
               <button class="action-btnP" (click)="openEdit(triages)">
                 <img src="assets/img/edit.png" class="btn-iconP">
               </button>
-              <button class="action-btnP">
+              <button class="action-btnP" (click)="confirmarEliminacion(triages)">
                 <img src="assets/img/delet.png" class="btn-iconP">
               </button>
             </td>
@@ -73,22 +73,68 @@
     </table>
   </div>
 
-  <!-- Modal edición cantidad -->
-  <div *ngIf="modalOpen" class="modal-backdrop" (click)="closeEdit()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3 style="margin:0">Editar stock</h3>
-        <button class="modal-close" (click)="closeEdit()" aria-label="Cerrar">×</button>
+  <!-- Modal edición completo -->
+  <div *ngIf="modalOpen" class="modal-overlay" (click)="closeEdit()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+      <h3>Editar Material de Triage</h3>
+
+      <div class="form-group">
+        <label>Nombre del Material</label>
+        <input type="text" class="form-control" [(ngModel)]="nombreNuevo" placeholder="Nombre del material">
       </div>
-      <div class="modal-body">
-        <label>Cantidad</label>
-        <input type="number" [(ngModel)]="editedCantidad"
-          style="width:100%; padding:8px; border:1px solid var(--input-border, #d1d5db); border-radius:8px;" />
+
+      <div class="form-row-3">
+
+        <div class="form-group">
+          <label>Cantidad</label>
+          <input type="number" class="form-control" [(ngModel)]="editedCantidad" placeholder="0">
+        </div>
+
+        <div class="form-group">
+          <label>Unidad</label>
+          <input type="text" class="form-control" [(ngModel)]="unidadNueva" placeholder="Ej. pza, caja">
+        </div>
+
+        <div class="form-group">
+          <label>Costo Unitario</label>
+          <div class="input-prefix-wrapper">
+            <span class="prefix-symbol">$</span>
+            <input type="number" class="form-control input-with-prefix" [(ngModel)]="costoNuevo" step="0.01"
+              placeholder="0.00">
+          </div>
+        </div>
+
       </div>
-      <div class="modal-footer">
-        <button class="btn" (click)="closeEdit()">Cancelar</button>
-        <button class="btn btn-edit" (click)="saveEdit()">Guardar</button>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeEdit()">Cancelar</button>
+        <button class="btn-save" (click)="saveEdit()">Guardar Cambios</button>
       </div>
+
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Eliminación -->
+  <div class="modal-overlay" *ngIf="modalEliminarVisible" (click)="cancelarEliminacion()">
+    <div class="modal-content danger-modal" (click)="$event.stopPropagation()">
+
+      <div class="danger-icon-circle">
+        <i class="fa-regular fa-trash-can"></i>
+      </div>
+
+      <h2 class="danger-title">¿Eliminar Material de Triage?</h2>
+
+      <p class="danger-message">
+        Estás a punto de eliminar a <strong>{{ triageAEliminar?.nombre }}</strong> de forma permanente.
+        <br>Esta acción <b>no se puede deshacer</b>.
+      </p>
+
+      <div class="modal-actions centered">
+        <button class="btn-cancel" (click)="cancelarEliminacion()">Cancelar</button>
+        <button class="btn-delete-confirm" (click)="ejecutarEliminacion()">Sí, eliminar</button>
+      </div>
+
     </div>
   </div>
 

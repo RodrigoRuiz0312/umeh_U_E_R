@@ -5,30 +5,28 @@
 
   <p-toast></p-toast>
 
-  <!-- Modal de campos obligatorios -->
   <div class="modal-overlay" *ngIf="mostrarModalCamposObligatorios" (click)="cerrarModalCamposObligatorios()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>⚠️ Campos obligatorios faltantes</h3>
-        <button class="modal-close" (click)="cerrarModalCamposObligatorios()">&times;</button>
+    <div class="modal-content warning-modal" (click)="$event.stopPropagation()">
+      <div class="warning-icon-circle">
+        <i class="fa-solid fa-triangle-exclamation"></i>
       </div>
-      <div class="modal-body">
-        <p class="modal-info">
-          Los campos marcados con <span class="asterisco-demo">*</span> son obligatorios.
-        </p>
-        <p class="modal-subtitle">Por favor completa los siguientes campos:</p>
-        <ul class="campos-faltantes">
-          <li *ngFor="let campo of camposFaltantes">
-            <span class="campo-icono">📋</span>
-            {{ campo }}
-          </li>
-        </ul>
+
+      <h2 class="warning-title">Faltan Datos Obligatorios</h2>
+
+      <p class="warning-message">
+        Para continuar con el registro, necesitamos que complete la siguiente información:
+      </p>
+
+      <div class="missing-fields-container">
+        <div class="missing-field-chip" *ngFor="let campo of camposFaltantes">
+          <i class="fa-solid fa-circle-xmark"></i>
+          {{ campo }}
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn-entendido" (click)="cerrarModalCamposObligatorios()">
-          Entendido
-        </button>
-      </div>
+
+      <button class="btn-understood" (click)="cerrarModalCamposObligatorios()">
+        Entendido
+      </button>
     </div>
   </div>
 
@@ -144,8 +142,10 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-reg btn-outline-primary btn-fix-1" (click)="verRegistros()">Ver Registros</button>
-        <button type="button" class="btn-reg btn-outline-primary btn-fix-2" (click)="irAConsultaRecepcion()">Realizar Consulta</button>
+        <button type="button" class="btn-reg btn-outline-primary btn-fix-1" (click)="verRegistros()">Ver
+          Registros</button>
+        <button type="button" class="btn-reg btn-outline-primary btn-fix-2" (click)="irAConsultaRecepcion()">Realizar
+          Consulta</button>
         <button type="submit" class="btn-reg btn-outline-primary">Guardar Datos</button>
       </div>
 
