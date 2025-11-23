@@ -3,13 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EditDoctorModal } from '../../utils/edit-doctor-modal/edit-doctor-modal';
 import { ApiService } from '../../services/api.service';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-lista-doctores',
   standalone: true,
-  imports: [CommonModule, FormsModule, EditDoctorModal],
+  imports: [CommonModule, FormsModule, EditDoctorModal, ToastModule],
   templateUrl: './lista-doctores.html',
-  styleUrl: './lista-doctores.css'
+  styleUrl: './lista-doctores.css',
+  providers: [MessageService]
 })
 export class ListaDoctores implements OnInit {
   searchTerm = '';
@@ -22,7 +25,10 @@ export class ListaDoctores implements OnInit {
   isModalVisible = false;
   medicoSeleccionado: any;
 
-  constructor(private api: ApiService) { }
+  modalEliminarVisible: boolean = false;
+  medicoAEliminar: { id: number, nombre: string } | null = null;
+
+  constructor(private api: ApiService, private messageService: MessageService) { }
 
   ngOnInit(): void {
     this.cargarMedicos();
@@ -99,15 +105,39 @@ export class ListaDoctores implements OnInit {
     this.cargarMedicos();
   }
 
-  borrarMedico(id: number) {
-    if (!confirm('¿Estás seguro de que quieres eliminar a este médico?')) return;
-    this.api.deleteDoctor(id).subscribe({
+  confirmarEliminacion(id: number, nombre: string) {
+    this.medicoAEliminar = { id, nombre };
+    this.modalEliminarVisible = true;
+  }
+
+  cancelarEliminacion() {
+    this.modalEliminarVisible = false;
+    this.medicoAEliminar = null;
+  }
+
+  ejecutarEliminacion() {
+    if (!this.medicoAEliminar) return;
+
+    this.api.deleteDoctor(this.medicoAEliminar.id).subscribe({
       next: () => {
-        this.medicos = this.medicos.filter(m => m.id_medico !== id);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Eliminado',
+          detail: 'Médico eliminado correctamente'
+        });
+        
+        this.medicos = this.medicos.filter(m => m.id_medico !== this.medicoAEliminar?.id);
         this.applyFilters();
+        this.cancelarEliminacion();
       },
       error: (error) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo eliminar el médico'
+        });
         console.error('Error al eliminar el médico', error);
+        this.cancelarEliminacion();
       }
     });
   }
