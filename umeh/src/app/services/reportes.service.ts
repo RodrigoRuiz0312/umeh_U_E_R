@@ -47,10 +47,10 @@ export interface ReporteInsumosRango {
 
 export interface ResumenConsultas {
   fecha: string;
-  total_consultas: number;
-  completadas: number;
-  canceladas: number;
-  total_ingresos: number;
+  total_consultas?: number;
+  completadas?: number;
+  canceladas?: number;
+  total_ingresos?: number;
 }
 
 @Injectable({

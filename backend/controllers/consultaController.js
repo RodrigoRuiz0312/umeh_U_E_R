@@ -147,7 +147,6 @@ class ConsultaController {
           p.nombre as paciente_nombre,
           p.apellidos as paciente_apellidos,
           p.fecha_nacimiento,
-          (SELECT telefono FROM paciente_telefonos WHERE id_paciente = p.id_paciente LIMIT 1) as paciente_telefono,
           p.sexo,
           p.calle,
           p.num,
@@ -176,7 +175,20 @@ class ConsultaController {
         return res.status(404).json({ error: 'Consulta no encontrada' });
       }
 
-      res.json(result.rows[0]);
+      // Obtener todos los teléfonos del paciente
+      const telefonosResult = await pool.query(
+        'SELECT telefono FROM paciente_telefonos WHERE id_paciente = $1',
+        [result.rows[0].id_paciente]
+      );
+      const telefonos = telefonosResult.rows.map(t => t.telefono);
+
+      // Agregar los teléfonos al resultado
+      const consultaData = {
+        ...result.rows[0],
+        paciente_telefono: telefonos // Array de todos los teléfonos
+      };
+
+      res.json(consultaData);
     } catch (error) {
       console.error('Error obteniendo hoja de consulta:', error);
       res.status(500).json({ error: 'Error al obtener datos de consulta' });
@@ -221,7 +233,7 @@ class ConsultaController {
         );
         if (med.rows.length > 0 && med.rows[0].cantidad >= cantidad) {
           inventarioDisponible = true;
-          costoUnitario = parseFloat(med.rows[0].costo_unitario); // ✅ Convertir aquí
+          costoUnitario = parseFloat(med.rows[0].costo_unitario); // Convertir aquí
         }
       } else if (tipo === 'material') {
         const mat = await client.query(
@@ -230,7 +242,7 @@ class ConsultaController {
         );
         if (mat.rows.length > 0 && mat.rows[0].cantidad >= cantidad) {
           inventarioDisponible = true;
-          costoUnitario = parseFloat(mat.rows[0].costo_unitario); // ✅ Convertir aquí
+          costoUnitario = parseFloat(mat.rows[0].costo_unitario); // Convertir aquí
         }
       } else if (tipo === 'mat_general') {
         const matGen = await client.query(
@@ -239,7 +251,7 @@ class ConsultaController {
         );
         if (matGen.rows.length > 0 && matGen.rows[0].cantidad >= cantidad) {
           inventarioDisponible = true;
-          costoUnitario = parseFloat(matGen.rows[0].costo_unitario || 0); // ✅ Convertir aquí
+          costoUnitario = parseFloat(matGen.rows[0].costo_unitario || 0); // Convertir aquí
         }
         // En el método agregarInsumo, dentro del if (tipo === 'procedimiento'):
       } else if (tipo === 'procedimiento') {
@@ -328,7 +340,7 @@ class ConsultaController {
         [insert.rows[0].id]
       );
 
-      // ✅ Convertir tipos de datos del insumo insertado
+      // Convertir tipos de datos del insumo insertado
       const insumoConvertido = {
         ...result.rows[0],
         id: parseInt(result.rows[0].id, 10),
@@ -345,13 +357,13 @@ class ConsultaController {
       );
 
       // Dentro de agregarInsumo (antes de COMMIT)
-      console.log('✅ INSERTANDO INSUMO EN CONSULTA:', { id_consulta, id_insumo, tipo, cantidad, costoUnitario });
+      console.log('INSERTANDO INSUMO EN CONSULTA:', { id_consulta, id_insumo, tipo, cantidad, costoUnitario });
 
       await client.query('COMMIT');
 
       res.status(201).json({
-        insumo: insumoConvertido, // ✅ Enviar el insumo convertido
-        totalConsulta: parseFloat(totalConsulta.rows[0].total) // ✅ Convertir total también
+        insumo: insumoConvertido, // Enviar el insumo convertido
+        totalConsulta: parseFloat(totalConsulta.rows[0].total) // Convertir total también
       });
     } catch (error) {
       await client.query('ROLLBACK');
@@ -497,14 +509,14 @@ class ConsultaController {
         [id_consulta]
       );
 
-      // ✅ Convertir tipos de datos correctamente
+      // Convertir tipos de datos correctamente
       const insumos = result.rows.map(insumo => ({
         ...insumo,
-        id: parseInt(insumo.id, 10),                    // bigint → number
-        id_insumo: parseInt(insumo.id_insumo, 10),      // bigint → number
-        cantidad: parseFloat(insumo.cantidad),          // numeric → number
-        costo_unitario: parseFloat(insumo.costo_unitario), // numeric → number
-        subtotal: parseFloat(insumo.subtotal)           // numeric → number
+        id: parseInt(insumo.id, 10),
+        id_insumo: parseInt(insumo.id_insumo, 10),
+        cantidad: parseFloat(insumo.cantidad),
+        costo_unitario: parseFloat(insumo.costo_unitario),
+        subtotal: parseFloat(insumo.subtotal)
       }));
 
       res.json(insumos);
@@ -543,17 +555,19 @@ class ConsultaController {
         (SELECT telefono FROM paciente_telefonos WHERE id_paciente = p.id_paciente LIMIT 1) as paciente_telefono,
         m.nombre as medico_nombre,
         m.apellidos as medico_apellidos,
+        m.especialidad as medico_especialidad,
+        m.cedula_prof as medico_cedula,
         json_agg(
           json_build_object(
             'nombre', CASE 
-                WHEN ci.tipo = 'medicamento' THEN med.nombre
+                WHEN ci.tipo = 'medicamento' THEN m.nombre
                 WHEN ci.tipo = 'material' THEN mat.nombre
                 WHEN ci.tipo = 'mat_general' THEN mg.nombre
-                WHEN ci.tipo = 'procedimiento' THEN proc.descripcion
+                WHEN ci.tipo = 'procedimiento' THEN p.descripcion
               END,
             'cantidad', ci.cantidad,
             'unidad', CASE 
-                WHEN ci.tipo = 'medicamento' THEN med.unidad
+                WHEN ci.tipo = 'medicamento' THEN m.unidad
                 WHEN ci.tipo = 'material' THEN mat.unidad
                 WHEN ci.tipo = 'mat_general' THEN mg.unidad
                 ELSE 'procedimiento'
@@ -566,10 +580,10 @@ class ConsultaController {
         INNER JOIN paciente p ON c.id_paciente = p.id_paciente
         LEFT JOIN medico m ON c.id_medico = m.id_medico
         LEFT JOIN consulta_insumos ci ON c.id_consulta = ci.id_consulta
-        LEFT JOIN medicamentos med ON ci.tipo = 'medicamento' AND ci.id_insumo = med.id
+        LEFT JOIN medicamentos m ON ci.tipo = 'medicamento' AND ci.id_insumo = m.id
         LEFT JOIN mat_triage mat ON ci.tipo = 'material' AND ci.id_insumo = mat.id
         LEFT JOIN mat_general mg ON ci.tipo = 'mat_general' AND ci.id_insumo = mg.id
-        LEFT JOIN procedimientos proc ON ci.tipo = 'procedimiento' AND ci.id_insumo = proc.id_procedimiento
+        LEFT JOIN procedimientos p ON ci.tipo = 'procedimiento' AND ci.id_insumo = p.id_procedimiento
         WHERE c.id_consulta = $1
         GROUP BY c.id_consulta, c.fecha, c.total, c.observaciones,
         p.id_paciente, p.nombre, p.apellidos, m.nombre, m.apellidos`,
@@ -763,6 +777,16 @@ class ConsultaController {
              AND pi.id_insumo = mt.id`,
             [cantidad, id_insumo]
           );
+
+          await client.query(
+            `UPDATE mat_general mg
+             SET cantidad = mg.cantidad + (pi.cantidad * $1)
+             FROM procedimiento_insumos pi
+             WHERE pi.id_procedimiento = $2
+             AND pi.tipo = 'mat_general'
+             AND pi.id_insumo = mg.id`,
+            [cantidad, id_insumo]
+          );
         }
       }
 
@@ -835,7 +859,7 @@ async function obtenerHojaConsultaInterna(id_consulta) {
   // Combinamos los resultados
   return {
     ...consultaData,
-    paciente_telefono: telefonos[0] || null, // Tomamos el primer teléfono como principal
+    paciente_telefono: telefonos, // Array de todos los teléfonos
     telefonos,
     correos
   };
