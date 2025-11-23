@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { pool } = require('../db');
 const PDFDocument = require('pdfkit');
+const path = require('path');
 
 // Función para obtener datos de una consulta
 async function getConsultaById(id) {
@@ -21,6 +22,7 @@ async function getConsultaById(id) {
             m.nombre as medico_nombre, 
             m.apellidos as medico_apellidos, 
             m.especialidad,
+            m.nombre_agenda,
             m.cedula_prof,
             -- Obtener teléfonos como array
             (SELECT array_agg(telefono) 
@@ -84,115 +86,249 @@ async function getExtrasConsulta(id) {
     return result.rows;
 }
 
-// Función para generar PDF más detallado
+// Función para obtener el orden de prioridad de un tipo de insumo
+function getOrdenPrioridad(tipo) {
+    const orden = {
+        'medicamento': 1,
+        'mat_general': 2,
+        'material': 3,
+        'procedimiento': 4,
+        'consulta': 5,
+        'extra': 6
+    };
+    return orden[tipo] || 999; // Items sin tipo definido van al final
+}
+
+// Función para generar PDF Nota de Remisión (Media Carta - Estilo Oficial UMEH)
 async function generarPDFNotaRemision(datos) {
     return new Promise((resolve, reject) => {
-        const doc = new PDFDocument({ margin: 50 });
-        const chunks = [];
-
-        doc.on('data', chunk => chunks.push(chunk));
-        doc.on('end', () => {
-            const pdfBuffer = Buffer.concat(chunks);
-            resolve(pdfBuffer);
+        const doc = new PDFDocument({
+            size: 'LETTER',
+            margin: 20,
+            autoFirstPage: false
         });
+
+        const chunks = [];
+        doc.on('data', chunk => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
         doc.on('error', reject);
 
-        // Encabezado
-        doc.fontSize(20).font('Helvetica-Bold').text('NOTA DE REMISIÓN', { align: 'center' });
-        doc.fontSize(12).font('Helvetica');
-        doc.text(`No. ${datos.consulta.id_consulta}`, { align: 'center' });
-        doc.text(`Fecha: ${new Date(datos.consulta.fecha).toLocaleDateString('es-MX')}`, { align: 'center' });
-        doc.moveDown(1.5);
+        doc.addPage();
 
-        // Datos del paciente
-        doc.fontSize(14).font('Helvetica-Bold').text('DATOS DEL PACIENTE', { underline: true });
-        doc.fontSize(10).font('Helvetica');
-        doc.text(`Nombre: ${datos.paciente.paciente_nombre} ${datos.paciente.paciente_apellidos}`);
-        doc.text(`Fecha de Nacimiento: ${new Date(datos.paciente.fecha_nacimiento).toLocaleDateString('es-MX')}`);
-        doc.text(`Sexo: ${datos.paciente.sexo || 'No especificado'}`);
-        doc.text(`Teléfono(s): ${datos.paciente.telefonos ? datos.paciente.telefonos.join(', ') : 'No registrado'}`);
-        doc.text(`Domicilio: ${datos.paciente.calle} #${datos.paciente.num}, Col. ${datos.paciente.colonia}, ${datos.paciente.municipio}, ${datos.paciente.estado}`);
-        doc.moveDown(1);
+        // --- CONFIGURACIÓN DE ESTILOS ---
+        const colorBorde = '#000000'; // Negro para líneas
+        const colorFondoHeader = '#b2ebf2'; // Mismo cian que la hoja de consulta
+        const colorTexto = '#000000'; // Texto negro
+        const colorFolio = '#c0392b'; // Rojo oscuro para el folio (como en los recibos)
 
-        /*// Datos del médico
-        doc.fontSize(14).font('Helvetica-Bold').text('DATOS DEL MÉDICO', { underline: true });
-        doc.fontSize(10).font('Helvetica');
-        doc.text(`Nombre: Dr. ${datos.paciente.medico_nombre} ${datos.paciente.medico_apellidos}`);
-        doc.text(`Especialidad: ${datos.paciente.especialidad}`);
-        doc.text(`Cédula Profesional: ${datos.paciente.cedula_prof}`);
-        doc.moveDown(1);
-        */
+        const pageW = doc.page.width;
+        const margin = 25;
+        const contentW = pageW - (margin * 2);
+        const halfHeight = 396; // Límite de media carta
 
-        // Motivo de consulta
-        /*if (datos.consulta.motivo) {
-            doc.fontSize(14).font('Helvetica-Bold').text('MOTIVO DE CONSULTA', { underline: true });
-            doc.fontSize(10).font('Helvetica');
-            doc.text(datos.consulta.motivo);
-            doc.moveDown(1);
-        }*/
+        // --- HELPER PARA DIBUJAR CELDAS ---
+        function dibujarCelda(x, y, w, h, titulo, valor, alinearValor = 'left', fondo = false, ajustey = 0) {
+            // Fondo y Borde
+            if (fondo) {
+                doc.rect(x, y, w, 12).fillAndStroke(colorFondoHeader, colorBorde);
+                doc.rect(x, y + 12, w, h - 12).stroke(colorBorde);
+            } else {
+                doc.rect(x, y, w, h).stroke(colorBorde);
+            }
 
-        // Detalles de la nota
-        doc.fontSize(14).font('Helvetica-Bold').text(`DETALLE ${datos.modoDetallado ? '(DETALLADO)' : '(RESUMIDO)'}`, { underline: true });
-        doc.moveDown(0.5);
+            // Título
+            doc.fontSize(6).font('Helvetica-Bold').fillColor(colorTexto);
+            doc.text(titulo.toUpperCase(), x + 2, y + 3, { width: w - 4, align: 'center' });
 
-        // Tabla de items
-        const tableTop = doc.y;
-        let currentY = tableTop;
-
-        // Encabezados de tabla
-        doc.fontSize(9).font('Helvetica-Bold');
-        doc.text('Descripción', 50, currentY);
-        if (datos.modoDetallado) {
-            doc.text('Cantidad', 300, currentY, { width: 60, align: 'center' });
-            doc.text('P. Unit.', 370, currentY, { width: 70, align: 'right' });
+            // Valor
+            if (valor) {
+                doc.fontSize(9).font('Helvetica').fillColor(colorTexto); // Letra un poco más grande
+                const textY = (fondo ? y + 16 : y + 12) + ajustey;
+                doc.text(valor, x + 4, textY, { width: w - 8, align: alinearValor });
+            }
         }
-        doc.text('Importe', 450, currentY, { width: 80, align: 'right' });
 
-        currentY += 20;
-        doc.fontSize(9).font('Helvetica');
+        let currentY = margin;
 
-        let totalGeneral = 0;
+        // 1. ENCABEZADO Y FOLIO
+        // Logo en el lado izquierdo
+        const logoPath = path.join(__dirname, '..', 'public', 'logo_umeh.png');
+        try {
+            doc.image(logoPath, 35, 20, { width: 100, height: 35 });
+        } catch (error) {
+            console.log('No se pudo cargar el logo:', error.message);
+        }
+
+        doc.fontSize(12).font('Helvetica-Bold').fillColor('#000').text('NOTA DE REMISIÓN', margin, currentY, { align: 'center', width: contentW });
+        doc.fontSize(8).font('Helvetica').text('UNIDAD MÉDICA DE LA HUASTECA', margin, currentY + 16, { align: 'center', width: contentW });
+
+        // Lado Derecho: Folio (Color Rojo)
+        doc.fontSize(14).font('Helvetica-Bold').fillColor(colorFolio);
+        doc.text(`No. ${datos.consulta.id_consulta}`, pageW - margin - 100, currentY + 5, { align: 'right', width: 100 });
+
+        currentY += 40;
+
+        // 2. FILA: PACIENTE Y FECHA (DÍA | MES | AÑO)
+        const rowH = 35;
+
+        // Cálculo de anchos para la fecha
+        const wDateBox = 35; // Ancho de cada cajita de fecha
+        const totalWDate = wDateBox * 3;
+        const wPaciente = contentW - totalWDate; // El resto para el nombre
+
+        // Datos de fecha
+        const fechaObj = new Date(datos.consulta.fecha);
+        const dia = fechaObj.getDate().toString().padStart(2, '0');
+        const mes = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+        const anio = fechaObj.getFullYear().toString().slice(-2); // Solo últimos 2 dígitos (ej. 25)
+
+        // Dibujar Paciente
+        const nombrePaciente = `${datos.paciente.paciente_nombre} ${datos.paciente.paciente_apellidos}`;
+        dibujarCelda(margin, currentY, wPaciente, rowH, 'PACIENTE', nombrePaciente, 'center', true, 5);
+
+        // Dibujar Fecha (3 cajitas pegadas)
+        const xDate = margin + wPaciente;
+        dibujarCelda(xDate, currentY, wDateBox, rowH, 'DÍA', dia, 'center', true, 5);
+        dibujarCelda(xDate + wDateBox, currentY, wDateBox, rowH, 'MES', mes, 'center', true, 5);
+        dibujarCelda(xDate + (wDateBox * 2), currentY, wDateBox, rowH, 'AÑO', anio, 'center', true, 5);
+
+        currentY += rowH + 5;
+
+        // 3. TABLA DE CONCEPTOS
+        const tableY = currentY;
+        const tableH = 180;
+
+        // --- Definición de columnas ---
+        let colCatW = 0, colCantW = 0, colDescW = 0, colUnitW = 0, colImpW = 0;
+        let colCatX = 0, colCantX = 0, colDescX = 0, colUnitX = 0, colImpX = 0;
+
+        // Configuración de anchos según modo
+        if (datos.modoDetallado) {
+            colCatW = 90;  // Categoría nombre completo
+            colCantW = 40;
+            colUnitW = 50;
+            colImpW = 60;
+            colDescW = contentW - colCatW - colCantW - colUnitW - colImpW;
+        } else {
+            // Modo resumido
+            colCatW = 0;
+            colCantW = 0;
+            colUnitW = 0;
+            colImpW = 80;
+            colDescW = contentW - colImpW;
+        }
+
+        // Posiciones X
+        colCatX = margin;
+        colCantX = colCatX + colCatW;
+        colDescX = colCantX + colCantW;
+        colUnitX = colDescX + colDescW;
+        colImpX = colUnitX + colUnitW;
+
+        // --- Encabezados ---
+        const headerH = 15;
+        doc.fontSize(7).font('Helvetica-Bold').fillColor(colorTexto);
+
+        // Función helper para encabezado
+        const drawHeader = (x, w, text) => {
+            doc.rect(x, tableY, w, headerH).fillAndStroke('#b2ebf2', colorBorde);
+            doc.fillColor(colorTexto).text(text, x, tableY + 5, { width: w, align: 'center' });
+        };
+
+        if (datos.modoDetallado) {
+            drawHeader(colCatX, colCatW, 'CATEGORÍA');
+            drawHeader(colCantX, colCantW, 'CANT.');
+            drawHeader(colUnitX, colUnitW, 'P.UNIT');
+            drawHeader(colDescX, colDescW, 'CONCEPTO / DESCRIPCIÓN');
+        } else {
+            drawHeader(colDescX, colDescW, 'CONCEPTO / DESCRIPCIÓN');
+        }
+
+        drawHeader(colImpX, colImpW, 'IMPORTE');
+
+        // --- Cuerpo (Rectángulos vacíos) ---
+        const bodyY = tableY + headerH;
+
+        if (datos.modoDetallado) {
+            doc.rect(colCatX, bodyY, colCatW, tableH).stroke();
+            doc.rect(colCantX, bodyY, colCantW, tableH).stroke();
+            doc.rect(colUnitX, bodyY, colUnitW, tableH).stroke();
+            doc.rect(colDescX, bodyY, colDescW, tableH).stroke();
+        } else {
+            doc.rect(colDescX, bodyY, colDescW, tableH).stroke();
+        }
+        doc.rect(colImpX, bodyY, colImpW, tableH).stroke();
+
+        // --- Rellenado de Ítems ---
+        let itemY = bodyY + 8;
+        doc.fontSize(8).font('Helvetica');
+
+        // Helper para obtener la agenda del médico
+        const agendaMedico = datos.consulta.nombre_agenda || 'General';
 
         datos.items.forEach(item => {
-            if (currentY > 650) {
-                doc.addPage();
-                currentY = 50;
-            }
+            if (itemY > (bodyY + tableH - 10)) return;
 
             if (datos.modoDetallado) {
-                doc.text(item.nombre || item.concepto, 50, currentY, { width: 240 });
-                if (item.cantidad && item.unidad) {
-                    doc.text(`${item.cantidad} ${item.unidad}`, 300, currentY, { width: 60, align: 'center' });
-                } else {
-                    doc.text('-', 300, currentY, { width: 60, align: 'center' });
+                // Categoría (nombre completo)
+                const categoriaNombre = getCategoriaNombre(item.tipo);
+                doc.fontSize(8).text(categoriaNombre, colCatX + 5, itemY, { width: colCatW - 4, align: 'left' });
+                doc.fontSize(8);
+                // Cantidad
+                doc.text(item.cantidad || '-', colCantX, itemY, { width: colCantW, align: 'center' });
+                // P. Unit
+                doc.text(`$${(item.costo_unitario || item.costo || 0).toFixed(2)}`, colUnitX, itemY, { width: colUnitW - 2, align: 'center' });
+                // Descripción
+                let nombre = item.nombre || item.concepto || 'Servicio';
+                // Agregar leyenda de médico si es costo de consulta
+                if (item.tipo === 'consulta') {
+                    nombre = `${nombre} (Atendido por: Médico ${agendaMedico})`;
                 }
-                doc.text(`$${(item.costo_unitario || item.costo || 0).toFixed(2)}`, 370, currentY, { width: 70, align: 'right' });
-                const subtotal = item.subtotal || item.costo || 0;
-                doc.text(`$${subtotal.toFixed(2)}`, 450, currentY, { width: 80, align: 'right' });
-                totalGeneral += subtotal;
+                doc.text(nombre, colDescX + 4, itemY, { width: colDescW - 8 });
             } else {
-                doc.text(item.nombre, 50, currentY, { width: 400 });
-                const subtotal = item.subtotal || 0;
-                doc.text(`$${subtotal.toFixed(2)}`, 450, currentY, { width: 80, align: 'right' });
-                totalGeneral += subtotal;
+                // Modo resumido
+                // Descripción
+                let nombre = item.nombre || item.concepto || 'Servicio';
+                // Agregar leyenda de médico si es costo de consulta
+                if (nombre === 'Costo de consulta') {
+                    nombre = `${nombre} (Atendido por: Médico ${agendaMedico})`;
+                }
+                doc.text(nombre, colDescX + 4, itemY, { width: colDescW - 8 });
             }
 
-            currentY += 15;
+            // Importe
+            doc.text(`$${(item.subtotal || item.costo || 0).toFixed(2)}`, colImpX, itemY, { width: colImpW - 4, align: 'center' });
+
+            itemY += 15;
         });
 
-        // Línea separadora
-        doc.moveTo(50, currentY).lineTo(530, currentY).stroke();
-        currentY += 10;
+        // 4. PIE DE PÁGINA Y TOTALES
+        const footerTableY = bodyY + tableH;
 
         // Total
-        doc.fontSize(11).font('Helvetica-Bold');
-        doc.text('TOTAL:', 350, currentY, { width: 100, align: 'right' });
-        doc.text(`$${totalGeneral.toFixed(2)}`, 450, currentY, { width: 80, align: 'right' });
+        doc.rect(colImpX, footerTableY, colImpW, 20).stroke();
+        doc.fontSize(10).font('Helvetica-Bold');
+        doc.text('TOTAL:', colImpX - 60, footerTableY + 6, { align: 'right', width: 55 });
+        doc.text(`$${datos.total.toFixed(2)}`, colImpX, footerTableY + 6, { width: colImpW - 5, align: 'right' });
 
-        // Pie de página
-        doc.fontSize(8).font('Helvetica');
-        doc.text('Gracias por su preferencia', 50, 750, { align: 'center', width: 480 });
-        doc.text('Esta nota no es válida como factura fiscal', 50, 765, { align: 'center', width: 480 });
+        // --- DIRECCIÓN Y TELÉFONOS (Estilo Pie de Recibo) ---
+        const addressY = footerTableY + 30;
+        doc.fontSize(7).font('Helvetica').fillColor('#444');
+
+        // Dirección
+        doc.text('Calle Manuel J. Othón No. 723, Col. Altavista, C.P. 79050, Cd. Valles, S.L.P.', margin, addressY, { align: 'center', width: contentW });
+
+        // Teléfonos
+        doc.font('Helvetica-Bold');
+        doc.text('Tel. 481 382 4043  /  481 380 9184', margin, addressY + 10, { align: 'center', width: contentW });
+
+        // Disclaimer pequeño
+        doc.fontSize(6).font('Helvetica-Oblique').fillColor('#666');
+        doc.text('ESTA NOTA NO ES VÁLIDA COMO FACTURA FISCAL', margin, addressY + 22, { align: 'center', width: contentW });
+
+        // Línea de Corte
+        doc.moveTo(0, halfHeight).lineTo(pageW, halfHeight).dash(5, { space: 5 }).strokeColor('#999').stroke();
+        doc.fontSize(6).text('', 0, halfHeight - 8, { align: 'center', width: pageW });
 
         doc.end();
     });
@@ -256,7 +392,8 @@ router.get('/:id/nota-remision', async (req, res) => {
                 if (!agrupados[categoria]) {
                     agrupados[categoria] = {
                         nombre: categoria,
-                        subtotal: 0
+                        subtotal: 0,
+                        tipo: insumo.tipo // Preservar el tipo para ordenamiento
                     };
                 }
                 agrupados[categoria].subtotal += parseFloat(insumo.subtotal) || 0;
@@ -266,7 +403,8 @@ router.get('/:id/nota-remision', async (req, res) => {
             if (consulta.costo_consulta) {
                 agrupados['Consulta'] = {
                     nombre: 'Costo de consulta',
-                    subtotal: parseFloat(consulta.costo_consulta)
+                    subtotal: parseFloat(consulta.costo_consulta),
+                    tipo: 'consulta'
                 };
             }
 
@@ -275,12 +413,18 @@ router.get('/:id/nota-remision', async (req, res) => {
                 const totalExtras = extras.reduce((sum, extra) => sum + (parseFloat(extra.costo) || 0), 0);
                 agrupados['Servicios Adicionales'] = {
                     nombre: 'Servicios y procedimientos adicionales',
-                    subtotal: totalExtras
+                    subtotal: totalExtras,
+                    tipo: 'extra'
                 };
             }
 
             itemsNota = Object.values(agrupados);
         }
+
+        // Ordenar items según la prioridad definida
+        itemsNota.sort((a, b) => {
+            return getOrdenPrioridad(a.tipo) - getOrdenPrioridad(b.tipo);
+        });
 
         // Calcular total general
         const totalGeneral = itemsNota.reduce((sum, item) => sum + (item.subtotal || item.costo || 0), 0);
@@ -323,33 +467,33 @@ router.patch('/:id/modo-nota', async (req, res) => {
 });
 
 router.get('/historial', async (req, res) => {
-  const { nombre, apellidos, fecha } = req.query;
+    const { nombre, apellidos, fecha } = req.query;
 
-  if (!nombre || !fecha) {
-    return res.status(400).json({ mensaje: "El nombre y la fecha son obligatorios" });
-  }
-
-  try {
-    let apellidosArray = [];
-    if (apellidos && apellidos.trim() !== '') {
-      apellidosArray = apellidos
-        .trim()
-        .split(/\s+/)
-        .map(a => a.toLowerCase());
+    if (!nombre || !fecha) {
+        return res.status(400).json({ mensaje: "El nombre y la fecha son obligatorios" });
     }
 
-    let apellidoConditions = "";
-    let apellidoParams = [];
+    try {
+        let apellidosArray = [];
+        if (apellidos && apellidos.trim() !== '') {
+            apellidosArray = apellidos
+                .trim()
+                .split(/\s+/)
+                .map(a => a.toLowerCase());
+        }
 
-    if (apellidosArray.length > 0) {
-      apellidoConditions = apellidosArray
-        .map((a, index) => `LOWER(p.apellidos) LIKE $${3 + index}`)
-        .join(" AND ");
+        let apellidoConditions = "";
+        let apellidoParams = [];
 
-      apellidoParams = apellidosArray.map(a => `%${a}%`);
-    }
+        if (apellidosArray.length > 0) {
+            apellidoConditions = apellidosArray
+                .map((a, index) => `LOWER(p.apellidos) LIKE $${3 + index}`)
+                .join(" AND ");
 
-    const sql = `
+            apellidoParams = apellidosArray.map(a => `%${a}%`);
+        }
+
+        const sql = `
       SELECT
         c.id_consulta,
         c.fecha,
@@ -367,29 +511,30 @@ router.get('/historial', async (req, res) => {
       ORDER BY c.fecha ASC
     `;
 
-    const params = [
-      `%${nombre}%`,
-      fecha,
-      ...apellidoParams
-    ];
+        const params = [
+            `%${nombre}%`,
+            fecha,
+            ...apellidoParams
+        ];
 
-    const { rows } = await pool.query(sql, params);
+        const { rows } = await pool.query(sql, params);
 
-    res.json(rows);
+        res.json(rows);
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ mensaje: 'Error consultando historial avanzado' });
-  }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ mensaje: 'Error consultando historial avanzado' });
+    }
 });
 
 
 function getCategoriaNombre(tipo) {
     const categorias = {
         'medicamento': 'Medicamentos',
-        'material': 'Material de curación',
+        'material': 'Material Triage',
         'mat_general': 'Material general',
-        'procedimiento': 'Procedimientos médicos',
+        'procedimiento': 'Procedimientos',
+        'consulta': 'Consulta',
         'extra': 'Servicios adicionales'
     };
     return categorias[tipo] || 'Otros servicios';
