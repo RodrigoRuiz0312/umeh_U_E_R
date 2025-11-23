@@ -467,10 +467,10 @@ router.patch('/:id/modo-nota', async (req, res) => {
 });
 
 router.get('/historial', async (req, res) => {
-    const { nombre, apellidos, fecha } = req.query;
+    const { nombre, apellidos, fecha_inicio, fecha_fin } = req.query;
 
-    if (!nombre || !fecha) {
-        return res.status(400).json({ mensaje: "El nombre y la fecha son obligatorios" });
+    if (!nombre) {
+        return res.status(400).json({ mensaje: "El nombre es obligatorio" });
     }
 
     try {
@@ -484,13 +484,33 @@ router.get('/historial', async (req, res) => {
 
         let apellidoConditions = "";
         let apellidoParams = [];
+        let paramIndex = 2; // Empezamos en 2 porque $1 es el nombre
 
         if (apellidosArray.length > 0) {
             apellidoConditions = apellidosArray
-                .map((a, index) => `LOWER(p.apellidos) LIKE $${3 + index}`)
+                .map((a, index) => `LOWER(p.apellidos) LIKE $${paramIndex + index}`)
                 .join(" AND ");
 
             apellidoParams = apellidosArray.map(a => `%${a}%`);
+            paramIndex += apellidosArray.length;
+        }
+
+        // Construir condiciones de fecha
+        let fechaCondition = "";
+        let fechaParams = [];
+
+        if (fecha_inicio && fecha_fin) {
+            // Rango de fechas
+            fechaCondition = `AND c.fecha::date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            fechaParams = [fecha_inicio, fecha_fin];
+        } else if (fecha_inicio) {
+            // Solo fecha de inicio (desde esa fecha en adelante)
+            fechaCondition = `AND c.fecha::date >= $${paramIndex}`;
+            fechaParams = [fecha_inicio];
+        } else if (fecha_fin) {
+            // Solo fecha fin (hasta esa fecha)
+            fechaCondition = `AND c.fecha::date <= $${paramIndex}`;
+            fechaParams = [fecha_fin];
         }
 
         const sql = `
@@ -506,27 +526,27 @@ router.get('/historial', async (req, res) => {
       JOIN paciente p ON p.id_paciente = c.id_paciente
       JOIN medico m ON m.id_medico = c.id_medico
       WHERE LOWER(p.nombre) LIKE LOWER($1)
-        AND c.fecha::date = $2
+        AND LOWER(TRIM(c.estatus)) = 'completada'
+        ${fechaCondition}
         ${apellidoConditions ? `AND ${apellidoConditions}` : ""}
-      ORDER BY c.fecha ASC
+      ORDER BY c.fecha DESC
     `;
 
-        const params = [
-            `%${nombre}%`,
-            fecha,
-            ...apellidoParams
-        ];
+    const params = [
+        `%${nombre}%`,
+        ...apellidoParams,
+        ...fechaParams
+    ];
 
-        const { rows } = await pool.query(sql, params);
+    const { rows } = await pool.query(sql, params);
 
-        res.json(rows);
+    res.json(rows);
 
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ mensaje: 'Error consultando historial avanzado' });
-    }
+} catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: 'Error consultando historial avanzado' });
+}
 });
-
 
 function getCategoriaNombre(tipo) {
     const categorias = {

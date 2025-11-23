@@ -155,13 +155,22 @@ export class ConsultaService {
   }
 
   getHistorialConsultas(filtro: any) {
+    let params: any = {
+      nombre: filtro.nombre,
+      apellidos: filtro.apellidos || ''
+    };
+
+    // Solo agregar fechas si tienen valor
+    if (filtro.fecha_inicio) {
+      params.fecha_inicio = filtro.fecha_inicio;
+    }
+    if (filtro.fecha_fin) {
+      params.fecha_fin = filtro.fecha_fin;
+    }
+
     return this.http.get<any[]>(
       `${this.apiUrl}/notas/historial`, {
-      params: {
-        nombre: filtro.nombre,
-        apellidos: filtro.apellidos,
-        fecha: filtro.fecha
-      }
+      params: params
     }
     );
   }

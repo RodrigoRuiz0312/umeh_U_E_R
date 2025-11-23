@@ -1,73 +1,96 @@
-<!-- Modal Buscar Nota -->
+<!-- Modal de Historial de Notas -->
 <div class="modal-backdrop" *ngIf="mostrarModalNotas">
-  <div class="modal-container">
+  <div class="modal-container historial-modal-container">
 
-    <h3>Buscar Nota de Remisión Histórica</h3>
-
-    <!-- Fila con 3 inputs -->
-    <div class="form-row-1">
-      <div class="form-group flex-1">
-        <label>Nombre *</label>
-        <input type="text" [(ngModel)]="filtro.nombre">
+    <div class="historial-modal-header">
+      <div>
+        <h3>Historial de Notas</h3>
+        <p class="historial-modal-subtitle">Búsqueda y reimpresión de documentos</p>
       </div>
-
-      <div class="form-group flex-1">
-        <label>Apellidos</label>
-        <input type="text" [(ngModel)]="filtro.apellidos">
-      </div>
-
-      <div class="form-group flex-1">
-        <label>Fecha *</label>
-        <input type="date" [(ngModel)]="filtro.fecha">
-      </div>
+      <button class="historial-modal-btn-close" (click)="cerrarModal()" title="Cerrar">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
 
-    <button class="btn btn-primary w-100 mt-2" (click)="buscarNotas()">
-      Buscar
-    </button>
+    <div class="historial-modal-body">
 
-    <hr>
-
-    <!-- Contenedor con scroll -->
-    <div class="result-scroll">
-
-      <div *ngIf="resultados.length === 0 && intentado" class="text-muted">
-        No se encontraron consultas en esa fecha.
+      <div class="historial-search-box">
+        <div class="historial-form-grid">
+          <div class="historial-form-group">
+            <label>Nombre <span class="requerido">*</span></label>
+            <input type="text" [(ngModel)]="filtro.nombre" placeholder="Ej. Rodrigo">
+          </div>
+          <div class="historial-form-group">
+            <label>Apellidos</label>
+            <input type="text" [(ngModel)]="filtro.apellidos" placeholder="Ej. Ruiz">
+          </div>
+          <div class="historial-form-group">
+            <label>Fecha Inicio</label>
+            <input type="date" [(ngModel)]="filtro.fecha_inicio">
+          </div>
+          <div class="historial-form-group">
+            <label>Fecha Fin</label>
+            <input type="date" [(ngModel)]="filtro.fecha_fin">
+          </div>
+          <div class="historial-form-group historial-button-container">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary w-100" (click)="buscarNotas()">
+              <i class="bi bi-search"></i> Buscar
+            </button>
+          </div>
+        </div>
       </div>
 
-      <table class="table" *ngIf="resultados.length > 0">
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Médico</th>
-            <th>Total</th>
-            <th>Nota</th>
-          </tr>
-        </thead>
+      <div class="historial-results-container">
 
-        <tbody>
-          <tr *ngFor="let r of resultados">
-            <td>{{ r.fecha | date:'HH:mm' }}</td>
-            <td>{{ r.medico_nombre }} {{ r.medico_apellidos }}</td>
-            <td>{{ r.total | currency:'MXN' }}</td>
-            <td>
-              <button class="btn btn-sm btn-light border" (click)="imprimirNotaHistorica(r.id_consulta, false)">
-                Resumida
-              </button>
+        <div *ngIf="resultados.length === 0 && intentado" class="historial-empty-state">
+          <i class="bi bi-inbox"></i>
+          <p>No se encontraron consultas con estos criterios.</p>
+        </div>
 
-              <button class="btn btn-sm btn-info text-white" (click)="imprimirNotaHistorica(r.id_consulta, true)">
-                Detallada
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+        <div class="historial-table-wrapper" *ngIf="resultados.length > 0">
+          <table class="historial-table">
+            <thead>
+              <tr>
+                <th width="15%">Hora</th>
+                <th width="40%">Médico</th>
+                <th width="20%" class="text-end">Total</th>
+                <th width="25%" class="text-center">Nota</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of resultados">
+                <td class="fw-bold text-muted">{{ r.fecha | date:'HH:mm' }}</td>
+                <td>
+                  <span class="historial-medico-name">{{ r.medico_nombre }} {{ r.medico_apellidos }}</span>
+                </td>
+                <td class="text-end historial-total">{{ r.total | currency:'MXN' }}</td>
+                <td class="text-center">
+                  <div class="historial-btn-group">
+                    <button class="btn btn-outline-secondary btn-sm"
+                      (click)="imprimirNotaHistorica(r.id_consulta, false)" title="Nota Resumida">
+                      Resumida
+                    </button>
+                    <button class="btn btn-primary btn-sm" (click)="imprimirNotaHistorica(r.id_consulta, true)"
+                      title="Nota Detallada">
+                      Detallada
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
     </div>
 
-    <button class="btn btn-secondary w-100 mt-3" (click)="cerrarModal()">
-      Cerrar
-    </button>
+    <div class="historial-modal-footer">
+      <span class="text-muted small" *ngIf="resultados.length > 0">
+        {{ resultados.length }} registros encontrados
+      </span>
+      <button class="btn btn-light border" (click)="cerrarModal()">Cerrar</button>
+    </div>
 
   </div>
 </div>
@@ -522,12 +545,10 @@
                     <td class="fw-bold">{{ formatearMoneda(item.subtotal) }}</td>
                     <td>{{ item.observaciones || '-' }}</td>
                     <td>
-                      <button *ngIf="!item.esExtra && item.id" class="btn btn-sm"
-                        (click)="eliminarInsumo(+item.id!)">
+                      <button *ngIf="!item.esExtra && item.id" class="btn btn-sm" (click)="eliminarInsumo(+item.id!)">
                         <img src="assets/img/delet.png" class="btn-iconP">
                       </button>
-                      <button *ngIf="item.esExtra && item.id" class="btn btn-sm"
-                        (click)="eliminarExtra(item.id!)">
+                      <button *ngIf="item.esExtra && item.id" class="btn btn-sm" (click)="eliminarExtra(item.id!)">
                         <img src="assets/img/delet.png" class="btn-iconP">
                       </button>
                     </td>
@@ -640,7 +661,8 @@
           <h6>PACIENTE</h6>
           <p class="mb-1"><strong>Nombre:</strong> {{ pacienteSeleccionado?.nombre }} {{ pacienteSeleccionado?.apellidos
             }}</p>
-          <p class="mb-1"><strong>Teléfono:</strong> {{ formatearTelefonosOCorreos(pacienteSeleccionado?.telefonos) || 'N/A' }}</p>
+          <p class="mb-1"><strong>Teléfono:</strong> {{ formatearTelefonosOCorreos(pacienteSeleccionado?.telefonos) ||
+            'N/A' }}</p>
         </div>
 
         <div class="seccion mb-3">
@@ -648,7 +670,7 @@
           <div *ngIf="listaCostosCombinada.length === 0" class="text-muted">
             No hay insumos registrados
           </div>
-          
+
           <!-- Vista Resumida (por categorías) -->
           <div *ngIf="listaCostosCombinada.length > 0 && !modoDetallado">
             <div *ngFor="let grupo of getInsumosAgrupados()" class="mb-2">
@@ -659,7 +681,7 @@
             <hr>
             <div><strong>TOTAL:</strong> {{ totalConsulta | currency:'MXN':'symbol':'1.2-2' }}</div>
           </div>
-          
+
           <!-- Vista Detallada (ítem por ítem) -->
           <div *ngIf="listaCostosCombinada.length > 0 && modoDetallado">
             <table class="table table-sm">
