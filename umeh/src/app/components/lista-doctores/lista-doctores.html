@@ -49,7 +49,7 @@
             <button class="action-btnP" (click)="openEditModal(medico)">
               <img src="assets/img/edit.png" class="btn-iconP">
             </button>
-            <button class="action-btnP" (click)="borrarMedico(medico.id_medico)">
+            <button class="action-btnP" (click)="confirmarEliminacion(medico.id_medico, medico.nombre)">
               <img src="assets/img/delet.png" class="btn-iconP">
             </button>
           </td>
@@ -59,9 +59,31 @@
   </div>
 </div>
 
-<app-edit-doctor-modal
-  *ngIf="isModalVisible"
-  [doctor]="medicoSeleccionado"
-  (doctorActualizado)="recargarMedicos()"
+<div class="modal-overlay" *ngIf="modalEliminarVisible" (click)="cancelarEliminacion()">
+  <div class="modal-content danger-modal" (click)="$event.stopPropagation()">
+
+    <div class="danger-icon-circle">
+      <i class="fa-regular fa-trash-can"></i>
+
+    </div>
+
+    <h2 class="danger-title">¿Eliminar Médico?</h2>
+
+    <p class="danger-message">
+      Estás a punto de eliminar a <strong>{{ medicoAEliminar?.nombre }}</strong> de forma permanente.
+      <br>Esta acción <b>no se puede deshacer</b>.
+    </p>
+
+    <div class="modal-actions centered">
+      <button class="btn-cancel" (click)="cancelarEliminacion()">Cancelar</button>
+      <button class="btn-delete-confirm" (click)="ejecutarEliminacion()">Sí, eliminar</button>
+    </div>
+
+  </div>
+</div>
+
+<p-toast></p-toast>
+
+<app-edit-doctor-modal *ngIf="isModalVisible" [doctor]="medicoSeleccionado" (doctorActualizado)="recargarMedicos()"
   (close)="closeModal()">
 </app-edit-doctor-modal>
