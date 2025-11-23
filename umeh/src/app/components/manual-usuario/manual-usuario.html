@@ -86,11 +86,13 @@
           </li>
           <li>
             <strong>Guardar el registro</strong>
-            Una vez que haya verificado que toda la información es correcta, haga clic en el botón "Guardar datos" en la esquina superior derecha.
+            Una vez que haya verificado que toda la información es correcta, haga clic en el botón "Guardar datos" en la
+            esquina superior derecha.
           </li>
-          
+
         </ol>
-        <p><strong>Nota:</strong> Los campos marcados con un asterisco (<span class="requerido">*</span>) son obligatorios.</p>
+        <p><strong>Nota:</strong> Los campos marcados con un asterisco (<span class="requerido">*</span>) son
+          obligatorios.</p>
         <img src="assets/manual/registroPaciente.png" alt="Formulario de registro de paciente" class="img-manual" />
 
         <h4>5. Otras acciones del formulario</h4>
@@ -119,6 +121,204 @@
         <p>Si el registro es exitoso (después de hacer clic en "Guardar datos"), el sistema le
           mostrará un mensaje de confirmación.</p>
       </mat-expansion-panel>
+
+      <!--4.- pantalla de visualizacion de doctores registrados-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>4. Gestión de Pacientes Registrados</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>El módulo de <strong>Pacientes Registrados</strong> permite visualizar, buscar y administrar la base de datos
+          completa de los pacientes dados de alta en el sistema UMEH. Desde aquí podrá realizar búsquedas específicas,
+          ordenar la información y ejecutar acciones de edición o eliminación.</p>
+
+        <img src="assets/manual/registro-paciente.png" alt="Vista general de pacientes registrados"
+          class="img-manual" />
+
+        <h4>Funcionalidades de la Pantalla:</h4>
+
+        <ul>
+          <li>
+            <strong>Barra de Búsqueda:</strong>
+            Ubicada en la parte superior, permite localizar rápidamente a un paciente ingresando su nombre. La tabla se
+            filtrará automáticamente conforme escriba.
+          </li>
+          <li>
+            <strong>Filtros de Ordenamiento:</strong>
+            A la derecha de la búsqueda, encontrará un menú desplegable que le permite organizar la lista de pacientes
+            según diferentes criterios:
+            <ul>
+              <li>Por Nombre o Apellidos (A-Z o Z-A).</li>
+              <li>Por número telefónico.</li>
+              <li>Por correo electrónico.</li>
+              <li>Por sexo.</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h4>Tabla de Resultados y Acciones</h4>
+        <p>La tabla central muestra la información detallada de cada paciente (Nombre, Contacto, Domicilio). En la
+          última
+          columna, llamada <strong>"Acciones"</strong>, encontrará dos botones fundamentales:</p>
+
+        <ol>
+          <li>
+            <strong>Editar (Icono de Lápiz <img src="assets/img/edit.png"
+                style="width: 15px; vertical-align: middle;">):</strong>
+            <p>Al hacer clic en este botón, se abrirá una ventana modal con la información actual del paciente,
+              permitiéndole modificar datos erróneos o actualizarlos. Al finalizar, los cambios se reflejarán
+              inmediatamente en la tabla.</p>
+          </li>
+          <li>
+            <strong>Eliminar (Icono de Papelera <img src="assets/img/delet.png"
+                style="width: 15px; vertical-align: middle;">):</strong>
+            <p>Este botón inicia el proceso para dar de baja a un paciente del sistema. Por seguridad, se requiere una
+              confirmación adicional.</p>
+          </li>
+        </ol>
+
+        <h4>Confirmación de Eliminación</h4>
+        <p>El sistema cuenta con un mecanismo de seguridad para evitar borrados accidentales. Al intentar eliminar un
+          registro, aparecerá una ventana de advertencia (Modal de Peligro).</p>
+
+        <p>Esta ventana le pedirá confirmar la acción, advirtiendo que <strong>el proceso es irreversible</strong>. Solo
+          si está completamente seguro, debe presionar el botón "Sí, eliminar". De lo contrario, puede presionar
+          "Cancelar" para abortar la operación.</p>
+
+        <img src="assets/manual/registro-confirmacion.png" alt="Modal de confirmación de eliminación"
+          class="img-manual" />
+
+      </mat-expansion-panel>
+
+      <!--5.-Pantalla de agenda-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>5. Gestión de Citas y Agenda</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>El módulo <strong>Gestor de Citas</strong> es el corazón operativo del sistema. Desde aquí podrá consultar
+          disponibilidad, agendar nuevas citas y administrar las ya existentes.</p>
+
+        <h4>A. Búsqueda Rápida de Citas</h4>
+        <p>En la parte superior encontrará una barra de búsqueda inteligente. Si necesita verificar rápidamente cuándo
+          es la cita de un paciente:</p>
+        <ul>
+          <li>Escriba el nombre del paciente en el campo de texto.</li>
+          <li>El sistema mostrará las coincidencias encontradas con fecha, hora, médico y consultorio.</li>
+        </ul>
+        <img src="assets/manual/agenda-buscador.png" alt="Buscador de citas" class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>B. Selección de Agenda y Médico</h4>
+        <p>Para visualizar los horarios, seleccione primero el tipo de agenda (General, Neuropediatría, Cirujano). Si
+          elige "General", deberá seleccionar posteriormente al médico específico del listado.</p>
+        <img src="assets/manual/agenda-agendas.png" alt="Selección de tipo de agenda" class="img-manual" />
+
+        <h4>C. Tablero de Horarios</h4>
+        <p>El día se divide en bloques de tiempo (Mañana y Tarde). Los óvalos representan las horas de consulta:</p>
+        <ul>
+          <li><span style="color: #2c6cd4; font-weight: bold;">Azul/Blanco (Hora Libre):</span> Disponible para agendar.
+          </li>
+          <li><span style="color: #666; font-weight: bold;">Gris/Rojo (Ocupado):</span> Ya tiene una cita asignada.</li>
+        </ul>
+        <img src="assets/manual/agenda-horarios.png" alt="Tablero de horarios" class="img-manual" />
+
+        <h4>Navegación por Fechas (Calendario)</h4>
+        <p>Dentro del tablero de horarios, encontrará el <strong>Selector de Fecha</strong> en la esquina
+          superior derecha. Esta herramienta es esencial para la navegación:</p>
+        <ul>
+          <li>Por defecto, el sistema muestra la fecha actual (hoy).</li>
+          <li>Haga clic en el campo de fecha para desplegar el calendario y moverse a días futuros</li>
+          <li>Al cambiar la fecha, el tablero de horarios se actualizará automáticamente.</li>
+        </ul>
+        <hr class="manual-divider">
+
+        <h4>D. Cómo Agendar una Nueva Cita</h4>
+        <p>Al hacer clic en un <strong>horario disponible (azul)</strong>, se abrirá la ventana emergente "Agendar Nueva
+          Cita".</p>
+
+        <p><strong>Pasos para agendar:</strong></p>
+        <ol>
+          <li><strong>Verificación:</strong> Confirme que el médico, la fecha y la hora mostrados en la parte superior
+            sean correctos.</li>
+          <li><strong>Buscar Paciente:</strong> Use los campos de texto para buscar al paciente por nombre o apellidos.
+            Seleccione al paciente correcto de la lista de resultados que aparecerá.</li>
+          <li><strong>Asignar Consultorio:</strong> Seleccione un consultorio disponible de la lista desplegable.</li>
+          <li><strong>Confirmar:</strong> Presione el botón azul "Confirmar Cita" para guardar.</li>
+        </ol>
+        <img src="assets/manual/agenda-agendar.png" alt="Modal para agendar nueva cita" class="img-manual" />
+
+        <h4>F. Consultar Detalles y Cancelar Citas</h4>
+        <p>Al hacer clic en un <strong>horario ocupado (gris)</strong>, se abrirá la ventana "Detalles de la Cita".</p>
+
+        <ul>
+          <li><strong>Información:</strong> Aqui podra ver claramente quién es el paciente, el médico asignado, la hora
+            y el
+            estado actual de la cita.</li>
+          <li><strong>Boton cancelar Cita:</strong> Si necesita anular la cita, presione el botón rojo "Cancelar cita".
+            El
+            sistema liberará ese horario inmediatamente, volviéndolo blanco (disponible) en el tablero.</li>
+        </ul>
+        <img src="assets/manual/agenda-detalles.png" alt="Modal de detalles y cancelación" class="img-manual" />
+
+      </mat-expansion-panel>
+
+      <!--6.- Registro doctores-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>6. Registrar Nuevo Médico</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este módulo permite dar de alta al personal médico en el sistema. Es fundamental completar este registro
+          correctamente para que el médico pueda aparecer en las agendas y se le puedan asignar citas.</p>
+
+        <h4>Pasos para el Registro:</h4>
+        <ol>
+          <li>
+            <strong>Datos Personales y Profesionales:</strong>
+            <p>Complete los campos del formulario. Tenga en cuenta que los campos marcados con un asterisco (<span
+                class="requerido">*</span>) son obligatorios para crear el perfil.</p>
+            <ul>
+              <li><strong>Nombre y Apellidos*:</strong> Identificación del médico.</li>
+              <li><strong>Cédula Profesional*:</strong> Número de registro oficial.</li>
+              <li><strong>Especialidad, Teléfono y Correo:</strong> Datos opcionales de contacto y perfil.</li>
+            </ul>
+          </li>
+
+          <li>
+            <strong>Asignación de Agenda (Obligatorio):</strong>
+            <p>En la parte inferior del formulario encontrará la sección <strong>"Asignar a Agenda"</strong>. Debe
+              seleccionar una de las tres opciones disponibles haciendo clic sobre la tarjeta correspondiente:</p>
+            <ul>
+              <li><strong>General</strong></li>
+              <li><strong>Cirujano</strong></li>
+              <li><strong>Neuropediatra</strong></li>
+            </ul>
+          </li>
+
+          <li>
+            <strong>Guardar:</strong>
+            <p>Una vez seleccionada la agenda y llenados los datos, presione el botón <strong>"Registrar
+                Doctor"</strong>.</p>
+          </li>
+        </ol>
+
+        <img src="assets/manual/doctor-registro.png" alt="Formulario de registro de doctor" class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>Validación de Datos (Manejo de Errores)</h4>
+        <p>El sistema protege la integridad de la información impidiendo registros incompletos. Si intenta guardar sin
+          haber llenado los campos obligatorios (Nombre, Apellidos, Cédula o Agenda), aparecerá una <strong>Alerta de
+            Faltan Datos</strong>.</p>
+
+        <p>Esta ventana emergente le indicará exactamente qué campos necesita corregir antes de continuar.</p>
+
+        <img src="assets/manual/doctor-alerta.png" alt="Alerta de campos faltantes" class="img-manual" />
+
+      </mat-expansion-panel>
+
     </mat-accordion>
   </div>
 </div>
