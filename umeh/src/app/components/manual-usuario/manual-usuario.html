@@ -122,7 +122,7 @@
           mostrará un mensaje de confirmación.</p>
       </mat-expansion-panel>
 
-      <!--4.- pantalla de visualizacion de doctores registrados-->
+      <!--4.- Gestion de pacientes registrados-->
       <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title>4. Gestión de Pacientes Registrados</mat-panel-title>
@@ -319,6 +319,511 @@
 
       </mat-expansion-panel>
 
+      <!--7.-Gestion de doctores registrados-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>7. Gestión de Médicos Registrados</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>En este apartado podrá consultar y administrar el directorio completo del personal médico de la clínica. Es
+          el punto central para mantener actualizada la información de los especialistas.</p>
+
+        <img src="assets/manual/vistaDoctores.png" alt="Vista de tabla de doctores" class="img-manual" />
+
+        <h4>Funcionalidades de Búsqueda y Ordenamiento</h4>
+        <ul>
+          <li>
+            <strong>Búsqueda Avanzada:</strong>
+            A diferencia del módulo de pacientes, esta barra de búsqueda es más potente. Le permite encontrar médicos
+            ingresando su <strong>nombre, número de cédula profesional o especialidad</strong>.
+          </li>
+          <li>
+            <strong>Filtros de Ordenamiento:</strong>
+            Puede organizar la lista de resultados mediante el menú desplegable, ordenando por:
+            <ul>
+              <li>Nombre o Apellidos (Alfabético).</li>
+              <li>Cédula Profesional.</li>
+              <li>Especialidad.</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h4>Edición de Información (Modal)</h4>
+        <p>Si un médico cambia su número de teléfono, correo o necesita corregir un dato personal, haga clic en el
+          <strong>botón de Editar (Lápiz <img src="assets/img/edit.png"
+              style="width: 15px; vertical-align: middle;">)</strong>.
+        </p>
+
+        <p>Se abrirá una ventana emergente organizada en dos secciones claras:</p>
+        <ul>
+          <li><strong>Información Personal:</strong> Nombre, Apellidos, Cédula Profesional y Especialidad.</li>
+          <li><strong>Contacto:</strong> Teléfono y Correo Electrónico.</li>
+        </ul>
+        <p>Modifique los datos necesarios y presione <strong>"Guardar Cambios"</strong> para actualizar la base de datos
+          al instante.</p>
+
+        <img src="assets/manual/doctor-edicion.png" alt="Modal de edición de doctor" class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>Baja de Personal (Eliminar)</h4>
+        <p>Para retirar a un médico del sistema, utilice el <strong>botón de Eliminar (Papelera <img
+              src="assets/img/delet.png" style="width: 15px; vertical-align: middle;">)</strong>.</p>
+
+        <p><strong>Advertencia de Seguridad:</strong><br>
+          Al igual que con los pacientes, aparecerá una ventana de confirmación en rojo. Tenga en cuenta que al eliminar
+          a un médico, <strong>esta acción es permanente y no se puede deshacer</strong>.</p>
+
+        <img src="assets/manual/doctor-confirmacion.png" alt="Confirmación de eliminación de doctor"
+          class="img-manual" />
+
+      </mat-expansion-panel>
+
+      <!--8.- Gestion de consultas-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>8. Gestión de Consultas y Caja (Nota de Remisión)</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este módulo es donde ocurre la atención activa del paciente. Aquí se registran los servicios, insumos y
+          medicamentos utilizados para generar automáticamente la cuenta final y la nota de remisión.</p>
+
+        <h4>A. Formas de Iniciar una Consulta</h4>
+        <p>Existen dos maneras de comenzar, dependiendo de si el paciente ya tenía una cita programada o si llegó
+          directamente a la clínica:</p>
+
+        <div style="border-left: 4px solid #007bff; padding-left: 15px; margin-bottom: 20px;">
+          <h5>Opción 1: Paciente con Cita Agendada (Recomendado)</h5>
+          <p>En el panel <strong>"Citas Agendadas para Hoy"</strong> aparecerán todos los pacientes que se registraron
+            desde la Agenda.</p>
+          <ul>
+            <li>Busque al paciente en la lista.</li>
+            <li>Haga clic en el botón verde <strong>"Iniciar Consulta"</strong>.</li>
+            <li><strong>Nota:</strong> Como la cita ya estaba programada, el sistema ya sabe qué médico lo atenderá, por
+              lo que <strong>NO</strong> necesitará seleccionarlo manualmente.</li>
+          </ul>
+        </div>
+
+        <div style="border-left: 4px solid #28a745; padding-left: 15px; margin-bottom: 20px;">
+          <h5>Opción 2: Paciente Sin Cita (Urgencia/Walk-in)</h5>
+          <p>Si el paciente llega sin aviso, utilice el buscador superior <strong>"Nueva Consulta - Búsqueda de
+              Paciente"</strong>.</p>
+          <ol>
+            <li>Escriba el nombre del paciente y presione Buscar.</li>
+            <li>Seleccione al paciente de la lista de resultados.</li>
+            <li><strong>Paso Adicional:</strong> El sistema le llevará a una pantalla donde <strong>debe seleccionar
+                obligatoriamente al Médico Asignado</strong> y escribir el motivo de consulta antes de continuar.</li>
+          </ol>
+        </div>
+
+        <img src="assets/manual/consulta-inicio.png" alt="Pantalla de inicio de consulta mostrando ambas opciones"
+          class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>B. Captura de Insumos y Procedimientos (Caja)</h4>
+        <p>Una vez creada la consulta, accederá a la pantalla de captura. Aquí irá agregando todo lo que se consuma
+          durante la atención.</p>
+
+        <ul>
+          <li>
+            <strong>Agregar Insumo:</strong>
+            Seleccione el tipo (Medicamento, Material, Procedimiento), búsquelo por nombre y defina la cantidad. Al
+            presionar "Agregar", se sumará a la cuenta del paciente.
+          </li>
+          <li>
+            <strong>Costos Adicionales:</strong>
+            Si necesita cobrar algo que no está en el inventario (ej. "Honorarios extra"), use la sección derecha para
+            escribir el concepto y el precio manualmente.
+          </li>
+          <li>
+            <strong>Tabla Resumen:</strong>
+            En la parte inferior verá el desglose de todos los cargos y el <strong>TOTAL</strong> actualizado en tiempo
+            real.
+          </li>
+        </ul>
+        <img src="assets/manual/consulta-captura.png" alt="Pantalla de captura de insumos y costos"
+          class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>C. Finalización y Nota de Remisión</h4>
+        <p>Cuando la atención termine, presione el botón <strong>"Finalizar y Generar Nota"</strong>. Esto descargará
+          del inventario los materiales usados y le permitirá imprimir el comprobante.</p>
+
+        <p><strong>Personalización de la Nota:</strong><br>
+          Antes de imprimir, puede elegir cómo se ve la información:</p>
+        <ul>
+          <li><strong>Modo Resumido:</strong> Agrupa los gastos por categorías (ej. "Total Medicamentos: $500"). Ideal
+            para entregar al cliente.</li>
+          <li><strong>Modo Detallado:</strong> Muestra cada jeringa, gasa o pastilla individualmente. Ideal para control
+            interno.</li>
+        </ul>
+        <img src="assets/manual/notaRemision.png" alt="Opciones de nota de remisión" class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>D. Consultas Activas y En Espera</h4>
+        <p>Si necesita salir de la pantalla de captura (por ejemplo, para atender a otro paciente rápido), la consulta
+          no se pierde. Aparecerá en la tabla <strong>"Consultas Activas"</strong> en la pantalla principal del módulo,
+          marcada como "En Atención" o "En Espera". Solo presione "Continuar" para retomarla.</p>
+
+        <h4>E. Historial de Notas</h4>
+        <p>Para reimprimir una nota antigua, use el botón <strong>"Generar Nota Histórica"</strong> en la parte
+          superior. Podrá buscar por nombre del paciente o fecha de la consulta.</p>
+
+      </mat-expansion-panel>
+
+      <!--9.-Registro de insumos-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>9. Gestión de Insumos > Registrar Nuevo Insumo</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este módulo permite alimentar el inventario de la clínica y definir el catálogo de servicios. Es el primer
+          paso para que los medicamentos y materiales aparezcan disponibles al momento de realizar una consulta.</p>
+
+        <h4>Paso 1: Selección del Tipo de Registro</h4>
+        <p>Lo primero que debe hacer es desplegar la lista <strong>"¿Qué desea registrar?"</strong>. Dependiendo de su
+          elección, el formulario cambiará dinámicamente:</p>
+
+        <ul>
+          <li><strong>Insumos Físicos:</strong> (Medicamento, Material de Triage o Material General).</li>
+          <li><strong>Servicios Clínicos:</strong> (Procedimiento).</li>
+        </ul>
+
+        <hr class="manual-divider">
+
+        <h4>Opción A: Registro de Insumos Físicos</h4>
+        <p>Si selecciona <em>Medicamento</em> o cualquier tipo de <em>Material</em>, deberá llenar los campos básicos de
+          inventario:</p>
+        <ul>
+          <li><strong>Nombre y Cantidad*:</strong> Datos obligatorios para el stock.</li>
+          <li><strong>Costo Unitario*:</strong> Precio por unidad (base para los cálculos de la consulta).</li>
+          <li><strong>Métodos de Aplicación (Solo Medicamentos):</strong> Si registra un fármaco, aparecerá una lista de
+            opciones (Oral, Intravenosa, etc.). Marque todas las casillas que apliquen.</li>
+        </ul>
+        <img src="assets/manual/insumo-registro.png" alt="Formulario para medicamentos y materiales"
+          class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>Opción B: Registro de Procedimientos (Paquetes)</h4>
+        <p>Si selecciona <strong>Procedimiento</strong>, el formulario cambiará por completo. Aquí no se registra un
+          stock, sino una "receta" de cómo se realiza un servicio (ej. "Sutura simple").</p>
+
+        <ol>
+          <li>
+            <strong>Descripción y Notas:</strong> Defina el nombre del servicio.
+          </li>
+          <li>
+            <strong>Responsables y Costos:</strong>
+            <p>Defina quién realiza el servicio y el costo asociado (honorarios o precio base). Puede agregar varios
+              responsables (ej. UMEH + MEDICO) pulsando el botón <strong>"+ Agregar Responsable"</strong>.</p>
+          </li>
+          <li>
+            <strong>Insumos Utilizados (Kit Automático):</strong>
+            <p>Aquí define qué materiales se gastan automáticamente al realizar este procedimiento (ej. 1 par de guantes
+              + 1 gasa). </p>
+            <ul>
+              <li>Busque el insumo en la lista desplegable.</li>
+              <li>Indique la cantidad a descontar.</li>
+              <li>Presione <strong>"+ Agregar Insumo"</strong>.</li>
+            </ul>
+          </li>
+        </ol>
+        <p><em>Esto automatiza el inventario: cada vez que cobre este procedimiento en una consulta, el sistema
+            descontará automáticamente estos materiales del stock.</em></p>
+
+        <img src="assets/manual/insumo-procedimiento.png" alt="Formulario complejo de procedimientos"
+          class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>Validación de Errores</h4>
+        <p>Si intenta guardar sin completar los campos obligatorios (como el Nombre, Costo o la selección de
+          Responsables en procedimientos), el sistema mostrará la alerta de <strong>"Faltan Datos"</strong> indicando
+          qué debe corregir.</p>
+        <img src="assets/manual/insumo-alerta.png" alt="Modal de error por datos faltantes" class="img-manual" />
+
+      </mat-expansion-panel>
+
+      <!--10.- insumo Medicamento-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>10. Gestión de Insumos > Medicamentos</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este módulo permite visualizar y administrar el inventario exclusivo de fármacos. Aquí podrá monitorear las
+          existencias (stock), actualizar precios y corregir detalles de los productos.</p>
+
+        <img src="assets/manual/medicamento-tabla.png" alt="Tabla de inventario de medicamentos" class="img-manual" />
+
+        <h4>Búsqueda y Ordenamiento</h4>
+        <p>Para localizar un medicamento rápidamente entre cientos de opciones, utilice las herramientas de la parte
+          superior:</p>
+        <ul>
+          <li><strong>Buscador Inteligente:</strong> Escriba el nombre (ej. "Paracetamol") o la cantidad exacta que
+            busca.</li>
+          <li><strong>Filtros de Orden:</strong> Organice la lista por:
+            <ul>
+              <li><strong>Cantidad (Stock):</strong> Ideal para ver qué medicamentos se están agotando (Menor a Mayor).
+              </li>
+              <li><strong>Costo:</strong> Para identificar los productos más caros o económicos.</li>
+              <li><strong>Nombre:</strong> Orden alfabético estándar.</li>
+            </ul>
+          </li>
+        </ul>
+
+        <hr class="manual-divider">
+
+        <h4>Edición de Medicamentos</h4>
+        <p>Si necesita ajustar el inventario (ej. llegaron nuevas cajas) o corregir un precio, haga clic en el botón
+          <strong>Editar (Lápiz <img src="assets/img/edit.png" style="width: 15px; vertical-align: middle;">)</strong>.
+        </p>
+
+        <p>En la ventana emergente podrá modificar:</p>
+        <ol>
+          <li><strong>Datos Básicos:</strong> Nombre, Cantidad Disponible, Unidad de Medida y Costo Unitario.</li>
+          <li>
+            <strong>Métodos de Aplicación:</strong>
+            <p>En la parte inferior verá etiquetas seleccionables (chips). Haga clic sobre ellas para activar o
+              desactivar las vías de administración permitidas para ese medicamento (Oral, Intravenosa, etc.). Las
+              seleccionadas aparecerán marcadas con una palomita <i class="fa-solid fa-check"
+                style="font-size: 0.8em;"></i>.</p>
+          </li>
+        </ol>
+        <img src="assets/manual/medicamento-editar.png" alt="Modal de edición con selección de métodos"
+          class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>Eliminación de Inventario</h4>
+        <p>Para dar de baja un medicamento que ya no se maneja en la clínica, utilice el botón <strong>Eliminar
+            (Papelera <img src="assets/img/delet.png" style="width: 15px; vertical-align: middle;">)</strong>.</p>
+        <p><strong>Atención:</strong> El sistema le pedirá confirmación final. Recuerde que esta acción borrará el
+          historial de stock de ese producto.</p>
+        <img src="assets/manual/medicamento-alerta.png" alt="Confirmación de borrado" class="img-manual" />
+
+      </mat-expansion-panel>
+
+      <!--11.-insumo material TRIAGE-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>11. Gestión de Insumos > Material de Triage</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este apartado está destinado al control de inventario de los materiales de uso rápido y constante en el área
+          de valoración (Triage). Aquí podrá gestionar existencias de guantes, cubrebocas, termómetros y otros
+          desechables.</p>
+
+        <img src="assets/manual/vistaTriage.png" alt="Tabla de material de triage" class="img-manual" />
+
+        <h4>Funcionalidades de la Tabla</h4>
+        <ul>
+          <li>
+            <strong>Búsqueda Específica:</strong>
+            Puede buscar insumos no solo por nombre, sino también por <strong>Unidad de Medida</strong> (ej. buscar
+            "caja" para ver todo lo que viene en cajas) o por <strong>Cantidad</strong>.
+          </li>
+          <li>
+            <strong>Ordenamiento:</strong>
+            Utilice el filtro para ordenar por <strong>Costo (menor a mayor)</strong> y controlar los gastos, o por
+            <strong>Cantidad</strong> para detectar faltantes urgentes.
+          </li>
+        </ul>
+
+        <hr class="manual-divider">
+
+        <h4>Actualización de Inventario (Editar)</h4>
+        <p>Al presionar el botón de <strong>Editar</strong> en un material, se abrirá una ventana donde podrá
+          actualizar:</p>
+        <ul>
+          <li><strong>Nombre:</strong> Corrección de errores tipográficos.</li>
+          <li><strong>Cantidad (Stock):</strong> Ajuste manual de existencias tras un conteo físico o nueva compra.</li>
+          <li><strong>Unidad y Costo:</strong> Actualización de precios de compra o presentación del producto.</li>
+        </ul>
+        <p><em>Nota: A diferencia de los medicamentos, aquí no se gestionan vías de administración.</em></p>
+
+        <img src="assets/manual/editarTriage.png" alt="Formulario de edición de material" class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>Baja de Materiales</h4>
+        <p>Si un material deja de utilizarse o fue registrado por error, utilice el botón de <strong>Eliminar
+            (Papelera)</strong>. Confirme la acción en la ventana de advertencia para borrarlo permanentemente del
+          sistema.</p>
+
+        <img src="assets/manual/eliminarTriage.png" alt="Modal de eliminación" class="img-manual" />
+
+      </mat-expansion-panel>
+
+      <!--12.- insumo material general-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>12. Gestión de Insumos > Material General</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este módulo administra el inventario de insumos diversos de la clínica. A diferencia del Triage (uso clínico
+          inmediato), aquí se suelen gestionar artículos de limpieza, papelería, equipo administrativo o materiales de
+          curación no urgentes.</p>
+
+        <img src="assets/manual/vistaGeneral.png" alt="Tabla de material general" class="img-manual" />
+
+        <h4>Control de Inventario</h4>
+        <p>La tabla principal le permite monitorear el stock actual. Utilice las herramientas superiores para:</p>
+        <ul>
+          <li><strong>Buscar:</strong> Localice artículos por nombre, cantidad existente o tipo de unidad (ej. "litros"
+            para limpieza).</li>
+          <li><strong>Ordenar:</strong> Organice la lista por <strong>Costo Unitario</strong> para revisar gastos
+            administrativos, o por <strong>Cantidad</strong> para reabastecer.</li>
+        </ul>
+
+        <hr class="manual-divider">
+
+        <h4>Edición de Datos</h4>
+        <p>Para corregir existencias o precios, haga clic en el botón <strong>Editar (Lápiz)</strong>.</p>
+        <p>Los campos editables son:</p>
+        <ul>
+          <li><strong>Nombre:</strong> Descripción del producto.</li>
+          <li><strong>Cantidad:</strong> Ajuste manual tras auditoría de stock.</li>
+          <li><strong>Unidad:</strong> Forma de medida (Pieza, Caja, Paquete, Litro, etc.).</li>
+          <li><strong>Costo Unitario:</strong> Valor monetario del insumo.</li>
+        </ul>
+        <img src="assets/manual/editarGeneral.png" alt="Edición de material general" class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>Eliminar Insumo</h4>
+        <p>Use el botón de la <strong>Papelera</strong> para retirar definitivamente un artículo del inventario. Esta
+          acción solicitará una confirmación de seguridad irreversible.</p>
+        <img src="assets/manual/eliminarGeneral.png" alt="Confirmación de borrado" class="img-manual" />
+
+      </mat-expansion-panel>
+
+      <!--12.- insumo procedimientos-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>13. Gestión de Insumos > Procedimientos</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este módulo funciona como el <strong>Catálogo de Servicios Clínicos</strong>. Aquí puede consultar la
+          configuración de cada procedimiento médico, ver cuánto cuesta y qué materiales consume automáticamente del
+          inventario.</p>
+
+        <img src="assets/manual/vistaProcedimientos.png" alt="Tabla detallada de procedimientos" class="img-manual" />
+
+        <h4>Interpretación de la Tabla</h4>
+        <p>Esta vista es más compleja que las anteriores, ya que muestra el desglose completo del servicio:</p>
+
+        <ul>
+          <li>
+            <strong>Insumos (El Kit Automático):</strong>
+            Muestra la lista de materiales que el sistema descontará del stock cada vez que se realice este
+            procedimiento.
+            <br><em>Ejemplo: Si dice "Guantes (1)", al cobrar el servicio, el inventario de guantes bajará en 1.</em>
+          </li>
+          <li>
+            <strong>Responsables (Desglose de Costos):</strong>
+            Indica cómo se distribuye el cobro. Muestra cuánto corresponde a la clínica (UMEH), al médico o al
+            enfermero.
+          </li>
+          <li>
+            <strong>Costo Total:</strong>
+            Es la suma final de todos los costos involucrados. Este columna se puede ordenar (menor a mayor) haciendo
+            clic en el encabezado.
+          </li>
+        </ul>
+
+        <hr class="manual-divider">
+
+        <h4>Búsqueda Inteligente</h4>
+        <p>El buscador de esta sección es muy potente. Le permite encontrar un procedimiento buscando por:</p>
+        <ul>
+          <li>El nombre del servicio (ej. "Sutura").</li>
+          <li>Un insumo contenido (ej. busque "Venda" para ver en qué procedimientos se usa).</li>
+          <li>El responsable (ej. busque "Enfermero" para ver qué servicios realiza).</li>
+        </ul>
+
+      </mat-expansion-panel>
+
+      <!--14.- Generar reporte-->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>14. Generar reportes</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <p>Este módulo proporciona una visión financiera y operativa completa de la clínica. Aquí podrá consultar cuánto
+          se ingresó, cuántas consultas se atendieron y, lo más importante, qué insumos se gastaron exactamente en un
+          día específico.</p>
+
+        <h4>A. Generar un Reporte</h4>
+        <p>El proceso es muy sencillo:</p>
+        <ol>
+          <li><strong>Seleccionar Fecha:</strong> Haga clic en el campo de fecha (icono de calendario <i
+              class="fa-solid fa-calendar"></i>) y elija el día que desea auditar.</li>
+          <li><strong>Generar:</strong> Presione el botón <strong>"Generar Reporte"</strong>. El sistema procesará toda
+            la información de ese día en tiempo real.</li>
+        </ol>
+
+        <hr class="manual-divider">
+
+        <h4>B. Tablero de Resumen (Dashboard)</h4>
+        <p>Una vez generado el reporte, verá una serie de tarjetas informativas divididas en dos bloques:</p>
+
+        <ul>
+          <li>
+            <strong>Resumen Operativo:</strong>
+            Muestra el conteo de consultas (Totales, Completadas y Canceladas) y el <strong>Total de Ingresos</strong>
+            brutos del día.
+          </li>
+          <li>
+            <strong>Desglose de Costos Principales:</strong>
+            Separa el dinero ingresado por categorías para facilitar la contabilidad:
+            <ul>
+              <li><span style="color: #E91E63;">■</span> Costos por Consultas (Honorarios).</li>
+              <li><span style="color: #9C27B0;">■</span> Procedimientos Extras.</li>
+              <li><span style="color: #00BCD4;">■</span> Costos de Insumos (Venta de material/medicamento).</li>
+            </ul>
+          </li>
+        </ul>
+        <img src="assets/manual/reporte-uno.png" alt="Dashboard de resumen financiero" class="img-manual" />
+
+        <hr class="manual-divider">
+
+        <h4>C. Análisis Detallado de Insumos</h4>
+        <p>En la parte inferior encontrará el desglose granular de los materiales utilizados. Esta sección cuenta con
+          herramientas de análisis:</p>
+
+        <ul>
+          <li>
+            <strong>Filtros:</strong> Puede filtrar la tabla por tipo (ej. ver solo "Medicamentos" vendidos) o buscar un
+            producto específico por nombre.
+          </li>
+          <li>
+            <strong>Totales por Categoría:</strong>
+            Tarjetas de colores que le dicen rápidamente cuánto dinero representó cada categoría (Medicamentos, Material
+            de Triage, etc.).
+          </li>
+          <li>
+            <strong>Tabla de Detalle:</strong>
+            Lista ítem por ítem con la cantidad exacta consumida y el subtotal monetario.
+          </li>
+        </ul>
+
+        <h4>D. Exportación e Impresión</h4>
+        <p>En la esquina superior derecha de la tarjeta de insumos, encontrará dos botones de utilidad:</p>
+        <ul>
+          <li><strong><i class="fa-solid fa-file-csv"></i> Exportar CSV:</strong> Descarga un archivo compatible con
+            Excel para análisis externos.</li>
+          <li><strong><i class="fa-solid fa-print"></i> Imprimir:</strong> Genera una versión imprimible y limpia del
+            reporte del día.</li>
+        </ul>
+
+        <img src="assets/manual/reporte-dos.png" alt="Tabla detallada de insumos y botones de exportación"
+          class="img-manual" />
+
+      </mat-expansion-panel>
     </mat-accordion>
   </div>
 </div>
