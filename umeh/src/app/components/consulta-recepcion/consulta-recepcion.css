@@ -1321,14 +1321,6 @@
   border-radius: 4px;
 }
 
-/* ---- Ajuste y estilo de la tabla ---- */
-.modal-container table {
-  width: 100%;
-  margin-top: 10px;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
 .modal-container table th,
 .modal-container table td {
   padding: 8px;
@@ -1341,22 +1333,211 @@
   text-align: left;
 }
 
-.modal-container table tbody tr:hover {
-  background-color: #f2f2f2;
+/* --- Rediseño Modal Historial --- */
+
+/* Ajuste al contenedor principal */
+.historial-modal-container {
+  max-width: 900px;
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Botones dentro de la tabla */
-.modal-container .btn-sm {
-  padding: 4px 8px;
+/* 1. Header Moderno */
+.historial-modal-header {
+  background: #fff;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.historial-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--heading-text);
+  font-weight: 700;
+}
+
+.historial-modal-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.historial-modal-btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.historial-modal-btn-close:hover {
+  background: #f3f4f6;
+  color: #ef4444;
+}
+
+/* 2. Cuerpo y Filtros */
+.historial-modal-body {
+  padding: 24px;
+  background-color: #f9fafb;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.historial-search-box {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+.historial-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.8fr 0.8fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.historial-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.historial-form-group label {
   font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.historial-form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  font-size: var(--fs-md);
+  background: var(--input-bg);
+  color: var(--input-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.historial-form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-color) 20%, transparent);
+}
+
+.historial-button-container {
+  min-width: 120px;
+}
+
+/* 3. Tabla Moderna */
+.historial-results-container {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.historial-table-wrapper {
+  overflow-y: auto;
+  max-height: 40vh;
+}
+
+.historial-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.historial-table thead th {
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.historial-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  color: var(--card-text);
+}
+
+.historial-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.historial-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.historial-medico-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.historial-total {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #059669;
+}
+
+/* Botones de acción en tabla */
+.historial-btn-group {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.historial-btn-group .btn {
+  padding: 4px 10px;
+  font-size: 0.75rem;
   border-radius: 4px;
 }
 
-.modal-container .btn-info {
-  color: #fff;
+/* Estado vacío */
+.historial-empty-state {
+  padding: 40px;
+  text-align: center;
+  color: #9ca3af;
 }
 
-.btn-iconP {
-  width: 20px;
-  height: 20px;
+.historial-empty-state i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  display: block;
+}
+
+/* Footer del modal */
+.historial-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

@@ -160,7 +160,8 @@ export class ConsultaRecepcion implements OnInit {
   filtro = {
     nombre: '',
     apellidos: '',
-    fecha: ''
+    fecha_inicio: '',
+    fecha_fin: ''
   };
 
   get listaCostosCombinada() {
@@ -1014,8 +1015,8 @@ export class ConsultaRecepcion implements OnInit {
   }
 
   buscarNotas() {
-    if (!this.filtro.nombre.trim() || !this.filtro.fecha) {
-      alert("El nombre y la fecha son obligatorios");
+    if (!this.filtro.nombre.trim()) {
+      alert("El nombre del paciente es obligatorio");
       return;
     }
 

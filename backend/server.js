@@ -7,12 +7,12 @@ const app = express();
 app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-app.use(cors({
+app.use(cors(/*{
   origin: ['http://localhost:4200', 'http://192.168.37.222:4200', 'http://192.168.37.222:4000'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
-}));
+}*/));
 
 // Rutas INSUMOS MEDICOS
 const medicamentosRouter = require('./routes/medicamentos');
@@ -52,15 +52,21 @@ app.use('/api/codigo-postal', codigoPostalRouter);
 const consultaExtrasRoutes = require('./routes/consultaExtrasRoutes');
 app.use('/api/consultas/extras', consultaExtrasRoutes);
 
-const notaRoutes = require('./routes/nota');       
+const notaRoutes = require('./routes/nota');
 app.use('/api/notas', notaRoutes);
 
-// Servir Angular (build de producción) - ajusta 'umeh' si tu carpeta difiere
-const angularDistPath = path.join(__dirname, 'dist', 'umeh', 'browser');
-app.use(express.static(angularDistPath));
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(angularDistPath, 'index.html'));
+// Servir Angular (build de producción) - ajusta 'umeh' si tu carpeta difiere DESCOMENTAR CUANDO GENEREMOS LA CARPETA DIST (PRODUCCIÓN)
+/* const angularDistPath = path.join(__dirname, 'dist', 'umeh', 'browser');
+app.use(express.static(angularDistPath)); */
+
+// app.get(/.*/, (req, res) => {
+//   res.sendFile(path.join(angularDistPath, 'index.html'));
+// });
+
+app.get('/', (req, res) => {
+  res.send('Servidor Backend corriendo correctamente. Usa el puerto 4200 para el Frontend.');
 });
+
 
 const PORT = process.env.PORT || 4000;
 // Escucha en 0.0.0.0 para aceptar conexiones desde la LAN
