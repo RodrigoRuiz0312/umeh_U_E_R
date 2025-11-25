@@ -6,7 +6,7 @@ router.get('/', async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, nombre, cantidad, unidad,
-              COALESCE(costo_unitario, 0) AS costo
+              COALESCE(costo_unitario, 0) AS costo_unitario
          FROM mat_general`
     );
     res.json(result.rows);

@@ -302,6 +302,43 @@ export class InsumoService {
     );
   }
 
+  // Actualizar un procedimiento por ID
+  updateProcedimiento(id: number, payload: any): Observable<any> {
+    if (!id) {
+      return throwError(() => new Error('ID es requerido'));
+    }
+
+    return this.http.put<any>(`${this.procedimientoURL}/${id}`, payload).pipe(
+      tap(() => {
+        // Invalidar cache para refrescar datos
+        this.procedimientoCache = null;
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error al actualizar procedimiento:', error);
+        return throwError(() => new Error('Error al actualizar procedimiento: ' + (error.error?.error || error.message)));
+      })
+    );
+  }
+
+  // Eliminar un procedimiento por ID
+  deleteProcedimiento(id: number): Observable<{ message: string; procedimiento: any }> {
+    if (!id) {
+      return throwError(() => new Error('ID es requerido'));
+    }
+
+    return this.http.delete<{ message: string; procedimiento: any }>(`${this.procedimientoURL}/${id}`).pipe(
+      tap((res: any) => {
+        if (this.procedimientoCache) {
+          this.procedimientoCache = this.procedimientoCache.filter(p => p.id_procedimiento !== id);
+        }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error al eliminar procedimiento:', error);
+        return throwError(() => new Error('Error al eliminar procedimiento: ' + (error.error?.error || error.message)));
+      })
+    );
+  }
+
   // ✅ Obtener configuración actual (limiteStock, etc.)
   obtenerConfiguracion(): Observable<any> {
     return this.http.get(`${this.baseUrl}/configuracion`);
