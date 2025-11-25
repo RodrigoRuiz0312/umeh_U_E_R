@@ -267,7 +267,7 @@ export class Registro implements OnInit {
     const encoded = String(ctrl.get('encoded')?.value || '');
 
     if (!encoded) {
-      ctrl.patchValue({ id: null, tipo: null, nombre: '' });
+      ctrl.patchValue({ id: null, tipo: null, nombre: '', busqueda: '' });
       return;
     }
 
@@ -280,19 +280,19 @@ export class Registro implements OnInit {
     else if (tipoPrefix === 'mg') tipo = 'mat_general';
 
     if (!tipo || !Number.isFinite(idNum)) {
-      ctrl.patchValue({ id: null, tipo: null, nombre: '' });
+      ctrl.patchValue({ id: null, tipo: null, nombre: '', busqueda: '' });
       return;
     }
 
     if (tipo === 'medicamento') {
       const med = this.medicamentos.find(m => m.id === idNum);
-      ctrl.patchValue({ id: idNum, tipo, nombre: med?.nombre || '' });
+      ctrl.patchValue({ id: idNum, tipo, nombre: med?.nombre || '', busqueda: med?.nombre || '' });
     } else if (tipo === 'material') {
       const mat = this.materiales.find(t => t.id === idNum);
-      ctrl.patchValue({ id: idNum, tipo, nombre: mat?.nombre || '' });
+      ctrl.patchValue({ id: idNum, tipo, nombre: mat?.nombre || '', busqueda: mat?.nombre || '' });
     } else if (tipo === 'mat_general') {
       const mg = this.matGenerales.find(t => t.id === idNum);
-      ctrl.patchValue({ id: idNum, tipo, nombre: mg?.nombre || '' });
+      ctrl.patchValue({ id: idNum, tipo, nombre: mg?.nombre || '', busqueda: mg?.nombre || '' });
     }
 
     // Validar disponibilidad después de seleccionar
@@ -345,7 +345,14 @@ export class Registro implements OnInit {
       return;
     }
 
+    // No se encontró ningún insumo con ese nombre exacto
     ctrl.patchValue({ id: null, encoded: '', tipo: null, nombre: '' });
+    this.messageService.add({  
+      severity: 'warn',
+      summary: 'Insumo no encontrado',
+      detail: 'No se encontró un insumo con ese nombre. Intenta con el selector.',
+      life: 3000
+    });
   }
 
   // NUEVO MÉTODO: Solo muestra información del insumo seleccionado, no valida inventario
@@ -437,10 +444,16 @@ export class Registro implements OnInit {
     if (tipo === 'procedimiento') {
       const proc = this.procGroup.value;
 
-      // Formatear descripción con capitalize
+      // Formatear y limpiar payload del procedimiento
       const procFormateado = {
-        ...proc,
-        descripcion: this.capitalize(proc.descripcion)
+        descripcion: this.capitalize(proc.descripcion),
+        observaciones: proc.observaciones || '',
+        responsables: proc.responsables || [],
+        insumos: (proc.insumos || []).map((i: any) => ({
+          id: i.id,
+          tipo: i.tipo,
+          cantidad: i.cantidad
+        }))
       };
 
       try {

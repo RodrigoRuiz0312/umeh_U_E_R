@@ -19,7 +19,8 @@
         <tr>
           <th (click)="toggleSort('procedimiento')" style="cursor:pointer; user-select:none;">
             Procedimiento
-            <span *ngIf="sortColumn==='procedimiento'" aria-hidden="true">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            <span *ngIf="sortColumn==='procedimiento'" aria-hidden="true">{{ sortDirection === 'asc' ? '▲' : '▼'
+              }}</span>
           </th>
           <th>Observaciones</th>
           <th>Insumos</th>
@@ -28,6 +29,7 @@
             Costo Total
             <span *ngIf="sortColumn==='costo_total'" aria-hidden="true">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
           </th>
+          <th class="actions">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -38,13 +40,15 @@
             <td><p-skeleton></p-skeleton></td>
             <td><p-skeleton></p-skeleton></td>
             <td><p-skeleton></p-skeleton></td>
+            <td class="actions"><p-skeleton></p-skeleton></td>
           </tr>
         </ng-container>
 
         <ng-template #dataRows>
           <tr *ngIf="procedimientosView.length === 0">
-            <td colspan="5" style="text-align:center; opacity:0.8; padding:20px;">
-              {{ searchTerm ? 'No se encontraron procedimientos que coincidan con la búsqueda.' : 'No hay procedimientos registrados.' }}
+            <td colspan="6" style="text-align:center; opacity:0.8; padding:20px;">
+              {{ searchTerm ? 'No se encontraron procedimientos que coincidan con la búsqueda.' : 'No hay procedimientos
+              registrados.' }}
             </td>
           </tr>
           <tr *ngFor="let p of procedimientosView">
@@ -91,9 +95,156 @@
             <td style="font-weight: 600; color: var(--primary-color);">
               {{ (p.costo_total || 0) | currency:'MXN':'symbol-narrow':'1.2-2' }}
             </td>
+            <td class="actions">
+              <button class="action-btnP" (click)="openEdit(p)" title="Editar procedimiento">
+                <img src="assets/img/edit.png" class="btn-iconP" alt="Editar">
+              </button>
+              <button class="action-btnP" (click)="confirmarEliminacion(p)" title="Eliminar procedimiento">
+                <img src="assets/img/delet.png" class="btn-iconP" alt="Eliminar">
+              </button>
+            </td>
           </tr>
         </ng-template>
       </tbody>
     </table>
+  </div>
+
+  <!-- Modal de Edición -->
+  <div *ngIf="modalEditOpen" class="modal-overlay" (click)="closeEdit()">
+    <div class="modal-content large-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Editar Procedimiento</h2>
+        <button class="modal-close" (click)="closeEdit()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="editForm" class="proc-grid full-row">
+          <div class="form-field">
+            <label>Descripción <span class="requerido">*</span></label>
+            <input type="text" formControlName="descripcion" placeholder="Describe el procedimiento" />
+          </div>
+          <div class="form-field">
+            <label>Notas adicionales</label>
+            <input type="text" formControlName="observaciones" placeholder="Notas adicionales" />
+          </div>
+
+          <!-- Responsables -->
+          <div class="two-col full-row">
+            <div>
+              <h3>Responsables y Costos <span class="requerido">*</span></h3>
+              <div formArrayName="responsables">
+                <div class="form-field inline" *ngFor="let r of responsablesFA.controls; let i = index"
+                  [formGroupName]="i">
+                  <p-select [options]="[
+                    {label: 'UMEH', value: 'UMEH'},
+                    {label: 'ENFERMERO', value: 'ENFERMERO'},
+                    {label: 'MEDICO', value: 'MEDICO'}
+                  ]" formControlName="nombre" />
+                  <input type="number" formControlName="costo" placeholder="Costo" />
+                  <button type="button" class="deleteButton" (click)="removeResponsable(i)">
+                    🗑️
+                    <span class="tooltip">Eliminar</span>
+                  </button>
+                </div>
+                <button type="button" (click)="addResponsable()" class="add-btn">+ Agregar Responsable</button>
+              </div>
+            </div>
+            <div>
+              <h4>Resumen de Responsables</h4>
+              <ul class="summary-list">
+                <li *ngFor="let r of responsablesFA.controls">
+                  <span>{{ r.value.nombre }}</span>
+                  <span>{{ r.value.costo | currency }}</span>
+                </li>
+              </ul>
+              <div class="total-cost">
+                <strong>Total:</strong> {{ costoTotal | currency }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Insumos -->
+          <div class="two-col full-row">
+            <div>
+              <h3>Insumos utilizados</h3>
+              <div formArrayName="insumos">
+                <div class="form-field inline" *ngFor="let ins of insumosFA.controls; let i = index"
+                  [formGroupName]="i">
+                  <!-- Búsqueda por teclado con datalist -->
+                  <input type="text" placeholder="Buscar insumo..." formControlName="busqueda" list="listaInsumos"
+                    (change)="onSearchInsumo(i)" />
+                  <datalist id="listaInsumos">
+                    <option *ngFor="let m of medicamentos" [value]="m.nombre"></option>
+                    <option *ngFor="let t of materiales" [value]="t.nombre"></option>
+                    <option *ngFor="let g of matGenerales" [value]="g.nombre"></option>
+                  </datalist>
+                  <!-- Select opcional para selección directa -->
+                  <select formControlName="encoded" (change)="onSelectInsumo(i)">
+                    <option [ngValue]="null">-- Selecciona --</option>
+                    <optgroup label="Medicamentos">
+                      <option *ngFor="let m of medicamentos" [value]="'med-'+m.id">{{ m.nombre }} (Disp: {{ m.cantidad
+                        }})
+                      </option>
+                    </optgroup>
+                    <optgroup label="Material TRIAGE">
+                      <option *ngFor="let t of materiales" [value]="'mat-'+t.id">{{ t.nombre }} (Disp: {{ t.cantidad }})
+                      </option>
+                    </optgroup>
+                    <optgroup label="Material General">
+                      <option *ngFor="let g of matGenerales" [value]="'mg-'+g.id">{{ g.nombre }} (Disp: {{ g.cantidad
+                        }})
+                      </option>
+                    </optgroup>
+                  </select>
+                  <input type="number" min="0" formControlName="cantidad" placeholder="Cantidad"
+                    (change)="onCantidadChange(i)" />
+                  <button type="button" class="deleteButton" (click)="removeInsumo(i)">
+                    🗑️
+                    <span class="tooltip">Eliminar</span>
+                  </button>
+                </div>
+                <button type="button" (click)="addInsumo()">+ Agregar Insumo</button>
+              </div>
+            </div>
+            <div>
+              <h4>Resumen de Insumos</h4>
+              <ul class="summary-list">
+                <li *ngFor="let ins of insumosFA.controls">
+                  <span>{{ ins.value.nombre || '—' }}</span>
+                  <span>x {{ ins.value.cantidad || 0 }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="closeEdit()">Cancelar</button>
+        <button class="btn-save" (click)="saveEdit()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación de Eliminación -->
+  <div class="modal-overlay" *ngIf="modalEliminarVisible" (click)="cancelarEliminacion()">
+    <div class="modal-content danger-modal" (click)="$event.stopPropagation()">
+      <div class="danger-icon-circle">
+        <i class="fa-regular fa-trash-can"></i>
+      </div>
+
+      <h2 class="danger-title">¿Eliminar Procedimiento?</h2>
+
+      <p class="danger-message">
+        Estás a punto de eliminar el procedimiento <strong>{{ procedimientoAEliminar?.procedimiento }}</strong> de forma
+        permanente.
+        <br>Esta acción <b>no se puede deshacer</b> y también eliminará todos los insumos y responsables asociados.
+      </p>
+
+      <div class="modal-actions centered">
+        <button class="btn-cancel" (click)="cancelarEliminacion()">Cancelar</button>
+        <button class="btn-delete-confirm" (click)="ejecutarEliminacion()">Sí, eliminar</button>
+      </div>
+    </div>
   </div>
 </div>

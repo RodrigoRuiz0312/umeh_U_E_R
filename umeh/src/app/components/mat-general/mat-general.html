@@ -58,7 +58,7 @@
             <td>{{ material.nombre }}</td>
             <td>{{ material.cantidad }}</td>
             <td>{{ material.unidad }}</td>
-            <td>{{ (material.costo_unitario || 0) | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
+            <td>{{ material.costo_unitario | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
             <td class="actions">
               <button class="action-btnP" (click)="openEdit(material)" title="Editar cantidad">
                 <img src="assets/img/edit.png" class="btn-iconP" alt="Editar">

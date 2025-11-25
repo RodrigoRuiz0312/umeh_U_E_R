@@ -19,7 +19,8 @@ insumos AS (
       pi.id_procedimiento,
       JSON_AGG(
         JSON_BUILD_OBJECT(
-          'insumo', COALESCE(m.nombre, t.nombre),
+          'id_insumo', pi.id_insumo,
+          'insumo', COALESCE(m.nombre, t.nombre, mg.nombre),
           'tipo', pi.tipo,
           'cantidad', pi.cantidad
         )
@@ -29,6 +30,8 @@ insumos AS (
     ON pi.tipo = 'medicamento' AND m.id = pi.id_insumo
   LEFT JOIN mat_triage t 
     ON pi.tipo = 'material' AND t.id = pi.id_insumo
+  LEFT JOIN mat_general mg
+    ON pi.tipo = 'mat_general' AND mg.id = pi.id_insumo
   GROUP BY pi.id_procedimiento
 )
 SELECT 
