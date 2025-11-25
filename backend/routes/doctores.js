@@ -29,12 +29,12 @@ router.get('/', async (_, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, apellidos, telefono, correo, especialidad } = req.body;
+    const { nombre, apellidos, cedula_prof, telefono, correo, especialidad } = req.body;
     const query = `
       UPDATE medico 
-      SET nombre=$1, apellidos=$2, telefono=$3, correo=$4, especialidad=$5 
-      WHERE id_medico=$6 RETURNING *`;
-    const result = await pool.query(query, [nombre, apellidos, telefono, correo, especialidad, id]);
+      SET nombre=$1, apellidos=$2, cedula_prof=$3, telefono=$4, correo=$5, especialidad=$6 
+      WHERE id_medico=$7 RETURNING *`;
+    const result = await pool.query(query, [nombre, apellidos, cedula_prof, telefono, correo, especialidad, id]);
     if (result.rowCount === 0) return res.status(404).json({ error: 'Médico no encontrado' });
     res.json({ message: 'Médico actualizado con éxito', medico: result.rows[0] });
   } catch (err) {

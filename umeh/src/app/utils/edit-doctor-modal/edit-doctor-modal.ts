@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ToastrService } from 'ngx-toastr';
+import { MessageService } from 'primeng/api';
 import { ApiService } from '../../services/api.service';
 
 @Component({
@@ -21,7 +21,7 @@ export class EditDoctorModal implements OnChanges {
   constructor(
     private fb: FormBuilder,
     private api: ApiService,
-    private toastr: ToastrService
+    private messageService: MessageService
   ) {
     this.editForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -52,12 +52,12 @@ export class EditDoctorModal implements OnChanges {
 
   guardarCambios() {
     if (this.editForm.invalid) {
-      this.toastr.warning('Por favor, completa los campos requeridos.');
+      this.messageService.add({ severity: 'warn', summary: 'Advertencia', detail: 'Por favor, completa los campos requeridos.' });
       return;
     }
 
     if (!this.doctor) {
-      this.toastr.error('No hay un doctor seleccionado.');
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No hay un doctor seleccionado.' });
       return;
     }
 
@@ -68,11 +68,11 @@ export class EditDoctorModal implements OnChanges {
 
     this.api.actualizarDoctor(this.doctor.id_medico, updatedData).subscribe({
       next: (response) => {
-        this.toastr.success('¡Médico actualizado con éxito!');
+        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: '¡Médico actualizado con éxito!' });
         this.doctorActualizado.emit();
       },
       error: (error) => {
-        this.toastr.error('Error al actualizar el médico.');
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar el médico.' });
         console.error(error);
       }
     });
