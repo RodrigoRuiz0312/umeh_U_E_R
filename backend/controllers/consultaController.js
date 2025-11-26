@@ -560,14 +560,14 @@ class ConsultaController {
         json_agg(
           json_build_object(
             'nombre', CASE 
-                WHEN ci.tipo = 'medicamento' THEN m.nombre
+                WHEN ci.tipo = 'medicamento' THEN med.nombre
                 WHEN ci.tipo = 'material' THEN mat.nombre
                 WHEN ci.tipo = 'mat_general' THEN mg.nombre
-                WHEN ci.tipo = 'procedimiento' THEN p.descripcion
+                WHEN ci.tipo = 'procedimiento' THEN proc.descripcion
               END,
             'cantidad', ci.cantidad,
             'unidad', CASE 
-                WHEN ci.tipo = 'medicamento' THEN m.unidad
+                WHEN ci.tipo = 'medicamento' THEN med.unidad
                 WHEN ci.tipo = 'material' THEN mat.unidad
                 WHEN ci.tipo = 'mat_general' THEN mg.unidad
                 ELSE 'procedimiento'
@@ -580,13 +580,14 @@ class ConsultaController {
         INNER JOIN paciente p ON c.id_paciente = p.id_paciente
         LEFT JOIN medico m ON c.id_medico = m.id_medico
         LEFT JOIN consulta_insumos ci ON c.id_consulta = ci.id_consulta
-        LEFT JOIN medicamentos m ON ci.tipo = 'medicamento' AND ci.id_insumo = m.id
+        LEFT JOIN medicamentos med ON ci.tipo = 'medicamento' AND ci.id_insumo = med.id
         LEFT JOIN mat_triage mat ON ci.tipo = 'material' AND ci.id_insumo = mat.id
         LEFT JOIN mat_general mg ON ci.tipo = 'mat_general' AND ci.id_insumo = mg.id
-        LEFT JOIN procedimientos p ON ci.tipo = 'procedimiento' AND ci.id_insumo = p.id_procedimiento
+        LEFT JOIN procedimientos proc ON ci.tipo = 'procedimiento' AND ci.id_insumo = proc.id_procedimiento
         WHERE c.id_consulta = $1
         GROUP BY c.id_consulta, c.fecha, c.total, c.observaciones,
-        p.id_paciente, p.nombre, p.apellidos, m.nombre, m.apellidos`,
+        p.id_paciente, p.nombre, p.apellidos, 
+        m.id_medico, m.nombre, m.apellidos, m.especialidad, m.cedula_prof`,
         [id_consulta]
       );
 
