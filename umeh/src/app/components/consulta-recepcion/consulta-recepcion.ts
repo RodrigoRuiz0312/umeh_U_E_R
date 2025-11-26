@@ -755,13 +755,9 @@ export class ConsultaRecepcion implements OnInit {
         next: (pdfBlob: Blob) => {
           this.cargando = false;
 
-          // Crear y descargar el PDF
+          // Abrir el PDF en una nueva ventana del navegador
           const url = window.URL.createObjectURL(pdfBlob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `nota_remision_${this.consultaActual?.id_consulta}.pdf`;
-          link.click();
-          window.URL.revokeObjectURL(url);
+          window.open(url, '_blank');
 
           this.mensajeExito = 'Nota de remisión generada correctamente';
         },
