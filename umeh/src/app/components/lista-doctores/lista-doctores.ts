@@ -20,7 +20,11 @@ export class ListaDoctores implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
 
   medicos: any[] = [];
-  medicosView: any[] = [];
+  medicosView: any[] = []; // Kept for compatibility, but will mirror medicos
+
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
 
   isModalVisible = false;
   medicoSeleccionado: any;
@@ -35,10 +39,11 @@ export class ListaDoctores implements OnInit {
   }
 
   cargarMedicos() {
-    this.api.getDoctores().subscribe({
-      next: (data) => {
-        this.medicos = data || [];
-        this.applyFilters();
+    this.api.getDoctores(this.currentPage, this.itemsPerPage, this.sortColumn, this.sortDirection, this.searchTerm).subscribe({
+      next: (data: any) => {
+        this.medicos = data.doctores || [];
+        this.totalItems = data.total || 0;
+        this.medicosView = [...this.medicos];
       },
       error: (error) => {
         console.error('Error al cargar los médicos:', error);
@@ -47,7 +52,8 @@ export class ListaDoctores implements OnInit {
   }
 
   onSearchTermChange() {
-    this.applyFilters();
+    this.currentPage = 1;
+    this.cargarMedicos();
   }
 
   onSortOptionChange(value: string) {
@@ -59,35 +65,29 @@ export class ListaDoctores implements OnInit {
     if (dir === 'asc' || dir === 'desc') {
       this.sortDirection = dir;
     }
-    this.applyFilters();
+    this.cargarMedicos();
   }
 
-  private applyFilters() {
-    const term = (this.searchTerm || '').trim().toLowerCase();
-    let data = [...this.medicos];
-    if (term) {
-      data = data.filter(d => {
-        const nombreCompleto = `${d.nombre || ''} ${d.apellidos || ''}`.toLowerCase();
-        return (
-          nombreCompleto.includes(term) ||
-          String(d?.nombre || '').toLowerCase().includes(term) ||
-          String(d?.apellidos || '').toLowerCase().includes(term) ||
-          String(d?.cedula_prof || '').toLowerCase().includes(term) ||
-          String(d?.telefono || '').toLowerCase().includes(term) ||
-          String(d?.especialidad || '').toLowerCase().includes(term) ||
-          String(d?.correo || '').toLowerCase().includes(term)
-        );
-      });
+  goToPage(page: number) {
+    const pageCount = Math.ceil(this.totalItems / this.itemsPerPage)
+    if (page < 1 || page > pageCount) return;
+    this.currentPage = page;
+    this.cargarMedicos();
+  }
+
+  getPages(): number[] {
+    const pageCount = Math.ceil(this.totalItems / this.itemsPerPage);
+    const pages: number[] = [];
+    const start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(pageCount, this.currentPage + 2);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
     }
-    const dir = this.sortDirection === 'asc' ? 1 : -1;
-    data.sort((a, b) => {
-      const av = String(a?.[this.sortColumn] ?? '').toLowerCase();
-      const bv = String(b?.[this.sortColumn] ?? '').toLowerCase();
-      if (av < bv) return -1 * dir;
-      if (av > bv) return 1 * dir;
-      return 0;
-    });
-    this.medicosView = data;
+    return pages;
+  }
+
+  get pageCount(): number {
+    return Math.ceil(this.totalItems / this.itemsPerPage);
   }
 
   // acciones
@@ -127,7 +127,7 @@ export class ListaDoctores implements OnInit {
         });
         
         this.medicos = this.medicos.filter(m => m.id_medico !== this.medicoAEliminar?.id);
-        this.applyFilters();
+        this.cargarMedicos();
         this.cancelarEliminacion();
       },
       error: (error) => {

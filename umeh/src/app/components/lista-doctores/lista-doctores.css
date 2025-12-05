@@ -220,3 +220,34 @@
   background-color: #c82333;
   transform: translateY(-2px);
 }
+
+.paginacion {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.paginacion button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #f8f8f8;
+  border-radius: 6px;
+  cursor: pointer;
+  min-width: 36px;
+}
+
+.paginacion button:hover:not([disabled]) {
+  background: #e7e7e7;
+}
+
+.paginacion button.active {
+  background-color: #1976d2;
+  color: white;
+  border-color: #1976d2;
+}
+
+.paginacion button[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

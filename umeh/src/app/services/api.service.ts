@@ -11,11 +11,20 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   // Pacientes
-  getPacientes(): Observable<any[]> {
+  /*getPacientes(): Observable<any[]> {
     return this.http.get<any>(`${this.base}/pacientes`).pipe(
       map((resp) => Array.isArray(resp) ? resp : (resp?.pacientes ?? []))
     );
+  }*/
+
+  getPacientes(page: number, limit: number, sortBy?: string, order?: string, search?: string): Observable<any> {
+    let url = `${this.base}/pacientes?page=${page}&limit=${limit}`;
+    if (sortBy) url += `&sortBy=${sortBy}`;
+    if (order) url += `&order=${order}`;
+    if (search) url += `&search=${search}`;
+    return this.http.get<any>(url);
   }
+
 
   buscarPacientes(nombre?: string, apellidos?: string): Observable<any[]> {
     let params: any = {};
@@ -46,10 +55,13 @@ export class ApiService {
 
 
   // Doctores
-  getDoctores(): Observable<any[]> {
-    return this.http.get<any>(`${this.base}/doctores`).pipe(
-      map((resp) => Array.isArray(resp) ? resp : (resp?.doctores ?? resp ?? []))
-    );
+  // Doctores
+  getDoctores(page: number = 1, limit: number = 10, sortBy?: string, order?: string, search?: string): Observable<any> {
+    let url = `${this.base}/doctores?page=${page}&limit=${limit}`;
+    if (sortBy) url += `&sortBy=${sortBy}`;
+    if (order) url += `&order=${order}`;
+    if (search) url += `&search=${search}`;
+    return this.http.get<any>(url);
   }
 
   crearDoctor(data: any): Observable<any> {

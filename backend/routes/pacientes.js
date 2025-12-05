@@ -67,10 +67,51 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Obtener TODOS los pacientes (¡ACTUALIZADO!)
+// Obtener TODOS los pacientes
 router.get('/', async (req, res) => {
   try {
-    // Usamos array_agg para agrupar teléfonos y correos en listas
+    
+    let page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 10;
+    let { sortBy, order, search } = req.query;
+    
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 10;
+    const offset = (page - 1) * limit;
+
+    // Validate sort parameters
+    const validColumns = ['id_paciente', 'nombre', 'apellidos', 'sexo'];
+    const validOrder = ['ASC', 'DESC'];
+    
+    if (!order || !validOrder.includes(order.toUpperCase())) {
+      order = 'ASC';
+    } else {
+      order = order.toUpperCase();
+    }
+
+    let orderByClause = 'p.id_paciente ASC'; // Default
+
+    if (sortBy === 'telefonos') {
+      orderByClause = `MIN(t.telefono) ${order}`;
+    } else if (sortBy === 'correos') {
+      orderByClause = `MIN(c.correo) ${order}`;
+    } else if (validColumns.includes(sortBy)) {
+      orderByClause = `p.${sortBy} ${order}`;
+    } else if (sortBy === 'numero') {
+       orderByClause = `p.id_paciente ${order}`;
+    }
+
+    // Build WHERE clause for search
+    let whereClause = '';
+    const queryParams = [limit, offset];
+    let paramCounter = 3;
+
+    if (search) {
+      whereClause = `WHERE (p.nombre ILIKE $${paramCounter} OR p.apellidos ILIKE $${paramCounter})`;
+      queryParams.push(`%${search}%`);
+      paramCounter++;
+    }
+
     const query = `
       SELECT 
         p.*, 
@@ -82,14 +123,29 @@ router.get('/', async (req, res) => {
         paciente_telefonos t ON p.id_paciente = t.id_paciente
       LEFT JOIN 
         paciente_correos c ON p.id_paciente = c.id_paciente
+      ${whereClause}
       GROUP BY 
         p.id_paciente
       ORDER BY 
-        p.id_paciente ASC;
+        ${orderByClause}
+      LIMIT $1 OFFSET $2;
     `;
 
-    const pacientesResult = await pool.query(query);
-    res.json({ pacientes: pacientesResult.rows });
+    const pacientesResult = await pool.query(query, queryParams);
+
+    // Count total items (with filter if applicable)
+    let totalQuery = 'SELECT COUNT(*) FROM paciente p';
+    let totalParams = [];
+    
+    if (search) {
+      totalQuery += ` WHERE (p.nombre ILIKE $1 OR p.apellidos ILIKE $1)`;
+      totalParams.push(`%${search}%`);
+    }
+
+    const totalResult = await pool.query(totalQuery, totalParams);
+    const total = parseInt(totalResult.rows[0].count);
+
+    res.json({ pacientes: pacientesResult.rows, total });
 
   } catch (err) {
     console.error('Error al obtener pacientes:', err);
