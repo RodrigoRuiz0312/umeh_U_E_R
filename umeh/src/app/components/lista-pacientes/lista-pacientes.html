@@ -79,37 +79,51 @@
         </ng-container>
       </tbody>
     </table>
-  </div>
 
-</div>
+    <div class="paginacion">
+      <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+        &lt; Anterior
+      </button>
 
-<div class="modal-overlay" *ngIf="modalEliminarVisible" (click)="cancelarEliminacion()">
-  <div class="modal-content danger-modal" (click)="$event.stopPropagation()">
+      <button *ngFor="let page of getPages()" (click)="goToPage(page)" [class.active]="currentPage === page">
+        {{ page }}
+      </button>
 
-    <div class="danger-icon-circle">
-      <i class="fa-regular fa-trash-can"></i>
+      <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === pageCount">
+        Siguiente &gt;
+      </button>
 
     </div>
 
-    <h2 class="danger-title">¿Eliminar Paciente?</h2>
-
-    <p class="danger-message">
-      Estás a punto de eliminar a <strong>{{ pacienteAEliminar?.nombre }}</strong> de forma permanente.
-      <br>Esta acción <b>no se puede deshacer</b>.
-    </p>
-
-    <div class="modal-actions centered">
-      <button class="btn-cancel" (click)="cancelarEliminacion()">Cancelar</button>
-      <button class="btn-delete-confirm" (click)="ejecutarEliminacion()">Sí, eliminar</button>
-    </div>
-
   </div>
-</div>
+
+  <div class="modal-overlay" *ngIf="modalEliminarVisible" (click)="cancelarEliminacion()">
+    <div class="modal-content danger-modal" (click)="$event.stopPropagation()">
+
+      <div class="danger-icon-circle">
+        <i class="fa-regular fa-trash-can"></i>
+
+      </div>
+
+      <h2 class="danger-title">¿Eliminar Paciente?</h2>
+
+      <p class="danger-message">
+        Estás a punto de eliminar a <strong>{{ pacienteAEliminar?.nombre }}</strong> de forma permanente.
+        <br>Esta acción <b>no se puede deshacer</b>.
+      </p>
+
+      <div class="modal-actions centered">
+        <button class="btn-cancel" (click)="cancelarEliminacion()">Cancelar</button>
+        <button class="btn-delete-confirm" (click)="ejecutarEliminacion()">Sí, eliminar</button>
+      </div>
+
+    </div>
+  </div>
 
 
 
-<p-toast></p-toast>
+  <p-toast></p-toast>
 
-<app-edit-paciente-modal *ngIf="isModalVisible" (close)="closeModal()" [paciente]="pacienteSeleccionado"
-  (pacienteActualizado)="recargarPacientes()">
-</app-edit-paciente-modal>
+  <app-edit-paciente-modal *ngIf="isModalVisible" (close)="closeModal()" [paciente]="pacienteSeleccionado"
+    (pacienteActualizado)="recargarPacientes()">
+  </app-edit-paciente-modal>
