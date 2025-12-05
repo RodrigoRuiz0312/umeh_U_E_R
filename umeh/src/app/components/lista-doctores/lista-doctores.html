@@ -57,6 +57,20 @@
       </tbody>
     </table>
   </div>
+
+  <div class="paginacion">
+    <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+      &lt; Anterior
+    </button>
+
+    <button *ngFor="let page of getPages()" (click)="goToPage(page)" [class.active]="currentPage === page">
+      {{ page }}
+    </button>
+
+    <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === pageCount">
+      Siguiente &gt;
+    </button>
+  </div>
 </div>
 
 <div class="modal-overlay" *ngIf="modalEliminarVisible" (click)="cancelarEliminacion()">
