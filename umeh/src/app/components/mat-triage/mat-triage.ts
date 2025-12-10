@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Triage } from '../../modelos/triage';
 import { InsumoService } from '../../services/insumos.service';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
+import { TablaConfig, DEFAULT_TABLA_CONFIG } from '../../modelos/tabla-config';
 
 @Component({
   selector: 'app-mat-triage',
@@ -15,15 +16,17 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './mat-triage.css',
   providers: [MessageService]
 })
-export class MatTriage implements OnInit {
+export class MatTriage implements OnInit, OnDestroy {
   triage: Triage[] = [];
-  triageView: Triage[] = [];
   error: string | null = null;
   loading = true;
-  // búsqueda y ordenamiento
-  searchTerm = '';
-  sortColumn: 'nombre' | 'cantidad' | 'unidad' | 'costo' = 'nombre';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  
+  // Usar modelo TablaConfig
+  config: TablaConfig = { ...DEFAULT_TABLA_CONFIG };
+  
+  // Debounce para búsqueda
+  private searchTimeout: any = null;
+  
   // estado del modal de edición
   modalOpen = false;
   selectedTriage: Triage | null = null;
@@ -31,45 +34,53 @@ export class MatTriage implements OnInit {
   nombreNuevo: string = '';
   unidadNueva: string = '';
   costoNuevo: number | null = null;
-  loadingRows = Array.from({ length: 14 });
+  loadingRows = Array.from({ length: 10 });
 
   constructor(private insumosService: InsumoService,
     private messageService: MessageService) { }
 
   ngOnInit(): void {
-    console.log("🚀 Cargando insumos desde la base de datos...");
-    this.insumosService.getMaterial_Triage().subscribe({
-      next: (data) => {
-        console.log("✅ Datos recibidos:", data);
-        // Asegurar que costo sea numérico y por defecto 0
-        this.triage = (data || []).map(d => ({
+    console.log("🚀 Cargando material de triage desde la base de datos...");
+    this.cargarTriage();
+  }
+
+  cargarTriage() {
+    this.loading = true;
+    this.insumosService.getMaterial_Triage(
+      this.config.paginaActual,
+      this.config.limite,
+      this.config.searchTerm,
+      this.config.sortColumn,
+      this.config.sortDirection
+    ).subscribe({
+      next: (response) => {
+        console.log("✅ Datos recibidos:", response);
+        // Los datos ya vienen filtrados y ordenados del servidor
+        this.triage = (response.data || []).map(d => ({
           ...d,
-          costo: Number(d?.costo ?? 0)
+          costo: Number(d.costo ?? 0)
         }));
-        this.applyFilters();
+        
+        // Metadatos de paginación
+        this.config.totalItems = response.meta.totalItems;
+        this.config.totalPages = response.meta.totalPages;
+        
         this.loading = false;
-        if (!data || data.length === 0) {
+        
+        if (!response.data || response.data.length === 0) {
           this.messageService.add({
             severity: 'info',
             summary: 'Sin registros',
-            detail: 'No hay material de triage para mostrar.',
+            detail: this.config.searchTerm ? 'No se encontraron resultados.' : 'No hay material de triage para mostrar.',
             sticky: false,
-            life: 5000
-          });
-        } else {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Carga completa',
-            detail: 'El material de triage se cargó correctamente.',
-            sticky: false,
-            life: 5000
+            life: 3000
           });
         }
-
       },
       error: (err) => {
-        console.error("❌ Error al cargar insumos:", err.message);
-        this.error = "No se cargo el material.";
+        console.error("❌ Error al cargar material de triage:", err);
+        this.error = "No se cargó el material.";
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -81,59 +92,34 @@ export class MatTriage implements OnInit {
   }
 
   onSearchTermChange() {
-    this.applyFilters();
-  }
-
-  toggleSort(column: 'nombre' | 'cantidad' | 'unidad' | 'costo') {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+    // Cancelar búsqueda anterior si existe
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
     }
-    this.applyFilters();
+    
+    // Esperar 500ms después de que el usuario deje de escribir
+    this.searchTimeout = setTimeout(() => {
+      this.config.paginaActual = 1; // Resetear a página 1 al buscar
+      this.cargarTriage();
+    }, 500);
   }
 
   onSortOptionChange(value: string) {
     const [col, dir] = (value || '').split(':');
-    const validCols = ['nombre', 'cantidad', 'unidad', 'costo'] as const;
-    if (col && (validCols as readonly string[]).includes(col)) {
-      this.sortColumn = col as any;
+    const validCols = ['nombre', 'cantidad', 'costo_unitario'] as const;
+    if (col) {
+      // Mapear 'costo' a 'costo_unitario' para el backend
+      if (col === 'costo') {
+        this.config.sortColumn = 'costo_unitario';
+      } else if ((validCols as readonly string[]).includes(col as any)) {
+        this.config.sortColumn = col as any;
+      }
     }
     if (dir === 'asc' || dir === 'desc') {
-      this.sortDirection = dir;
+      this.config.sortDirection = dir;
     }
-    this.applyFilters();
-  }
-
-  private applyFilters() {
-    const term = this.searchTerm.trim().toLowerCase();
-    let data = [...this.triage];
-    if (term) {
-      data = data.filter(t =>
-        t.nombre.toLowerCase().includes(term) ||
-        String(t.cantidad).includes(term) ||
-        t.unidad.toLowerCase().includes(term) ||
-        String(t.costo ?? 0).includes(term)
-      );
-    }
-
-    data.sort((a, b) => {
-      let comp = 0;
-      if (this.sortColumn === 'cantidad') {
-        comp = (a.cantidad ?? 0) - (b.cantidad ?? 0);
-      } else if (this.sortColumn === 'nombre') {
-        comp = a.nombre.localeCompare(b.nombre);
-      } else if (this.sortColumn === 'unidad') {
-        comp = a.unidad.localeCompare(b.unidad);
-      } else {
-        // costo
-        comp = (a.costo ?? 0) - (b.costo ?? 0);
-      }
-      return this.sortDirection === 'asc' ? comp : -comp;
-    });
-
-    this.triageView = data;
+    this.config.paginaActual = 1; // Resetear a página 1 al ordenar
+    this.cargarTriage();
   }
 
   openEdit(item: Triage) {
@@ -201,18 +187,14 @@ export class MatTriage implements OnInit {
 
     this.insumosService.updateTriage(this.selectedTriage.id, datosActualizados).subscribe({
       next: (actualizado: any) => {
-        // Mapear respuesta del backend (costo_unitario -> costo)
-        const triageActualizado = {
-          ...actualizado,
-          costo: actualizado.costo_unitario !== undefined ? Number(actualizado.costo_unitario) : Number(actualizado.costo || 0)
-        };
-
-        const idx = this.triage.findIndex(t => t.id === actualizado.id);
-        if (idx !== -1) this.triage[idx] = { ...this.triage[idx], ...triageActualizado };
-
-        this.applyFilters();
-        this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Material actualizado correctamente.` });
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Actualizado', 
+          detail: 'Material de triage actualizado correctamente.' 
+        });
         this.closeEdit();
+        // Recargar la página actual
+        this.cargarTriage();
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error al actualizar', detail: err.message || 'Ocurrió un error.' });
@@ -239,14 +221,14 @@ export class MatTriage implements OnInit {
 
     this.insumosService.deleteTriage(this.triageAEliminar.id).subscribe({
       next: () => {
-        this.triage = this.triage.filter(t => t.id !== this.triageAEliminar!.id);
-        this.applyFilters();
         this.messageService.add({
           severity: 'success',
           summary: 'Eliminado',
           detail: `Material "${this.triageAEliminar!.nombre}" eliminado.`
         });
         this.cancelarEliminacion();
+        // Recargar la página actual
+        this.cargarTriage();
       },
       error: (err) => {
         this.messageService.add({
@@ -257,5 +239,38 @@ export class MatTriage implements OnInit {
         this.cancelarEliminacion();
       }
     });
+  }
+
+  // Métodos de paginación
+  irAPaginaAnterior() {
+    if (this.config.paginaActual > 1) {
+      this.config.paginaActual--;
+      this.cargarTriage();
+    }
+  }
+
+  irAPaginaSiguiente() {
+    if (this.config.paginaActual < this.config.totalPages) {
+      this.config.paginaActual++;
+      this.cargarTriage();
+    }
+  }
+
+  irAPagina(pagina: number) {
+    if (pagina >= 1 && pagina <= this.config.totalPages) {
+      this.config.paginaActual = pagina;
+      this.cargarTriage();
+    }
+  }
+
+  get paginasArray(): number[] {
+    return Array.from({ length: this.config.totalPages }, (_, i) => i + 1);
+  }
+
+  ngOnDestroy() {
+    // Limpiar timeout al destruir el componente
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
   }
 }

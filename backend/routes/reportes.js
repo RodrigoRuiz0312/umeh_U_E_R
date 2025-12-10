@@ -145,4 +145,7 @@ router.get('/insumos-rango', reportesController.obtenerReporteInsumosRango);
 // GET resumen de consultas del día
 router.get('/resumen-consultas', reportesController.obtenerResumenConsultasDia);
 
+// GET reporte PDF diario
+router.get('/pdf-diario', reportesController.generarReportePDF);
+
 module.exports = router;

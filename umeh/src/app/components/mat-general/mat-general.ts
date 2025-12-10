@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatGeneral } from '../../modelos/mat-general';
 import { InsumoService } from '../../services/insumos.service';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 import { FormsModule } from '@angular/forms';
+import { TablaConfig, DEFAULT_TABLA_CONFIG } from '../../modelos/tabla-config';
 
 @Component({
   selector: 'app-mat-general',
@@ -15,15 +16,17 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './mat-general.css',
   providers: [MessageService]
 })
-export class MatGeneralComponent implements OnInit {
+export class MatGeneralComponent implements OnInit, OnDestroy {
   matGeneral: MatGeneral[] = [];
-  matGeneralView: MatGeneral[] = [];
   error: string | null = null;
   loading = true;
-  // búsqueda y ordenamiento
-  searchTerm = '';
-  sortColumn: 'nombre' | 'cantidad' | 'unidad' | 'costo_unitario' = 'nombre';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  
+  // Usar modelo TablaConfig
+  config: TablaConfig = { ...DEFAULT_TABLA_CONFIG };
+  
+  // Debounce para búsqueda
+  private searchTimeout: any = null;
+  
   // estado del modal de edición
   modalOpen = false;
   selectedMatGeneral: MatGeneral | null = null;
@@ -31,7 +34,7 @@ export class MatGeneralComponent implements OnInit {
   nombreNuevo: string = '';
   unidadNueva: string = '';
   costoNuevo: number | null = null;
-  loadingRows = Array.from({ length: 14 });
+  loadingRows = Array.from({ length: 10 });
 
   constructor(
     private insumosService: InsumoService,
@@ -40,36 +43,44 @@ export class MatGeneralComponent implements OnInit {
 
   ngOnInit(): void {
     console.log("🚀 Cargando material general desde la base de datos...");
-    this.insumosService.getMatGeneral().subscribe({
-      next: (data) => {
-        console.log("✅ Datos recibidos:", data);
-        // Asegurar que costo_unitario sea numérico y por defecto 0
-        this.matGeneral = (data || []).map(d => ({
+    this.cargarMatGeneral();
+  }
+
+  cargarMatGeneral() {
+    this.loading = true;
+    this.insumosService.getMatGeneral(
+      this.config.paginaActual,
+      this.config.limite,
+      this.config.searchTerm,
+      this.config.sortColumn,
+      this.config.sortDirection
+    ).subscribe({
+      next: (response) => {
+        console.log("✅ Datos recibidos:", response);
+        // Los datos ya vienen filtrados y ordenados del servidor
+        this.matGeneral = (response.data || []).map(d => ({
           ...d,
-          costo_unitario: Number(d?.costo_unitario ?? 0)
+          costo_unitario: Number(d.costo_unitario ?? 0)
         }));
-        this.applyFilters();
+        
+        // Metadatos de paginación
+        this.config.totalItems = response.meta.totalItems;
+        this.config.totalPages = response.meta.totalPages;
+        
         this.loading = false;
-        if (!data || data.length === 0) {
+        
+        if (!response.data || response.data.length === 0) {
           this.messageService.add({
             severity: 'info',
             summary: 'Sin registros',
-            detail: 'No hay material general para mostrar.',
+            detail: this.config.searchTerm ? 'No se encontraron resultados.' : 'No hay material general para mostrar.',
             sticky: false,
-            life: 5000
-          });
-        } else {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Carga completa',
-            detail: 'El material general se cargó correctamente.',
-            sticky: false,
-            life: 5000
+            life: 3000
           });
         }
       },
       error: (err) => {
-        console.error("❌ Error al cargar material general:", err.message);
+        console.error("❌ Error al cargar material general:", err);
         this.error = "No se cargó el material general.";
         this.loading = false;
         this.messageService.add({
@@ -83,59 +94,29 @@ export class MatGeneralComponent implements OnInit {
   }
 
   onSearchTermChange() {
-    this.applyFilters();
-  }
-
-  toggleSort(column: 'nombre' | 'cantidad' | 'unidad' | 'costo_unitario') {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+    // Cancelar búsqueda anterior si existe
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
     }
-    this.applyFilters();
+    
+    // Esperar 500ms después de que el usuario deje de escribir
+    this.searchTimeout = setTimeout(() => {
+      this.config.paginaActual = 1; // Resetear a página 1 al buscar
+      this.cargarMatGeneral();
+    }, 500);
   }
 
   onSortOptionChange(value: string) {
     const [col, dir] = (value || '').split(':');
-    const validCols = ['nombre', 'cantidad', 'unidad', 'costo_unitario'] as const;
+    const validCols = ['nombre', 'cantidad', 'costo_unitario'] as const;
     if (col && (validCols as readonly string[]).includes(col)) {
-      this.sortColumn = col as any;
+      this.config.sortColumn = col as any;
     }
     if (dir === 'asc' || dir === 'desc') {
-      this.sortDirection = dir;
+      this.config.sortDirection = dir;
     }
-    this.applyFilters();
-  }
-
-  private applyFilters() {
-    const term = this.searchTerm.trim().toLowerCase();
-    let data = [...this.matGeneral];
-    if (term) {
-      data = data.filter(mg =>
-        mg.nombre.toLowerCase().includes(term) ||
-        String(mg.cantidad).includes(term) ||
-        mg.unidad.toLowerCase().includes(term) ||
-        String(mg.costo_unitario ?? 0).includes(term)
-      );
-    }
-
-    data.sort((a, b) => {
-      let comp = 0;
-      if (this.sortColumn === 'cantidad') {
-        comp = (a.cantidad ?? 0) - (b.cantidad ?? 0);
-      } else if (this.sortColumn === 'nombre') {
-        comp = a.nombre.localeCompare(b.nombre);
-      } else if (this.sortColumn === 'unidad') {
-        comp = a.unidad.localeCompare(b.unidad);
-      } else {
-        // costo_unitario
-        comp = (a.costo_unitario ?? 0) - (b.costo_unitario ?? 0);
-      }
-      return this.sortDirection === 'asc' ? comp : -comp;
-    });
-
-    this.matGeneralView = data;
+    this.config.paginaActual = 1; // Resetear a página 1 al ordenar
+    this.cargarMatGeneral();
   }
 
   openEdit(item: MatGeneral) {
@@ -203,17 +184,14 @@ export class MatGeneralComponent implements OnInit {
 
     this.insumosService.updateMatGeneral(this.selectedMatGeneral.id, datosActualizados).subscribe({
       next: (actualizado: any) => {
-        const idx = this.matGeneral.findIndex(mg => mg.id === actualizado.id);
-        if (idx !== -1) {
-          this.matGeneral[idx] = { ...this.matGeneral[idx], ...actualizado };
-        }
-        this.applyFilters();
         this.messageService.add({
           severity: 'success',
           summary: 'Actualizado',
-          detail: `Material general actualizado.`
+          detail: 'Material general actualizado correctamente.'
         });
         this.closeEdit();
+        // Recargar la página actual
+        this.cargarMatGeneral();
       },
       error: (err) => {
         this.messageService.add({
@@ -244,14 +222,14 @@ export class MatGeneralComponent implements OnInit {
 
     this.insumosService.deleteMatGeneral(this.materialAEliminar.id).subscribe({
       next: () => {
-        this.matGeneral = this.matGeneral.filter(mg => mg.id !== this.materialAEliminar!.id);
-        this.applyFilters();
         this.messageService.add({
           severity: 'success',
           summary: 'Eliminado',
           detail: `Material "${this.materialAEliminar!.nombre}" eliminado.`
         });
         this.cancelarEliminacion();
+        // Recargar la página actual
+        this.cargarMatGeneral();
       },
       error: (err) => {
         this.messageService.add({
@@ -262,5 +240,38 @@ export class MatGeneralComponent implements OnInit {
         this.cancelarEliminacion();
       }
     });
+  }
+
+  // Métodos de paginación
+  irAPaginaAnterior() {
+    if (this.config.paginaActual > 1) {
+      this.config.paginaActual--;
+      this.cargarMatGeneral();
+    }
+  }
+
+  irAPaginaSiguiente() {
+    if (this.config.paginaActual < this.config.totalPages) {
+      this.config.paginaActual++;
+      this.cargarMatGeneral();
+    }
+  }
+
+  irAPagina(pagina: number) {
+    if (pagina >= 1 && pagina <= this.config.totalPages) {
+      this.config.paginaActual = pagina;
+      this.cargarMatGeneral();
+    }
+  }
+
+  get paginasArray(): number[] {
+    return Array.from({ length: this.config.totalPages }, (_, i) => i + 1);
+  }
+
+  ngOnDestroy() {
+    // Limpiar timeout al destruir el componente
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
   }
 }

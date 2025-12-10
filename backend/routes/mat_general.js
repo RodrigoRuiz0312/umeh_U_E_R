@@ -1,18 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
+const { getPaginatedData } = require('../utils/paginationHelper');
 
+// ✅ GET todos los materiales generales con paginación
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query(
-      `SELECT id, nombre, cantidad, unidad,
-              COALESCE(costo_unitario, 0) AS costo_unitario
-         FROM mat_general`
+    const result = await getPaginatedData(
+      pool,
+      'mat_general',
+      'mg',
+      ['mg.nombre', 'mg.unidad', 'CAST(mg.cantidad AS TEXT)', 'CAST(mg.costo_unitario AS TEXT)'],
+      ['id', 'nombre', 'cantidad', 'costo_unitario'],
+      req.query
     );
-    res.json(result.rows);
+
+    res.json(result);
   } catch (err) {
-    console.error('Error obteniendo mat_general:', err);
-    res.status(500).json({ error: 'Error obteniendo material general' });
+    console.error('Error al obtener material general:', err);
+    res.status(500).json({ error: 'Error al obtener datos' });
   }
 });
 

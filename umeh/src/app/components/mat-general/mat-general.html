@@ -4,7 +4,7 @@
     <div style="flex: 1 1 auto;"></div>
     <div class="input-with-icon" style="flex:0 0 320px; max-width: 50%;">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+      <input type="text" [(ngModel)]="config.searchTerm" (ngModelChange)="onSearchTermChange()"
         placeholder="Buscar por material, cantidad o unidad..."
         style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
     </div>
@@ -54,11 +54,11 @@
             <td colspan="5" style="text-align:center; opacity:0.8; padding:12px;">No hay material general registrado.
             </td>
           </tr>
-          <tr *ngFor="let material of matGeneralView">
-            <td>{{ material.nombre }}</td>
-            <td>{{ material.cantidad }}</td>
-            <td>{{ material.unidad }}</td>
-            <td>{{ material.costo_unitario | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
+          <tr *ngFor="let material of matGeneral">
+            <td>{{ material.nombre || 'N/A' }}</td>
+            <td>{{ material.cantidad ?? 'N/A' }}</td>
+            <td>{{ material.unidad || 'N/A' }}</td>
+            <td>{{ (material.costo_unitario ?? 0) | currency:'MXN':'symbol-narrow':'1.2-2' }}</td>
             <td class="actions">
               <button class="action-btnP" (click)="openEdit(material)" title="Editar cantidad">
                 <img src="assets/img/edit.png" class="btn-iconP" alt="Editar">
@@ -71,6 +71,32 @@
         </ng-template>
       </tbody>
     </table>
+  </div>
+
+  <!-- Controles de paginación -->
+  <div *ngIf="!loading && config.totalPages > 1" class="pagination-container">
+    <div class="pagination-info">
+      Mostrando {{ (config.paginaActual - 1) * config.limite + 1 }} - {{ config.paginaActual * config.limite > config.totalItems ? config.totalItems : config.paginaActual * config.limite }} de {{ config.totalItems }} materiales
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="btn-pagination" 
+        (click)="irAPaginaAnterior()" 
+        [disabled]="config.paginaActual === 1"
+        title="Página anterior">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      
+      <span class="page-indicator">Página {{ config.paginaActual }} de {{ config.totalPages }}</span>
+      
+      <button 
+        class="btn-pagination" 
+        (click)="irAPaginaSiguiente()" 
+        [disabled]="config.paginaActual === config.totalPages"
+        title="Página siguiente">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Modal edición completo -->

@@ -1,25 +1,28 @@
-// routes/mat_triage.js
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
+const { getPaginatedData } = require('../utils/paginationHelper');
 
-// 📦 GET todo el material de triage
+// GET todo el material de triage con paginación
 router.get('/', async (req, res) => {
   try {
-    // Alias costo_unitario como costo y forzar 0 cuando venga NULL
-    const result = await pool.query(
-      `SELECT id, nombre, cantidad, unidad,
-              COALESCE(costo_unitario, 0) AS costo
-         FROM mat_triage`
+    const result = await getPaginatedData(
+      pool,
+      'mat_triage',
+      'mt',
+      ['mt.nombre', 'mt.unidad', 'CAST(mt.cantidad AS TEXT)'],
+      ['id', 'nombre', 'cantidad', 'costo_unitario'],
+      req.query
     );
-    res.json(result.rows);
+
+    res.json(result);
   } catch (err) {
-    console.error('Error obteniendo mat_triage:', err);
-    res.status(500).json({ error: 'Error obteniendo material de triage' });
+    console.error('Error al obtener triage:', err);
+    res.status(500).json({ error: 'Error al obtener datos' });
   }
 });
 
-// ✏️ Actualizar material de triage por ID (todos los campos)
+// Actualizar material de triage por ID (todos los campos)
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { nombre, cantidad, unidad, costo_unitario } = req.body;
@@ -73,7 +76,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ❌ DELETE eliminar material de triage
+// DELETE eliminar material de triage
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   if (!id) return res.status(400).json({ error: 'ID es requerido' });

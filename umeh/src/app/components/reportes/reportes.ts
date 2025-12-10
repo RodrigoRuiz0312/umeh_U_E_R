@@ -61,7 +61,7 @@ export class Reportes implements OnInit {
       this.reporte = reporteInsumos || null;
       this.resumenConsultas = resumen || null;
       this.cargando = false;
-      
+
       if (this.reporte && this.reporte.insumos.length === 0) {
         this.mensajeError = 'No se encontraron insumos para la fecha seleccionada';
       } else {
@@ -88,7 +88,7 @@ export class Reportes implements OnInit {
     // Filtrar por búsqueda
     if (this.busqueda.trim()) {
       const busquedaLower = this.busqueda.toLowerCase();
-      insumos = insumos.filter(i => 
+      insumos = insumos.filter(i =>
         i.nombre_insumo.toLowerCase().includes(busquedaLower)
       );
     }
@@ -126,7 +126,27 @@ export class Reportes implements OnInit {
   }
 
   imprimirReporte(): void {
-    window.print();
+    if (!this.fechaSeleccionada) return;
+
+    this.cargando = true;
+    this.reportesService.descargarReportePDF(this.fechaSeleccionada).subscribe(
+      (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `reporte_diario_${this.fechaSeleccionada}.pdf`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+        this.cargando = false;
+        this.mensajeExito = 'Reporte PDF descargado exitosamente';
+        setTimeout(() => this.mensajeExito = '', 3000);
+      },
+      (error) => {
+        console.error('Error descargando PDF:', error);
+        this.mensajeError = 'Error al descargar el reporte PDF';
+        this.cargando = false;
+      }
+    );
   }
 
   exportarCSV(): void {
@@ -154,10 +174,10 @@ export class Reportes implements OnInit {
       filas.push(['', '', '', '', 'Procedimientos Extras', `$${this.reporte.costoExtras.toFixed(2)}`]);
     }
     filas.push(['', '', '', '', 'Costos de Insumos', `$${this.reporte.totalInsumos.toFixed(2)}`]);
-    
+
     // Agregar línea en blanco
     filas.push(['', '', '', '', '', '']);
-    
+
     // Agregar total general
     filas.push(['', '', '', '', 'TOTAL GENERAL', `$${this.reporte.totalGeneral.toFixed(2)}`]);
 

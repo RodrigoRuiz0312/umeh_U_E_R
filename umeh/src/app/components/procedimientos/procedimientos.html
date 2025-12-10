@@ -4,9 +4,21 @@
     <div style="flex: 1 1 auto;"></div>
     <div class="input-with-icon" style="flex:0 0 320px; max-width: 50%;">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearchTermChange()"
+      <input type="text" [(ngModel)]="config.searchTerm" (ngModelChange)="onSearchTermChange()"
         placeholder="Buscar por procedimiento, responsable o insumo..."
         style="width:100%; padding:8px 8px 8px 32px; border-radius:8px; border:1px solid var(--input-border);" />
+    </div>
+    <div style="flex:0 0 220px;">
+      <select #orderSel (change)="onSortOptionChange(orderSel.value)"
+        style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--input-border);">
+        <option value="" disabled selected>Ordenar por...</option>
+        <option value="id_procedimiento:asc">ID (↑0→9)</option>
+        <option value="id_procedimiento:desc">ID (9→0)</option>
+        <option value="procedimiento:asc">Nombre (A→Z)</option>
+        <option value="procedimiento:desc">Nombre (Z→A)</option>
+        <option value="costo_total:asc">Costo (menor→mayor)</option>
+        <option value="costo_total:desc">Costo (mayor→menor)</option>
+      </select>
     </div>
   </div>
 
@@ -17,18 +29,11 @@
     <table class="procedimiento-table">
       <thead>
         <tr>
-          <th (click)="toggleSort('procedimiento')" style="cursor:pointer; user-select:none;">
-            Procedimiento
-            <span *ngIf="sortColumn==='procedimiento'" aria-hidden="true">{{ sortDirection === 'asc' ? '▲' : '▼'
-              }}</span>
-          </th>
+          <th>Procedimiento</th>
           <th>Observaciones</th>
           <th>Insumos</th>
           <th>Responsables</th>
-          <th (click)="toggleSort('costo_total')" style="cursor:pointer; user-select:none;">
-            Costo Total
-            <span *ngIf="sortColumn==='costo_total'" aria-hidden="true">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
-          </th>
+          <th>Costo Total</th>
           <th class="actions">Acciones</th>
         </tr>
       </thead>
@@ -45,15 +50,14 @@
         </ng-container>
 
         <ng-template #dataRows>
-          <tr *ngIf="procedimientosView.length === 0">
+          <tr *ngIf="procedimientos.length === 0">
             <td colspan="6" style="text-align:center; opacity:0.8; padding:20px;">
-              {{ searchTerm ? 'No se encontraron procedimientos que coincidan con la búsqueda.' : 'No hay procedimientos
-              registrados.' }}
+              {{ config.searchTerm ? 'No se encontraron procedimientos que coincidan con la búsqueda.' : 'No hay procedimientos registrados.' }}
             </td>
           </tr>
-          <tr *ngFor="let p of procedimientosView">
+          <tr *ngFor="let p of procedimientos">
             <td>
-              <div>{{ p.procedimiento }}</div>
+              <div>{{ p.procedimiento || 'N/A' }}</div>
             </td>
             <td>
               <span *ngIf="p.observaciones; else noObservaciones" class="text-muted">
@@ -107,6 +111,32 @@
         </ng-template>
       </tbody>
     </table>
+  </div>
+
+  <!-- Controles de paginación -->
+  <div *ngIf="!loading && config.totalPages > 1" class="pagination-container">
+    <div class="pagination-info">
+      Mostrando {{ (config.paginaActual - 1) * config.limite + 1 }} - {{ config.paginaActual * config.limite > config.totalItems ? config.totalItems : config.paginaActual * config.limite }} de {{ config.totalItems }} procedimientos
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="btn-pagination" 
+        (click)="irAPaginaAnterior()" 
+        [disabled]="config.paginaActual === 1"
+        title="Página anterior">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      
+      <span class="page-indicator">Página {{ config.paginaActual }} de {{ config.totalPages }}</span>
+      
+      <button 
+        class="btn-pagination" 
+        (click)="irAPaginaSiguiente()" 
+        [disabled]="config.paginaActual === config.totalPages"
+        title="Página siguiente">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
   </div>
 
   <!-- Modal de Edición -->
