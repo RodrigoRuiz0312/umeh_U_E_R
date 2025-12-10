@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Medicamento } from '../modelos/medicamento';
@@ -33,6 +33,17 @@ export interface NuevoMatGeneral {
   costo_unitario?: number | null;
 }
 
+// Define la estructura que viene del backend
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+  };
+}
+
 export type NuevoInsumo = NuevoMedicamento | NuevoMaterial | NuevoMatGeneral;
 
 @Injectable({
@@ -53,22 +64,41 @@ export class InsumoService {
 
   constructor(private http: HttpClient) { }
 
-  // "********************************************************************************************************"
-  // "* METODOS MEDICAMENTOS *
-  // "********************************************************************************************************"
-  getInsumos(): Observable<Medicamento[]> {
-    if (this.medicamentosCache) {
+  private getPaginationParams(
+    page: number,
+    limit: number,
+    search: string,
+    sortColumn: string,
+    sortDirection: string
+  ): HttpParams {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
 
-      return of(this.medicamentosCache);
+    if (search && search.trim()) {
+      params = params.set('search', search.trim());
     }
+    if (sortColumn) {
+      params = params.set('sortColumn', sortColumn);
+    }
+    if (sortDirection) {
+      params = params.set('sortDirection', sortDirection);
+    }
+    return params;
+  }
+  // "********************************************************************************************************"
+  // "* GET MEDICAMENTOS *
+  // "********************************************************************************************************"
+  getInsumos(page: number = 1, limit: number = 10, search: string = '', sortColumn: string = 'id', sortDirection: string = 'asc'): Observable<PaginatedResponse<Medicamento>> {
+    const params = this.getPaginationParams(page, limit, search, sortColumn, sortDirection);
 
-    return this.http.get<Medicamento[]>(this.medicamentosURL).pipe(
-      tap(data => this.medicamentosCache = data),
-      catchError((error) => {
-        console.error("❌ Error en la llamada HTTP:", error.message || error);
-        return throwError(() => new Error('No se pudo obtener la lista de insumos'));
-      })
-    );
+    return this.http.get<PaginatedResponse<Medicamento>>(this.medicamentosURL, { params })
+      .pipe(
+        catchError(error => {
+          console.error("Error en la llamada HTTP:", error.message || error);
+          return throwError(() => new Error('Error al cargar medicamentos'));
+        })
+      );
   }
 
   getResumen(): Observable<{ total_meds: number; stock_bajo: number; total_triage: number }> {
@@ -82,34 +112,29 @@ export class InsumoService {
   }
 
   // Obtener el material de triage
-  getMaterial_Triage(): Observable<Triage[]> {
-    if (this.triageCache) {
+  getMaterial_Triage(page: number = 1, limit: number = 10, search: string = '', sortColumn: string = 'nombre', sortDirection: string = 'asc'): Observable<PaginatedResponse<Triage>> {
+    const params = this.getPaginationParams(page, limit, search, sortColumn, sortDirection);
 
-      return of(this.triageCache);
-    }
-
-    return this.http.get<Triage[]>(this.triageURL).pipe(
-      tap(data => this.triageCache = data),
-      catchError((error) => {
-        console.error("❌ Error en la llamada HTTP:", error.message || error);
-        return throwError(() => new Error('No se pudo obtener la lista de insumos'));
-      })
-    );
+    return this.http.get<PaginatedResponse<Triage>>(this.triageURL, { params })
+      .pipe(
+        catchError(error => {
+          console.error("Error:", error);
+          return throwError(() => new Error('Error al cargar triage'));
+        })
+      );
   }
 
   // Obtener el material general
-  getMatGeneral(): Observable<MatGeneral[]> {
-    if (this.matGeneralCache) {
-      return of(this.matGeneralCache);
-    }
+  getMatGeneral(page: number = 1, limit: number = 10, search: string = '', sortColumn: string = 'nombre', sortDirection: string = 'asc'): Observable<PaginatedResponse<MatGeneral>> {
+    const params = this.getPaginationParams(page, limit, search, sortColumn, sortDirection);
 
-    return this.http.get<MatGeneral[]>(this.matGeneralURL).pipe(
-      tap(data => this.matGeneralCache = data),
-      catchError((error) => {
-        console.error("❌ Error en la llamada HTTP:", error.message || error);
-        return throwError(() => new Error('No se pudo obtener la lista de material general'));
-      })
-    );
+    return this.http.get<PaginatedResponse<MatGeneral>>(this.matGeneralURL, { params })
+      .pipe(
+        catchError(error => {
+          console.error("Error:", error);
+          return throwError(() => new Error('Error al cargar material general'));
+        })
+      );
   }
 
   // Actualizar material de triage por ID (todos los campos)
@@ -167,7 +192,7 @@ export class InsumoService {
   addInsumo(insumo: NuevoInsumo): Observable<Medicamento | Triage | MatGeneral> {
     const tipo = (insumo as any)?.tipo;
     let url: string;
-    
+
     if (tipo === 'medicamento' || Array.isArray((insumo as any)?.metodo_aplicacion)) {
       url = this.medicamentosURL;
     } else if (tipo === 'mat_general') {
@@ -288,13 +313,14 @@ export class InsumoService {
     return this.http.post(this.procedimientoURL, data);
   }
 
-  getProcedimientos(): Observable<Procedimiento[]> {
-    if (this.procedimientoCache) {
-      return of(this.procedimientoCache);
-    }
+  getProcedimientos(page: number = 1, limit: number = 10, search: string = '', sortColumn: string = 'id_procedimiento', sortDirection: string = 'asc'): Observable<PaginatedResponse<Procedimiento>> {
+    const params = this.getPaginationParams(page, limit, search, sortColumn, sortDirection);
 
-    return this.http.get<Procedimiento[]>(this.procedimientoURL).pipe(
-      tap(data => this.procedimientoCache = data),
+    return this.http.get<PaginatedResponse<Procedimiento>>(this.procedimientoURL, { params }).pipe(
+      tap((response) => {
+        // Invalidar cache cuando se realiza una búsqueda paginada
+        this.procedimientoCache = null;
+      }),
       catchError((error) => {
         console.error('❌ Error obteniendo procedimientos:', error.message || error);
         return throwError(() => new Error('No se pudo obtener la lista de procedimientos'));

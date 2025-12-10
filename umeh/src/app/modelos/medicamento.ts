@@ -4,5 +4,5 @@ export interface Medicamento {
     cantidad: number;
     unidad?: string; // Opcional: piezas, ml, mg, etc.
     costo: number;
-    metodo_aplicacion: number[]; // IDs de métodos
+    metodo_aplicacion: string[]; // Nombres de los métodos de aplicación
 }  

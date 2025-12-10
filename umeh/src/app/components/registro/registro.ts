@@ -186,15 +186,15 @@ export class Registro implements OnInit {
     const tipoInicial = this.form.get('tipo')?.value;
     this.form.get('tipo')?.setValue(tipoInicial, { emitEvent: true });
 
-    // Cargar catálogos de insumos existentes
-    this.insumoService.getInsumos().subscribe({
-      next: (meds: any[]) => this.medicamentos = meds || []
+    // Cargar catálogos de insumos existentes (límite alto para obtener todos)
+    this.insumoService.getInsumos(1, 1000).subscribe({
+      next: (response) => this.medicamentos = response.data || []
     });
-    this.insumoService.getMaterial_Triage().subscribe({
-      next: (tri: any[]) => this.materiales = tri || []
+    this.insumoService.getMaterial_Triage(1, 1000).subscribe({
+      next: (response) => this.materiales = response.data || []
     });
-    this.insumoService.getMatGeneral().subscribe({
-      next: (mg: any[]) => this.matGenerales = mg || []
+    this.insumoService.getMatGeneral(1, 1000).subscribe({
+      next: (response) => this.matGenerales = response.data || []
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InsumoService } from '../../services/insumos.service';
 import { Procedimiento } from '../../modelos/procedimiento';
@@ -7,6 +7,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SkeletonModule } from 'primeng/skeleton';
 import { SelectModule } from 'primeng/select';
+import { TablaConfig, DEFAULT_TABLA_CONFIG } from '../../modelos/tabla-config';
 
 @Component({
   selector: 'app-procedimientos',
@@ -16,16 +17,16 @@ import { SelectModule } from 'primeng/select';
   styleUrls: ['./procedimientos.css'],
   providers: [MessageService]
 })
-export class Procedimientos implements OnInit {
+export class Procedimientos implements OnInit, OnDestroy {
   procedimientos: Procedimiento[] = [];
-  procedimientosView: Procedimiento[] = [];
   loading = true;
   error: string | null = null;
 
-  // Búsqueda y ordenamiento
-  searchTerm = '';
-  sortColumn: 'id_procedimiento' | 'procedimiento' | 'costo_total' = 'id_procedimiento';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  // Usar modelo TablaConfig
+  config: TablaConfig = { ...DEFAULT_TABLA_CONFIG, sortColumn: 'id_procedimiento' };
+  
+  // Debounce para búsqueda
+  private searchTimeout: any = null;
 
   // Skeletons
   loadingRows = Array.from({ length: 8 });
@@ -54,21 +55,24 @@ export class Procedimientos implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cargarProcedimientos();
     this.cargarCatalogos();
+    this.cargarProcedimientos();
   }
 
   private cargarCatalogos() {
-    this.insumoService.getInsumos().subscribe({
-      next: (meds: any[]) => this.medicamentos = meds || [],
+    // Cargar todos los medicamentos (límite alto para obtener todos)
+    this.insumoService.getInsumos(1, 1000).subscribe({
+      next: (response) => this.medicamentos = response.data || [],
       error: (err) => console.error('Error cargando medicamentos:', err)
     });
-    this.insumoService.getMaterial_Triage().subscribe({
-      next: (tri: any[]) => this.materiales = tri || [],
+    // Cargar material de triage (límite alto para obtener todos)
+    this.insumoService.getMaterial_Triage(1, 1000).subscribe({
+      next: (response) => this.materiales = response.data || [],
       error: (err) => console.error('Error cargando material triage:', err)
     });
-    this.insumoService.getMatGeneral().subscribe({
-      next: (mg: any[]) => this.matGenerales = mg || [],
+    // Cargar material general (límite alto para obtener todos)
+    this.insumoService.getMatGeneral(1, 1000).subscribe({
+      next: (response) => this.matGenerales = response.data || [],
       error: (err) => console.error('Error cargando material general:', err)
     });
   }
@@ -77,23 +81,35 @@ export class Procedimientos implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.insumoService.getProcedimientos().subscribe({
-      next: (data) => {
-        this.procedimientos = data || [];
-        this.applyFilters();
+    this.insumoService.getProcedimientos(
+      this.config.paginaActual,
+      this.config.limite,
+      this.config.searchTerm,
+      this.config.sortColumn,
+      this.config.sortDirection
+    ).subscribe({
+      next: (response) => {
+        console.log('✅ Procedimientos recibidos:', response);
+        this.procedimientos = response.data || [];
+        
+        // Metadatos de paginación
+        this.config.totalItems = response.meta.totalItems;
+        this.config.totalPages = response.meta.totalPages;
+        
         this.loading = false;
 
         if (this.procedimientos.length === 0) {
           this.messageService.add({
             severity: 'info',
             summary: 'Sin registros',
-            detail: 'No hay procedimientos para mostrar.',
+            detail: this.config.searchTerm ? 'No se encontraron resultados.' : 'No hay procedimientos para mostrar.',
             sticky: false,
             life: 3000
           });
         }
       },
       error: (err) => {
+        console.error('❌ Error al cargar procedimientos:', err);
         this.error = err?.message || 'Error cargando procedimientos';
         this.loading = false;
         this.messageService.add({
@@ -107,47 +123,44 @@ export class Procedimientos implements OnInit {
   }
 
   onSearchTermChange() {
-    this.applyFilters();
+    // Cancelar búsqueda anterior si existe
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    
+    // Esperar 500ms después de que el usuario deje de escribir
+    this.searchTimeout = setTimeout(() => {
+      this.config.paginaActual = 1; // Resetear a página 1 al buscar
+      this.cargarProcedimientos();
+    }, 500);
   }
 
-  toggleSort(column: 'id_procedimiento' | 'procedimiento' | 'costo_total') {
-    if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortColumn = column;
-      this.sortDirection = 'asc';
+  onSortOptionChange(value: string) {
+    const [col, dir] = (value || '').split(':');
+    const validCols = ['id_procedimiento', 'procedimiento', 'costo_total'] as const;
+    if (col && (validCols as readonly string[]).includes(col as any)) {
+      this.config.sortColumn = col as any;
     }
-    this.applyFilters();
+    if (dir === 'asc' || dir === 'desc') {
+      this.config.sortDirection = dir;
+    }
+    this.config.paginaActual = 1; // Resetear a página 1 al ordenar
+    this.cargarProcedimientos();
   }
 
-  private applyFilters() {
-    const term = this.searchTerm.trim().toLowerCase();
-    let data = [...this.procedimientos];
-
-    if (term) {
-      data = data.filter(p =>
-        p.procedimiento.toLowerCase().includes(term) ||
-        String(p.id_procedimiento).includes(term) ||
-        String(p.costo_total ?? 0).includes(term) ||
-        (p.observaciones || '').toLowerCase().includes(term) ||
-        (p.costos_detalle || []).some(c => c.responsable.toLowerCase().includes(term)) ||
-        (p.insumos_detalle || []).some(i => i.insumo.toLowerCase().includes(term))
-      );
+  // Métodos de paginación
+  irAPaginaAnterior() {
+    if (this.config.paginaActual > 1) {
+      this.config.paginaActual--;
+      this.cargarProcedimientos();
     }
+  }
 
-    data.sort((a, b) => {
-      let comp = 0;
-      if (this.sortColumn === 'id_procedimiento') {
-        comp = (a.id_procedimiento ?? 0) - (b.id_procedimiento ?? 0);
-      } else if (this.sortColumn === 'procedimiento') {
-        comp = (a.procedimiento || '').localeCompare(b.procedimiento || '');
-      } else if (this.sortColumn === 'costo_total') {
-        comp = (a.costo_total ?? 0) - (b.costo_total ?? 0);
-      }
-      return this.sortDirection === 'asc' ? comp : -comp;
-    });
-
-    this.procedimientosView = data;
+  irAPaginaSiguiente() {
+    if (this.config.paginaActual < this.config.totalPages) {
+      this.config.paginaActual++;
+      this.cargarProcedimientos();
+    }
   }
 
   // Getters para el formulario
@@ -423,14 +436,13 @@ export class Procedimientos implements OnInit {
 
     this.insumoService.deleteProcedimiento(this.procedimientoAEliminar.id_procedimiento).subscribe({
       next: () => {
-        this.procedimientos = this.procedimientos.filter(p => p.id_procedimiento !== this.procedimientoAEliminar!.id_procedimiento);
-        this.applyFilters();
         this.messageService.add({
           severity: 'success',
           summary: 'Eliminado',
           detail: `Procedimiento "${this.procedimientoAEliminar!.procedimiento}" eliminado correctamente.`
         });
         this.cancelarEliminacion();
+        this.cargarProcedimientos(); // Recargar lista completa desde el servidor
       },
       error: (err) => {
         this.messageService.add({
@@ -441,5 +453,12 @@ export class Procedimientos implements OnInit {
         this.cancelarEliminacion();
       }
     });
+  }
+
+  ngOnDestroy() {
+    // Limpiar timeout al destruir el componente
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
   }
 }

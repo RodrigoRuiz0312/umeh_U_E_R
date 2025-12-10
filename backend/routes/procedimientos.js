@@ -2,57 +2,126 @@ const express = require('express')
 const router = express.Router()
 const { pool } = require('../db');
 
+// ✅ GET todos los procedimientos con paginación
 router.get('/', async (req, res) => {
   try {
-    const query = `
-    WITH costos AS (
-  SELECT 
-      pr.id_procedimiento,
-      JSON_AGG(JSON_BUILD_OBJECT('responsable', r.nombre, 'costo', pr.costo)) AS costos_detalle,
-      SUM(pr.costo) AS costo_total
-  FROM procedimiento_responsables pr
-  JOIN responsables r ON r.id_responsable = pr.id_responsable
-  GROUP BY pr.id_procedimiento
-),
-insumos AS (
-  SELECT 
-      pi.id_procedimiento,
-      JSON_AGG(
-        JSON_BUILD_OBJECT(
-          'id_insumo', pi.id_insumo,
-          'insumo', COALESCE(m.nombre, t.nombre, mg.nombre),
-          'tipo', pi.tipo,
-          'cantidad', pi.cantidad
-        )
-      ) AS insumos_detalle
-  FROM procedimiento_insumos pi
-  LEFT JOIN medicamentos m 
-    ON pi.tipo = 'medicamento' AND m.id = pi.id_insumo
-  LEFT JOIN mat_triage t 
-    ON pi.tipo = 'material' AND t.id = pi.id_insumo
-  LEFT JOIN mat_general mg
-    ON pi.tipo = 'mat_general' AND mg.id = pi.id_insumo
-  GROUP BY pi.id_procedimiento
-)
-SELECT 
-  p.id_procedimiento,
-  p.descripcion AS procedimiento,
-  p.observaciones,
-  COALESCE(c.costos_detalle, '[]') AS costos_detalle,
-  COALESCE(c.costo_total, 0) AS costo_total,
-  COALESCE(i.insumos_detalle, '[]') AS insumos_detalle
-FROM procedimientos p
-LEFT JOIN costos c ON c.id_procedimiento = p.id_procedimiento
-LEFT JOIN insumos i ON i.id_procedimiento = p.id_procedimiento
-ORDER BY p.id_procedimiento;
-    `
+    // 1. Obtener parámetros
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || '';
+    const sortColumn = req.query.sortColumn || 'id_procedimiento';
+    const sortDirection = (req.query.sortDirection || 'asc').toLowerCase() === 'desc' ? 'DESC' : 'ASC';
 
-    const result = await pool.query(query)
-    const procedimientos = result.rows
-    res.json(procedimientos)
+    // 2. Validar columna de ordenamiento y determinar ORDER BY
+    const validColumns = ['id_procedimiento', 'procedimiento', 'costo_total'];
+    const orderColumn = validColumns.includes(sortColumn) ? sortColumn : 'id_procedimiento';
+    
+    let orderByClause;
+    if (orderColumn === 'procedimiento') {
+      orderByClause = 'p.descripcion';
+    } else if (orderColumn === 'costo_total') {
+      orderByClause = 'COALESCE(c.costo_total, 0)';
+    } else {
+      orderByClause = 'p.id_procedimiento';
+    }
+
+    // 3. Construir WHERE con parámetros preparados
+    let whereClause = '';
+    let searchParams = [];
+    
+    if (search.trim()) {
+      whereClause = `
+        WHERE (
+          p.descripcion ILIKE $1 OR 
+          p.observaciones ILIKE $1 OR
+          CAST(p.id_procedimiento AS TEXT) ILIKE $1
+        )
+      `;
+      searchParams.push(`%${search.trim()}%`);
+    }
+
+    // 4. Query de DATOS con CTEs
+    const dataQuery = `
+      WITH costos AS (
+        SELECT 
+          pr.id_procedimiento,
+          JSON_AGG(JSON_BUILD_OBJECT('responsable', r.nombre, 'costo', pr.costo)) AS costos_detalle,
+          SUM(pr.costo) AS costo_total
+        FROM procedimiento_responsables pr
+        JOIN responsables r ON r.id_responsable = pr.id_responsable
+        GROUP BY pr.id_procedimiento
+      ),
+      insumos AS (
+        SELECT 
+          pi.id_procedimiento,
+          JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'id_insumo', pi.id_insumo,
+              'insumo', COALESCE(m.nombre, t.nombre, mg.nombre),
+              'tipo', pi.tipo,
+              'cantidad', pi.cantidad
+            )
+          ) AS insumos_detalle
+        FROM procedimiento_insumos pi
+        LEFT JOIN medicamentos m 
+          ON pi.tipo = 'medicamento' AND m.id = pi.id_insumo
+        LEFT JOIN mat_triage t 
+          ON pi.tipo = 'material' AND t.id = pi.id_insumo
+        LEFT JOIN mat_general mg
+          ON pi.tipo = 'mat_general' AND mg.id = pi.id_insumo
+        GROUP BY pi.id_procedimiento
+      )
+      SELECT 
+        p.id_procedimiento,
+        p.descripcion AS procedimiento,
+        p.observaciones,
+        COALESCE(c.costos_detalle, '[]') AS costos_detalle,
+        COALESCE(c.costo_total, 0) AS costo_total,
+        COALESCE(i.insumos_detalle, '[]') AS insumos_detalle
+      FROM procedimientos p
+      LEFT JOIN costos c ON c.id_procedimiento = p.id_procedimiento
+      LEFT JOIN insumos i ON i.id_procedimiento = p.id_procedimiento
+      ${whereClause}
+      ORDER BY ${orderByClause} ${sortDirection}
+      LIMIT $${searchParams.length + 1} OFFSET $${searchParams.length + 2}
+    `;
+
+    // 5. Query de CONTEO
+    const countQuery = `
+      SELECT COUNT(*) 
+      FROM procedimientos p
+      ${whereClause}
+    `;
+
+    // 6. Preparar parámetros para las queries
+    const dataParams = [...searchParams, limit, offset];
+    const countParams = searchParams;
+
+    // 7. Ejecutar ambas consultas en paralelo
+    const [dataResult, countResult] = await Promise.all([
+      pool.query(dataQuery, dataParams),
+      pool.query(countQuery, countParams)
+    ]);
+
+    // 8. Calcular metadatos
+    const totalItems = parseInt(countResult.rows[0].count);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // 9. Responder con estructura estándar
+    res.json({
+      data: dataResult.rows,
+      meta: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+        itemsPerPage: limit
+      }
+    });
+
   } catch (err) {
-    console.error('Error obteniendo procedimientos:', err)
-    res.status(500).json({ error: 'Error obteniendo procedimientos' })
+    console.error('❌ Error obteniendo procedimientos:', err);
+    res.status(500).json({ error: 'Error al obtener procedimientos' });
   }
 })
 

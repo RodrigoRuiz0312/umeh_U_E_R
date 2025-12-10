@@ -63,11 +63,6 @@ app.use(express.static(angularDistPath)); */
 //   res.sendFile(path.join(angularDistPath, 'index.html'));
 // });
 
-app.get('/', (req, res) => {
-  res.send('Servidor Backend corriendo correctamente. Usa el puerto 4200 para el Frontend.');
-});
-
-
 const PORT = process.env.PORT || 4000;
 // Escucha en 0.0.0.0 para aceptar conexiones desde la LAN
 app.listen(PORT, '0.0.0.0', () => {

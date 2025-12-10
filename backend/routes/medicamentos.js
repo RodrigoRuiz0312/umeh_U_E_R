@@ -2,34 +2,55 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
+const { getPaginatedData } = require('../utils/paginationHelper');
 
 // ✅ GET todos los medicamentos (read)
 router.get('/', async (req, res) => {
   try {
-    const query = `
+    const tableName = 'medicamentos';
+    const alias = 'm';
+    const validSortColumns = ['id', 'nombre', 'cantidad', 'costo_unitario'];
+
+    const searchFields = [
+      'm.nombre',
+      'm.unidad',
+      'CAST(m.cantidad AS TEXT)',
+      'CAST(m.costo_unitario AS TEXT)'
+    ];
+
+    const customSelect = `
       SELECT 
-        m.id, 
-        m.nombre, 
-        m.cantidad, 
+        m.id,
+        m.nombre,
+        m.cantidad,
         m.unidad,
         COALESCE(m.costo_unitario, 0) AS costo,
         COALESCE(
-          (
-            SELECT json_agg(ma2.nombre)
-            FROM medicamento_metodo mm2
-            LEFT JOIN metodos_aplicacion ma2 ON ma2.id = mm2.metodo_id
-            WHERE mm2.medicamento_id = m.id
-          ), 
+          (SELECT json_agg(ma.nombre)
+           FROM medicamento_metodo mm
+           JOIN metodos_aplicacion ma ON mm.metodo_id = ma.id
+           WHERE mm.medicamento_id = m.id
+          ),
           '[]'::json
         ) AS metodo_aplicacion
       FROM medicamentos m
-      ORDER BY m.id`;
+    `;
 
-    const result = await pool.query(query);
-    res.json(result.rows);
+    const result = await getPaginatedData(
+      pool,
+      tableName,
+      alias,
+      searchFields,
+      validSortColumns,
+      req.query,
+      customSelect
+    );
+
+    res.json(result);
+
   } catch (err) {
     console.error('❌ Error obteniendo medicamentos:', err);
-    res.status(500).json({ error: 'Error obteniendo medicamentos' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -141,7 +162,7 @@ router.put('/:id', async (req, res) => {
     if (Array.isArray(metodo_aplicacion)) {
       // Eliminar métodos existentes
       await client.query('DELETE FROM medicamento_metodo WHERE medicamento_id = $1', [id]);
-      
+
       // Insertar nuevos métodos
       if (metodo_aplicacion.length > 0) {
         const insertPromises = metodo_aplicacion.map((metodoId) =>

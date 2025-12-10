@@ -96,4 +96,16 @@ export class ReportesService {
     }
     return this.http.get<ResumenConsultas>(`${this.baseUrl}/resumen-consultas`, { params });
   }
+
+  /**
+   * Descarga el reporte PDF del día
+   * @param fecha Fecha en formato YYYY-MM-DD
+   */
+  descargarReportePDF(fecha: string): Observable<Blob> {
+    let params = new HttpParams().set('fecha', fecha);
+    return this.http.get(`${this.baseUrl}/pdf-diario`, {
+      params,
+      responseType: 'blob'
+    });
+  }
 }

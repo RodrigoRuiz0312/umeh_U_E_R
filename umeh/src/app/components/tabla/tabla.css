@@ -434,3 +434,79 @@
   background: #fa5252;
   transform: translateY(-1px);
 }
+
+/* --- CONTROLES DE PAGINACIÓN --- */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding: 15px 20px;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 12px 12px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.pagination-info {
+  font-size: 0.9rem;
+  color: var(--card-text);
+  opacity: 0.8;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-pagination {
+  background: var(--primary-color, #0d6efd);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.2);
+}
+
+.btn-pagination:hover:not(:disabled) {
+  background: #0b5ed7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+.btn-pagination:disabled {
+  background: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.page-indicator {
+  font-size: 0.9rem;
+  color: var(--card-text);
+  font-weight: 600;
+  padding: 0 10px;
+}
+
+/* Responsive para móviles */
+@media (max-width: 600px) {
+  .pagination-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pagination-info {
+    text-align: center;
+    font-size: 0.85rem;
+  }
+}
