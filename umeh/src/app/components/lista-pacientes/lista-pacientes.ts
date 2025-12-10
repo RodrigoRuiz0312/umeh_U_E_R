@@ -26,6 +26,10 @@ export class ListaPacientes implements OnInit {
   modalEliminarVisible: boolean = false;
   pacienteAEliminar: { id: number, nombre: string } | null = null;
 
+  currentPage: number = 1;
+  itemsPerPage: number = 10;
+  totalItems: number = 0;
+
   constructor(private api: ApiService, private messageService: MessageService) { }
 
   ngOnInit() {
@@ -34,11 +38,37 @@ export class ListaPacientes implements OnInit {
 
 
   cargarPacientes() {
-    this.api.getPacientes().subscribe(items => {
-      this.pacientes = items;
-      this.applyFilters();
+    this.api.getPacientes(this.currentPage, this.itemsPerPage, this.sortColumn, this.sortDirection, this.searchTerm).subscribe((resp: any) => {
+      this.pacientes = resp.pacientes;
+      this.totalItems = resp.total;
+      this.pacientesView = [...this.pacientes];
     });
   }
+
+  goToPage(page: number) {
+    const pageCount = Math.ceil(this.totalItems / this.itemsPerPage)
+    if (page < 1 || page > pageCount) return;
+    this.currentPage = page;
+    this.cargarPacientes();
+  }
+
+
+  getPages(): number[] {
+    const pageCount = Math.ceil(this.totalItems / this.itemsPerPage);
+    const pages: number[] = [];
+    const start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(pageCount, this.currentPage + 2);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  get pageCount(): number {
+    return Math.ceil(this.totalItems / this.itemsPerPage);
+  }
+
 
   openEditModal(paciente: any) {
     this.pacienteSeleccionado = { ...paciente };
@@ -55,9 +85,9 @@ export class ListaPacientes implements OnInit {
     this.cargarPacientes();
   }
 
-  // REEMPLAZA TU FUNCIÓN 'confirmarEliminacion' POR ESTA:
+ 
   confirmarEliminacion(id: number, nombre: string) {
-    // En lugar de llamar al servicio de PrimeNG, guardamos datos y mostramos NUESTRO modal
+   
     this.pacienteAEliminar = { id, nombre };
     this.modalEliminarVisible = true;
   }
@@ -99,66 +129,19 @@ export class ListaPacientes implements OnInit {
   }
 
   onSearchTermChange() {
-    this.applyFilters();
-  }
-
-  // EN: lista-pacientes.ts
-
-  private applyFilters() {
-    // --- El filtrado por término de búsqueda (search) no necesita cambios ---
-    const term = (this.searchTerm || '').trim().toLowerCase();
-    if (!term) {
-      this.pacientesView = [...this.pacientes];
-    } else {
-      this.pacientesView = this.pacientes.filter(p => {
-        const nombreCompleto = `${p.nombre || ''} ${p.apellidos || ''}`.toLowerCase();
-        return nombreCompleto.includes(term);
-      });
-    }
-
-    // --- El Ordenamiento (sort) SÍ necesita cambios ---
-    const dir = this.sortDirection === 'asc' ? 1 : -1;
-    this.pacientesView.sort((a, b) => {
-      const col = this.sortColumn;
-
-      let av: string, bv: string;
-
-      // --- ¡NUEVA LÓGICA DE ORDENAMIENTO! ---
-      if (col === 'telefonos') {
-        // Ordenar por el *primer* teléfono del array
-        av = String(a?.telefonos?.[0] ?? '').toLowerCase();
-        bv = String(b?.telefonos?.[0] ?? '').toLowerCase();
-      } else if (col === 'correos') {
-        // Ordenar por el *primer* correo del array
-        av = String(a?.correos?.[0] ?? '').toLowerCase();
-        bv = String(b?.correos?.[0] ?? '').toLowerCase();
-      } else {
-        // Lógica original para nombre, apellidos, sexo
-        av = String(a?.[col] ?? '').toLowerCase();
-        bv = String(b?.[col] ?? '').toLowerCase();
-      }
-      // --- FIN DE LA NUEVA LÓGICA ---
-
-      if (av < bv) return -1 * dir;
-      if (av > bv) return 1 * dir;
-      return 0;
-    });
+    this.currentPage = 1;
+    this.cargarPacientes();
   }
 
   onSortOptionChange(value: string) {
-    // value formato: "col:dir" e.g. "nombre:asc"
     const [col, dir] = (value || '').split(':');
 
-    // ANTES
-    // if (col && (['nombre','apellidos','telefono','correo','sexo'] as const).includes(col as any)) {
-
-    // DESPUÉS
     if (col && (['nombre', 'apellidos', 'telefonos', 'correos', 'sexo'] as const).includes(col as any)) {
       this.sortColumn = col as any;
     }
     if (dir === 'asc' || dir === 'desc') {
       this.sortDirection = dir;
     }
-    this.applyFilters();
+    this.cargarPacientes();
   }
 }
