@@ -4,4 +4,5 @@ export interface Triage {
     cantidad: number;
     unidad: string;
     costo: number;
+    costo_unitario?: number; // Campo del backend
 }
