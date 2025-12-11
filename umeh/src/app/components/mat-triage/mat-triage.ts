@@ -58,7 +58,7 @@ export class MatTriage implements OnInit, OnDestroy {
         // Los datos ya vienen filtrados y ordenados del servidor
         this.triage = (response.data || []).map(d => ({
           ...d,
-          costo: Number(d.costo ?? 0)
+          costo: Number(d.costo_unitario ?? 0)
         }));
         
         // Metadatos de paginación
