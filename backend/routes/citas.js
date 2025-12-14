@@ -173,7 +173,7 @@ router.get("/hoy", async (req, res) => {
       JOIN medico m ON c.id_medico = m.id_medico
       WHERE 
         c.fecha = $1 
-        AND c.estado = ('Agendada') -- Solo las citas activas
+        AND c.estado NOT IN ('Finalizada', 'Cancelada') -- Solo las citas activas
       ORDER BY 
         c.hora; -- Ordenadas por hora
     `;

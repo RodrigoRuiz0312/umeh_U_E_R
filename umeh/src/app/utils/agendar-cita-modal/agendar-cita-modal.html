@@ -8,7 +8,20 @@
 
     <div class="modal-body">
       <div class="cita-info">
-        <p><strong>Médico:</strong> {{ datosCita.doctor.nombre }} {{ datosCita.doctor.apellidos }}</p>
+        <div *ngIf="datosCita.doctor">
+          <p><strong>Médico:</strong> {{ datosCita.doctor.nombre }} {{ datosCita.doctor.apellidos }}</p>
+        </div>
+
+        <div *ngIf="!datosCita.doctor" class="form-group">
+          <label>Seleccionar Médico:</label>
+          <select [(ngModel)]="doctorSeleccionado">
+            <option [ngValue]="null">-- Seleccione --</option>
+            <option *ngFor="let doc of datosCita.doctoresDisponibles" [ngValue]="doc">
+              {{ doc.nombre }} {{ doc.apellidos }}
+            </option>
+          </select>
+        </div>
+
         <p><strong>Fecha:</strong> {{ datosCita.fecha | date:'dd/MM/yyyy' }}</p>
         <p><strong>Hora:</strong> {{ datosCita.hora.substring(0, 5) }} hrs</p>
       </div>
@@ -40,7 +53,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" *ngIf="!datosCita.consultorio">
         <label for="consultorio">Consultorio Disponible:</label>
         <select id="consultorio" name="consultorio" [(ngModel)]="consultorioSeleccionado">
           <option value="" disabled>Seleccione un consultorio</option>
@@ -48,6 +61,10 @@
             {{ consultorio }}
           </option>
         </select>
+      </div>
+
+      <div class="form-group" *ngIf="datosCita.consultorio">
+        <p><strong>Consultorio Asignado:</strong> {{ datosCita.consultorio }}</p>
       </div>
     </div>
 

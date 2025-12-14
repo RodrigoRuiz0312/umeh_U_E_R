@@ -22,6 +22,9 @@ export class Citas implements OnInit {
   terminoBusquedaCita: string = '';
   resultadoBusqueda: any[] = [];
   fechaSeleccionada: string = new Date().toISOString().split('T')[0];
+  
+  consultorios: string[] = ['Consultorio 1', 'Consultorio 2', 'Consultorio 3', 'Consultorio 4'];
+  citasDelDia: any[] = [];
 
   horariosManana: string[] = [
     '07:00:00', '07:30:00',
@@ -75,6 +78,8 @@ export class Citas implements OnInit {
 
   cargarAgenda() {
     if (!this.agendaSeleccionada) return;
+    
+    // 1. Obtener lista de doctores (para el modal de agendar)
     this.api.getAgenda(this.fechaSeleccionada, this.agendaSeleccionada).subscribe((data) => {
       this.agenda = [...data];
       console.log('Agenda recibida para la fecha', this.fechaSeleccionada, ':', this.agenda);
@@ -84,6 +89,12 @@ export class Citas implements OnInit {
         );
         this.doctorSeleccionado = actualizado ?? null;
       }
+    });
+
+    // 2. Obtener TODAS las citas del día para llenar la grilla de consultorios
+    this.api.getAgendaCompletaDelDia(this.fechaSeleccionada).subscribe(data => {
+      this.citasDelDia = data;
+      console.log('Citas del día (Global):', this.citasDelDia);
     });
   }
 
@@ -137,6 +148,38 @@ export class Citas implements OnInit {
 
   getAppointmentForHour(doctor: any, horario: string): any {
     return doctor.citas.find((cita: any) => cita.hora === horario);
+  }
+
+  // --- Nueva Lógica para la Vista por Consultorios ---
+
+  getCitaCelda(consultorio: string, horario: string): any {
+    // Buscar en la lista global de citas del día
+    // Asumimos que horario viene en formato 'HH:MM:SS' matches
+    return this.citasDelDia.find(c => c.consultorio === consultorio && c.hora === horario);
+  }
+
+  abrirModalAgendarCelda(consultorio: string, horario: string) {
+    const citaExistente = this.getCitaCelda(consultorio, horario);
+    
+    // Si ya hay cita, ver detalles
+    if (citaExistente) {
+      this.verDetallesCita(citaExistente);
+      return;
+    }
+
+    // Si está libre, agendar nueva. Filtrar doctores disponibles.
+    const doctoresDisponibles = this.agenda.filter(doc => {
+       // Un doctor está disponible si NO tiene cita a esa hora
+       return !doc.citas.some((c: any) => c.hora === horario);
+    });
+
+    this.datosParaNuevaCita = {
+      consultorio: consultorio,
+      fecha: this.fechaSeleccionada,
+      hora: horario,
+      doctoresDisponibles: doctoresDisponibles
+    };
+    this.isAgendarModalVisible = true;
   }
 
   verDetallesCita(cita: any) {
