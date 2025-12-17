@@ -86,9 +86,7 @@
     <div class="tablero-header">
       <div class="titles">
         <h2>{{ agendaSeleccionada }}</h2>
-        <h3 *ngIf="doctorSeleccionado" class="subtitle-doc">
-          Dr. {{ doctorSeleccionado.nombre }} {{ doctorSeleccionado.apellidos }}
-        </h3>
+        <p class="subtitle-doc">Vista Global Diaria</p>
       </div>
 
       <div class="date-selector">
@@ -99,57 +97,57 @@
 
     <hr class="divider-light">
 
-    <div *ngIf="agendaSeleccionada === 'General' && !doctorSeleccionado" class="doctor-selection-grid">
-      <div class="info-banner">
-        Seleccione un médico para ver sus horarios disponibles:
-      </div>
-
-      <div class="doctors-grid">
-        <div *ngFor="let doctor of agenda" class="doctor-card-mini" (click)="elegirDoctorDeLista(doctor)">
-          <div class="avatar-placeholder">
-            {{ doctor.nombre.charAt(0) }}{{ doctor.apellidos.charAt(0) }}
-          </div>
-          <div class="doc-info">
-            <h4>{{ doctor.nombre }}</h4>
-            <p>{{ doctor.apellidos }}</p>
-            <span class="btn-select">Ver Horarios &rarr;</span>
-          </div>
-        </div>
-      </div>
-
-      <button class='btn-reg btn-outline-primary marg' (click)="volverASeleccion()">
-        &lt; Cambiar tipo de Agenda
-      </button>
-    </div>
-
-    <div *ngIf="(agendaSeleccionada === 'General' && doctorSeleccionado) || agendaSeleccionada !== 'General'"
-      class="board-wrapper">
-
+    <div class="board-wrapper">
       <div class="board">
-        <div class="doctor-column" *ngFor="let doctor of (doctorSeleccionado ? [doctorSeleccionado] : agenda)">
+        <!-- Iterar Consultorios en lugar de Doctores -->
+        <div class="doctor-column" *ngFor="let consultorio of consultorios">
 
-          <div class="doctor-header" *ngIf="agendaSeleccionada !== 'General'">
-            <h3>{{ doctor.nombre }} {{ doctor.apellidos }}</h3>
+          <div class="doctor-header">
+            <h3>{{ consultorio }}</h3>
           </div>
 
           <div class="time-slots-wrapper">
             <h4 class="time-group-header">Mañana</h4>
             <div class="pills-container">
               <button *ngFor="let horario of horariosManana" class="time-pill"
-                [class.ocupado]="isHourBooked(doctor, horario)"
-                (click)="isHourBooked(doctor, horario) ? verDetallesCita(getAppointmentForHour(doctor, horario)) : abrirModalAgendar(doctor, horario)">
-                <span *ngIf="!isHourBooked(doctor, horario)">{{ horario.substring(0, 5) }}</span>
-                <span *ngIf="isHourBooked(doctor, horario)">Ocupado</span>
+                [class.ocupado]="getCitaCelda(consultorio, horario)"
+                (click)="abrirModalAgendarCelda(consultorio, horario)">
+
+                <span *ngIf="!getCitaCelda(consultorio, horario)">{{ horario.substring(0, 5) }}</span>
+
+                <div *ngIf="getCitaCelda(consultorio, horario)" class="cita-preview">
+                  <span class="pill-time-mini">{{ horario.substring(0, 5) }}</span>
+                  <div class="pill-stack patient-stack">
+                    <span class="text-upper">{{ getCitaCelda(consultorio, horario).nombre_paciente }}</span>
+                    <span class="text-upper">{{ getCitaCelda(consultorio, horario).apellidos_paciente }}</span>
+                  </div>
+                  <div class="pill-stack doctor-stack" *ngIf="getCitaCelda(consultorio, horario).apellidos_medico">
+                    <span class="doc-label">Dr(a). {{ getCitaCelda(consultorio, horario).nombre_medico }}</span>
+                    <span class="doc-surname">{{ getCitaCelda(consultorio, horario).apellidos_medico }}</span>
+                  </div>
+                </div>
               </button>
             </div>
 
             <h4 class="time-group-header">Tarde</h4>
             <div class="pills-container">
               <button *ngFor="let horario of horariosTarde" class="time-pill"
-                [class.ocupado]="isHourBooked(doctor, horario)"
-                (click)="isHourBooked(doctor, horario) ? verDetallesCita(getAppointmentForHour(doctor, horario)) : abrirModalAgendar(doctor, horario)">
-                <span *ngIf="!isHourBooked(doctor, horario)">{{ horario.substring(0, 5) }}</span>
-                <span *ngIf="isHourBooked(doctor, horario)">Ocupado</span>
+                [class.ocupado]="getCitaCelda(consultorio, horario)"
+                (click)="abrirModalAgendarCelda(consultorio, horario)">
+
+                <span *ngIf="!getCitaCelda(consultorio, horario)">{{ horario.substring(0, 5) }}</span>
+
+                <div *ngIf="getCitaCelda(consultorio, horario)" class="cita-preview">
+                  <span class="pill-time-mini">{{ horario.substring(0, 5) }}</span>
+                  <div class="pill-stack patient-stack">
+                    <span class="text-upper">{{ getCitaCelda(consultorio, horario).nombre_paciente }}</span>
+                    <span class="text-upper">{{ getCitaCelda(consultorio, horario).apellidos_paciente }}</span>
+                  </div>
+                  <div class="pill-stack doctor-stack" *ngIf="getCitaCelda(consultorio, horario).apellidos_medico">
+                    <span class="doc-label">Dr(a). {{ getCitaCelda(consultorio, horario).nombre_medico }}</span>
+                    <span class="doc-surname">{{ getCitaCelda(consultorio, horario).apellidos_medico }}</span>
+                  </div>
+                </div>
               </button>
             </div>
           </div>
@@ -157,13 +155,8 @@
       </div>
 
       <div class="actions-footer">
-        <button *ngIf="agendaSeleccionada === 'General'" class='btn btn-reg btn-outline-primary'
-          (click)="volverAListaDoctores()">
-          &lt; Elegir otro médico
-        </button>
-
         <button class='btn btn-reg' (click)="volverASeleccion()">
-          &lt; Ir al Inicio
+          &lt; Cambiar Agenda
         </button>
       </div>
 

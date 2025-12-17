@@ -37,7 +37,12 @@ export class AgendarCitaModal implements OnInit, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['datosCita'] && this.datosCita) {
-      this.buscarConsultoriosDisponibles(); // 🔥 Se actualiza cada vez
+      if (this.datosCita.consultorio) {
+        this.consultorioSeleccionado = this.datosCita.consultorio;
+        this.consultoriosDisponibles = [this.datosCita.consultorio]; 
+      } else {
+        this.buscarConsultoriosDisponibles(); 
+      }
     }
   }
 
@@ -76,20 +81,25 @@ export class AgendarCitaModal implements OnInit, OnChanges {
     this.pacientes = [];
   }
 
+  doctorSeleccionado: any = null;
+
   //acciones finales
   confirmarCita() {
-    if (!this.pacienteSeleccionado || !this.consultorioSeleccionado) {
+    // Si ya venía un doctor en datosCita, usalo. Si no, usa el seleccionado del dropdown.
+    const doctorFinal = this.datosCita.doctor || this.doctorSeleccionado;
+
+    if (!this.pacienteSeleccionado || !this.consultorioSeleccionado || !doctorFinal) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Advertencia',
-        detail: 'Por favor, seleccione un paciente y un consultorio'
+        detail: 'Por favor, complete todos los campos (Medico, Paciente, Consultorio)'
       });
       return;
     }
 
     const nuevaCita = {
       id_paciente: this.pacienteSeleccionado.id_paciente,
-      id_medico: this.datosCita.doctor.id_medico,
+      id_medico: doctorFinal.id_medico,
       fecha: this.datosCita.fecha,
       hora: this.datosCita.hora,
       consultorio: this.consultorioSeleccionado
