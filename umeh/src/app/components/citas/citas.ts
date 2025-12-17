@@ -56,7 +56,7 @@ export class Citas implements OnInit {
     '20:00:00', '20:30:00',
     '21:00:00'
   ];
-
+ // Comentario para forzar actualizacion
   horariosTardeConsultorio2: string[] = [
     '14:00:00', '14:15:00', '14:30:00', '14:45:00',
     '15:00:00', '15:15:00', '15:30:00', '15:45:00',
