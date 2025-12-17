@@ -61,6 +61,8 @@
   background-color: #0b5ed7;
 }
 
+
+
 /* --- El Tablero de Doctores --- */
 .board {
   display: flex;
@@ -412,6 +414,31 @@
   gap: 20px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  /* Espacio entre el botón y el selector de fecha */
+}
+
+/* Estilo para el botón de "Cambiar Agenda" */
+.btn-reg {
+  background: transparent;
+  color: #6c757d;
+  border: 1px solid #ced4da;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-reg:hover {
+  background: #f8f9fa;
+  color: #343a40;
+  border-color: #adb5bd;
+}
+
 .subtitle-doc {
   color: #0d6efd;
   margin: 0;
@@ -573,4 +600,66 @@
 
 .text-upper {
   text-transform: capitalize;
+}
+
+/* --- Modo Compacto para Consultorio 2 (Intervalos de 15 min) --- */
+
+.pills-container.compact-mode {
+  grid-template-columns: repeat(2, 1fr);
+  /* Mantiene 2 columnas */
+  gap: 4px;
+  /* Menor espacio entre celdas */
+}
+
+/* Celda base en modo compacto */
+.pills-container.compact-mode .time-pill {
+  height: 46px;
+  /* Altura reducida (aprox mitad de 85px) */
+  flex-direction: row;
+  /* Diseño horizontal */
+  padding: 0 4px;
+}
+
+/* Celda ocupada en modo compacto */
+.pills-container.compact-mode .time-pill.ocupado {
+  justify-content: flex-start;
+  /* Alinear contenido a la izquierda */
+}
+
+/* Contenedor interno de la cita al estar ocupado */
+.pills-container.compact-mode .cita-preview {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+/* Ajustes a la etiqueta de hora */
+.pills-container.compact-mode .pill-time-mini {
+  margin-bottom: 0;
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  min-width: 35px;
+  /* Ancho fijo para alineación */
+  text-align: center;
+}
+
+/* Ajustes al bloque del paciente */
+.pills-container.compact-mode .patient-stack {
+  align-items: flex-start;
+  text-align: left;
+  flex: 1;
+  /* Ocupar resto del espacio */
+}
+
+/* Ajustes de texto de paciente */
+.pills-container.compact-mode .patient-stack span {
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+
+/* Ocultar información del doctor en la vista compacta para ahorrar espacio */
+.pills-container.compact-mode .doctor-stack {
+  display: none;
 }

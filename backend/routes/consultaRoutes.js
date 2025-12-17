@@ -58,7 +58,7 @@ router.get('/activas', consultaController.obtenerConsultasActivas);
 // Nueva ruta para finalizar consulta (método PUT)
 router.put('/:id_consulta/finalizar', consultaController.finalizarConsulta);
 
-// ✅ NUEVA: Cancelar consulta y restaurar inventario
+// NUEVA: Cancelar consulta y restaurar inventario
 router.post('/:id_consulta/cancelar', consultaController.cancelarConsulta);
 
 router.patch('/actCosto/:id_consulta', async (req, res) => {

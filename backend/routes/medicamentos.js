@@ -4,7 +4,7 @@ const router = express.Router();
 const { pool } = require('../db');
 const { getPaginatedData } = require('../utils/paginationHelper');
 
-// ✅ GET todos los medicamentos (read)
+//  GET todos los medicamentos (read)
 router.get('/', async (req, res) => {
   try {
     const tableName = 'medicamentos';
@@ -122,7 +122,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// ✅ PUT actualizar un medicamento (update)
+// PUT actualizar un medicamento (update)
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { nombre, cantidad, unidad, costo_unitario, metodo_aplicacion } = req.body;
@@ -208,7 +208,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// ✅ DELETE eliminar un medicamento (delete)
+//  DELETE eliminar un medicamento (delete)
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   if (!id) return res.status(400).json({ error: 'ID es requerido' });

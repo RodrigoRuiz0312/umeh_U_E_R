@@ -89,9 +89,15 @@
         <p class="subtitle-doc">Vista Global Diaria</p>
       </div>
 
-      <div class="date-selector">
-        <label for="fecha">Fecha de consulta:</label>
-        <input type="date" id="fecha" [(ngModel)]="fechaSeleccionada" (change)="cargarAgenda()">
+      <div class="header-actions">
+        <button class='btn btn-reg' (click)="volverASeleccion()">
+          &lt; Cambiar Agenda
+        </button>
+
+        <div class="date-selector">
+          <label for="fecha">Fecha de consulta:</label>
+          <input type="date" id="fecha" [(ngModel)]="fechaSeleccionada" (change)="cargarAgenda()">
+        </div>
       </div>
     </div>
 
@@ -108,8 +114,8 @@
 
           <div class="time-slots-wrapper">
             <h4 class="time-group-header">Mañana</h4>
-            <div class="pills-container">
-              <button *ngFor="let horario of horariosManana" class="time-pill"
+            <div class="pills-container" [class.compact-mode]="consultorio === 'Consultorio 2'">
+              <button *ngFor="let horario of getHorariosManana(consultorio)" class="time-pill"
                 [class.ocupado]="getCitaCelda(consultorio, horario)"
                 (click)="abrirModalAgendarCelda(consultorio, horario)">
 
@@ -130,8 +136,8 @@
             </div>
 
             <h4 class="time-group-header">Tarde</h4>
-            <div class="pills-container">
-              <button *ngFor="let horario of horariosTarde" class="time-pill"
+            <div class="pills-container" [class.compact-mode]="consultorio === 'Consultorio 2'">
+              <button *ngFor="let horario of getHorariosTarde(consultorio)" class="time-pill"
                 [class.ocupado]="getCitaCelda(consultorio, horario)"
                 (click)="abrirModalAgendarCelda(consultorio, horario)">
 
@@ -152,12 +158,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="actions-footer">
-        <button class='btn btn-reg' (click)="volverASeleccion()">
-          &lt; Cambiar Agenda
-        </button>
       </div>
 
     </div>
