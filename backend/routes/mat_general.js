@@ -3,7 +3,7 @@ const router = express.Router();
 const { pool } = require('../db');
 const { getPaginatedData } = require('../utils/paginationHelper');
 
-// ✅ GET todos los materiales generales con paginación
+// GET todos los materiales generales con paginación
 router.get('/', async (req, res) => {
   try {
     const result = await getPaginatedData(

@@ -4,7 +4,7 @@ const { pool } = require('../db');
 const PDFDocument = require('pdfkit');
 const reportesController = require('../controllers/reportesController');
 
-// ✅ GET reporte PDF de medicamentos
+//  GET reporte PDF de medicamentos
 router.get('/ver', async (req, res) => {
     try {
         const query = `
@@ -29,7 +29,7 @@ router.get('/ver', async (req, res) => {
         const result = await pool.query(query);
         const medicamentos = result.rows;
 
-        // 📅 Obtener fecha actual formateada
+        //  Obtener fecha actual formateada
         const fechaActual = new Date();
         const opciones = {
             year: 'numeric',
@@ -135,7 +135,7 @@ router.get('/ver', async (req, res) => {
     }
 });
 
-// ✅ Nuevas rutas para reportes de insumos
+//  Nuevas rutas para reportes de insumos
 // GET reporte de insumos diarios
 router.get('/insumos-diarios', reportesController.obtenerReporteInsumosDiarios);
 

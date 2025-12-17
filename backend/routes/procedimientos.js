@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { pool } = require('../db');
 
-// ✅ GET todos los procedimientos con paginación
+//  GET todos los procedimientos con paginación
 router.get('/', async (req, res) => {
   try {
     // 1. Obtener parámetros
@@ -133,7 +133,7 @@ router.post('/', async (req, res) => {
 
     await client.query('BEGIN')
 
-    // 1️⃣ Insertar el procedimiento principal
+    // 1️ Insertar el procedimiento principal
     const insertProc = await client.query(
       `INSERT INTO procedimientos (descripcion, observaciones)
        VALUES ($1, $2)
@@ -143,7 +143,7 @@ router.post('/', async (req, res) => {
 
     const idProcedimiento = insertProc.rows[0].id_procedimiento
 
-    // 2️⃣ Insertar responsables con su costo
+    // 2️ Insertar responsables con su costo
     if (Array.isArray(responsables)) {
       for (const r of responsables) {
         const resId = await client.query(
@@ -161,7 +161,7 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // 3️⃣ Insertar insumos con su cantidad (usa tipo + id_insumo del payload)
+    // 3️ Insertar insumos con su cantidad (usa tipo + id_insumo del payload)
     if (Array.isArray(insumos)) {
       for (const i of insumos) {
         // Validaciones mínimas del payload

@@ -12,6 +12,14 @@
           <strong>Paciente:</strong>
           <span>{{ cita.nombre_paciente }} {{ cita.apellidos_paciente }}</span>
         </p>
+
+        <p class="info-row">
+          <strong>Contacto:</strong>
+          <span>{{ cita.telefono_paciente || 'Sin registro' }} </span>
+        </p>
+
+
+
         <p class="info-row">
           <strong>Médico:</strong>
           <span>{{ cita.nombre_medico }} {{ cita.apellidos_medico }}</span>

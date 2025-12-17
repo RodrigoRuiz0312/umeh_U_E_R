@@ -21,10 +21,10 @@ router.get("/agenda", async (req, res) => {
     const doctoresFiltrados = doctoresResult.rows;
 
     const citasQuery = `
-
     SELECT c.*,
       p.nombre AS nombre_paciente,
-      p.apellidos AS apellidos_paciente
+      p.apellidos AS apellidos_paciente,
+      (SELECT telefono FROM paciente_telefonos pt WHERE pt.id_paciente = p.id_paciente LIMIT 1) as telefono_paciente
     FROM citas c
     LEFT JOIN paciente p ON c.id_paciente = p.id_paciente
     WHERE c.fecha = $1
@@ -45,6 +45,7 @@ router.get("/agenda", async (req, res) => {
         ...cita,
         nombre_paciente: cita.nombre_paciente ?? null,
         apellidos_paciente: cita.apellidos_paciente ?? null,
+        telefono_paciente: cita.telefono_paciente ?? 'Sin registro',
         nombre_medico: doctor.nombre_medico,
         apellidos_medico: doctor.apellidos_medico
       };
@@ -167,6 +168,7 @@ router.get("/hoy", async (req, res) => {
       SELECT 
         c.*,  -- Trae todas las columnas de la cita
         p.nombre AS nombre_paciente, p.apellidos AS apellidos_paciente,
+        (SELECT telefono FROM paciente_telefonos pt WHERE pt.id_paciente = p.id_paciente LIMIT 1) as telefono_paciente,
         m.nombre AS nombre_medico, m.apellidos AS apellidos_medico, m.especialidad
       FROM citas c
       JOIN paciente p ON c.id_paciente = p.id_paciente
